@@ -498,6 +498,28 @@ body[context-menu-show] *:not(oda-context-menu){
     height: 2px;
     right: 0px;
 }
+.focused.focused-left:after, *[focused].focused-left:after{
+    bottom: 0px;
+    left: 0px;
+    width: 2px;
+    top: 0px;
+    right: unset;
+    height: unset;
+}
+.focused.focused-right:after, *[focused].focused-right:after{
+    bottom: 0px;
+    top: 0px;
+    width: 2px;
+    right: 0px;
+    left: unset;
+    height: unset;
+}
+.focused.focused-top:after, *[focused].focused-top:after{
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    bottom: unset;
+}
 
 @keyframes blinker {
     100% {

@@ -99,6 +99,8 @@ export class Embedding  extends NeuroModule{
             let window = tokens.slice(j, j + this.win_size);
             this.trainStep(token, window);
         }
+        tokens = this.tokens.map(i=>i.emb);
+        let res = this.forward(tokens);
         this.losses.push(this.error);
         return tokens;
     }
@@ -202,11 +204,11 @@ export class Embedding  extends NeuroModule{
             res.id = Object.keys(this.vocabulary).length;
             res.emb = tensor.param(tensor.rand(this.dim).minus_(.5))._label('emb: '+word);
             res.cnt = tensor.param(tensor.rand(this.dim).minus_(.5))._label('cnt: '+word);
-            if(this.tokens.length >= this.logits.d_out){
+            if(this['#size'] >= this.logits.d_out){
                 this.logits.updateOutSize(this.logits.d_out + this.dim);
             }
             this._tokens = undefined
-            this['#size'] = undefined;
+            this['#size']++;
             return res;
         })()
     }

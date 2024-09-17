@@ -137,6 +137,18 @@ export class tensor{
         }
         this.id = genId();
     }
+    _resize_data(data, ...shape){
+        if(Array.isArray(shape[0]))
+            shape = shape[0];
+        if(Object.equal(shape[0]?.constructor, tensor))
+            shape = shape[0].shape;
+        const size = shape.reduce((r, v)=>r * (v || 1), 1);
+        if (size !== data.length)
+            throw new Error(`_shape from (${this.shape}) to (${shape}) not allow.`);
+        this.#data = data;
+        this.#shape = shape
+        return this;
+    }
     getPath(level = 0){
         let tab = '|'.repeat(level) + '|- '
         let path = [tab + this.label];
