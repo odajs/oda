@@ -140,8 +140,6 @@ export class tensor{
     _resize_data(data, ...shape){
         if(Array.isArray(shape[0]))
             shape = shape[0];
-        if(Object.equal(shape[0]?.constructor, tensor))
-            shape = shape[0].shape;
         const size = shape.reduce((r, v)=>r * (v || 1), 1);
         if (size !== data.length)
             throw new Error(`_shape from (${this.shape}) to (${shape}) not allow.`);
@@ -1209,13 +1207,17 @@ tensor.unpack = (expr, inputs)=>{
     //todo
 }
 
-tensor.eye = (dim)=>{
-    const data = Array(dim).fill().map((_,i)=>{
-        let res =  Array(dim).fill(0);
-        res[i] = 1;
-        return res;
-    })
-    return tensor.from(data)._shape([dim,dim])._label('eye');
+tensor.eye = (...shape)=>{
+    if(Array.isArray(shape[0]))
+        shape = shape[0];
+    const size = shape.reduce((r, v)=>r * (v || 1), 1);
+    const data = new Float32Array(size);
+    let dim = shape.last
+    let step = Math.min(size/ dim, dim);
+    for (let i = 0; i<step; i++){
+        data[i * dim + i] = 1;
+    }
+    return tensor.from(data)._shape(shape)._label('eye');
 }
 tensor.einsum = (in_expr, sources = [])=>{
     const tensors = sources.map(t => tensor.from(t));
