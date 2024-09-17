@@ -1,5 +1,5 @@
 import {tensor} from "../../torus/torus.js";
-import {NeuroModule} from "../neuro-module.js";
+import {Linear, NeuroModule} from "../neuro-module.js";
 export class Embedding  extends NeuroModule{
     negativeSize = 3;
     constructor(dim = 1024, char_step = 0, win_size = 8) {
@@ -13,6 +13,7 @@ export class Embedding  extends NeuroModule{
                 emb: tensor.param(tensor.zeros(this.dim)),
                 cnt: tensor.param(tensor.rand(this.dim).minus_(.5))
             }}
+        this.logits = new Linear(this.dim, this.dim, true);
     }
     static cosSimilar(A, B) {
         if (A && B) {
@@ -41,6 +42,7 @@ export class Embedding  extends NeuroModule{
         return 0;
     }
     forward(x){
+        const result = this.logits(x);
 
     }
     plus(...tokens){
@@ -200,6 +202,9 @@ export class Embedding  extends NeuroModule{
             res.id = Object.keys(this.vocabulary).length;
             res.emb = tensor.param(tensor.rand(this.dim).minus_(.5))._label('emb: '+word);
             res.cnt = tensor.param(tensor.rand(this.dim).minus_(.5))._label('cnt: '+word);
+            if(this.tokens.length >= this.logits.d_out){
+                this.logits.updateOutSize(this.logits.d_out + this.dim);
+            }
             this._tokens = undefined
             this['#size'] = undefined;
             return res;

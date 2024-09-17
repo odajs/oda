@@ -23,7 +23,7 @@ class themeVars extends ROCKS({
                 });
             }
         }
-        [...document.styleSheets].map(sheet => {
+        [...top.document.styleSheets].map(sheet => {
             const scope = sheet.ownerNode.getAttribute('scope') || 'no-scope';
             [...sheet.cssRules].map(rule => {
                 fn(rule, scope);
@@ -106,9 +106,8 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
             $list: ['light', 'dark', 'light dark'],
             set(n) {
                 this.toggled = n === 'dark';
-            },
-            $save: true
-        },
+            }
+        }
     },
     vars: { $def() { return new themeVars() } },
     get elements() {
@@ -125,7 +124,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
         // console.log(elms);
         return elms;
     },
-    switchTheme(theme = this.theme) {
+    async switchTheme(theme = this.theme) {
         let wins = [ top ];
         wins = [...wins, ...Array.from(top)];
         wins.map(w => {
@@ -137,9 +136,14 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
             }
             meta.content = theme;
         })
+        this.async(() => {
+            this.vars = new themeVars();
+        }, 100)
         return theme;
     },
     ready() {
+        this.theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         this.toggled = this.theme === 'dark';
+        this.switchTheme();
     }
 })

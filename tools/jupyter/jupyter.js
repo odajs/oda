@@ -674,7 +674,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
  
     `,
     focus() {
-        this.$('oda-code-editor').focus();
+        this.$('oda-code-editor')?.focus();
     },
     _keypress(e){
         if (e.ctrlKey && e.keyCode === 10){
@@ -687,7 +687,15 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     },
 
     $public:{
-
+        autoRun:{
+            $type: Boolean,
+            get(){
+                return this.cell?.autoRun;
+            },
+            set(n){
+                this.cell.autoRun = n;
+            }
+        },
         hideCode: {
             $def: false,
             get(){

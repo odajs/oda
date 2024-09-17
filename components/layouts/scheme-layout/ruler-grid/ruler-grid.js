@@ -7,6 +7,11 @@ ODA({ is: 'oda-ruler-grid', template: /*html*/`
             overflow: hidden;
             background-color: {{backgroundColor}};
         }
+        path {
+            stroke: gray;
+            fill: none;
+            stroke-width: 1.5;
+        }
     </style>
     <oda-ruler ~if="showScale"></oda-ruler>
     <div class="horizontal flex">
@@ -25,7 +30,7 @@ ODA({ is: 'oda-ruler-grid', template: /*html*/`
                 </defs>
                 <rect ~if="showGrid" :transform fill="url(#bigLines)" :width :height></rect>
                 <rect ~if="showGrid" :transform fill="url(#smallLines)" :width :height></rect>
-                <path :transform="transform1" ~for="paths" ~is="$for.item.is" ~props="$for.item.props"></path>
+                <path :transform ~for="paths" ~is="$for.item.is" ~props="$for.item.props"></path>
             </svg>
             <div id="slot" class="vertical" style="overflow: auto; position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px;" @scroll="onScroll" @resize="onResize">
                 <slot class="flex vertical" name="content"></slot>

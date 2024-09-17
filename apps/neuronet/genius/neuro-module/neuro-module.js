@@ -144,6 +144,25 @@ export class Linear extends NeuroModule{
         }
 
     }
+    updateOutSize(new_size){
+        if (new_size <= this.d_out)
+            return;
+        this.d_out = this.params.d_out = new_size;
+        let data = new this.dType(this.d_in * this.d_out);
+        data = data.map((_,i)=>{
+            return this.W.data[i] ?? (Math.random()-.5) * .1;
+        })
+        this.W.data = data;
+        this.W._shape(this.d_in, this.d_out);
+        if (this.bias){
+            data = new this.dType(this.d_out);
+            data = data.map((_,i)=>{
+                return this.B.data[i] ?? (Math.random()-.5) * .1;
+            })
+            this.B.data = data;
+            this.B._shape(this.d_out);
+        }
+    }
     forward(x){
         x = tensor.from(x);
         x._label(`INPUT (${x.shape})`);
