@@ -82,7 +82,7 @@ const updateStyle = (key, val, vars) => {
     changes[key].isDark = isDark;
     changes[key].newVal = newVal;
     vars && (vars[key] = newVal);
-    console.log(changes)
+    // console.log(changes)
 }
 
 ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker',
@@ -159,7 +159,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
         }) { }
         const res = await ODA.showDropdown('oda-property-grid', { inspectedObject: props }, { minWidth: '480px' });
     },
-    changes() {
+    get changes() {
         return changes;
     },
     clearChanges() {
