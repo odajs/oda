@@ -41,6 +41,9 @@ export class Embedding  extends NeuroModule{
         return 0;
     }
     forward(x){
+        if(typeof x === 'string')
+            x = this._tokenize(x);
+        x = tensor.from(x);
         const result = this.logits(x);
         return result.softmax();
     }
