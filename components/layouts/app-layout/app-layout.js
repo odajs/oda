@@ -88,8 +88,18 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter', extends: 
 <!--        <slot name="title" class="horizontal"></slot>-->
         <slot name="header" class="horizontal"></slot>
     </div>
-    <div ~show="!isMinimized" class="main-container header flex" ~class="{'stop-pointer-events': sizeMode === 'min'}" ~style="{zoom: sizeMode === 'min' ? '50%' : '100%'}">
-        <div class="main vertical flex shadow" @wheel="_scroll"  style="order:1" ~style="{filter: (allowCompact && compact && opened)?'brightness(.5)':'none', pointerEvents: (allowCompact && compact && opened)?'none':'auto'}">
+    <div
+        ~show="!isMinimized"
+        class="main-container header flex"
+        ~class="{'stop-pointer-events': sizeMode === 'min'}"
+        ~style="{zoom: sizeMode === 'min' ? '50%' : '100%'}"
+    >
+        <div
+            class="main vertical flex shadow"
+            @wheel="_scroll"
+            style="order:1"
+            ~style="{filter: (allowCompact && compact && opened)?'brightness(.5)':'none', pointerEvents: (allowCompact && compact && opened)?'none':'auto'}"
+        >
             <slot name="top" class="vertical no-flex"></slot>
             <slot name="main" class="vertical flex" style="overflow: hidden; z-index: 0"></slot>
             <slot name="bottom" class="vertical no-flex" style="overflow: visible;"></slot>
@@ -650,7 +660,14 @@ ODA({is: 'app-layout-tabs',
         }
     </style>
     <div ~if="tabs.length > 1" class="horizontal" style="border-bottom: 1px solid gray;">
-        <oda-button ~for="tabs" ~props="$for.item" @tap="focused = $for.item" class="no-flex" :focused="focused === $for.item" :active="focused === $for.item"></oda-button>
+        <oda-button
+            ~for="tabs"
+            ~props="$for.item"
+            class="no-flex"
+            :focused="focused === $for.item"
+            :active="focused === $for.item"
+            @tap="focused = $for.item"
+        ></oda-button>
     </div>
     <slot @slotchange="onSlotchange" class="flex vertical" style="height: 0"></slot>
     `,
