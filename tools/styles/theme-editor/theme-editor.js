@@ -1,7 +1,7 @@
 class themeVars extends ROCKS({
     $public: (() => {
         const styles = {}, media = [];
-        const fn =(rule, _scope = 'no-scope', isMedia = false) => {
+        const fn = (rule, _scope = 'no-scope', isMedia = false) => {
             let scope = _scope;
             if (rule.selectorText === ':root') {
                 styles[scope] ||= { rules: [] };
@@ -17,7 +17,7 @@ class themeVars extends ROCKS({
                         const v = rule.style.getPropertyValue(propName).trim();
                         if (propName !== '--style-group') {
                             styles[scope].vars ||= [];
-                            styles[scope].vars.push( { var: { [propName.trim()]: v }, isMedia });
+                            styles[scope].vars.push({ var: { [propName.trim()]: v }, isMedia });
                         }
                     }
                 });
@@ -46,7 +46,10 @@ class themeVars extends ROCKS({
                     $group,
                     $editor: key.includes('color') || key.includes('background') ? '@oda/color-picker[oda-color-picker]' : 'oda-pg-string',
                     $def: val,
-                    set: (n) => { ODA.updateStyle({ [key]: n }) }
+                    set: (n) => { 
+                        ODA.updateStyle({ [key]: n });
+
+                    }
                 }
             })
         })
@@ -57,6 +60,7 @@ class themeVars extends ROCKS({
         return vars;
     })()
 }) { }
+
 
 ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker',
     template: `
@@ -71,9 +75,9 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
             <div>Switch Light/Dark mode: </div>
             <oda-toggle size="24" ::toggled></oda-toggle>
         </div>
-        <div class="horizontal wrap no-flex" style="position: relative; overflow: auto; flex-wrap: wrap; white-space:wrap; overflow-y: auto;">
-            <oda-button ~class="$for.item.length === 1 ? $for.item[0].k : $for.key" class="border" ~for="attr" style="width: 240px; height: 80px; margin: 4px; font-size: larger; padding: 4px;" @tap="showInfo($for.item)">
-                {{$for.item.length === 1 ? $for.item[0].k : $for.key}}
+        <div class="horizontal wrap no-flex" style=" justify-content: center; position: relative; overflow: auto; flex-wrap: wrap; white-space:wrap; overflow-y: auto;">
+            <oda-button ~class="$for.item.k" class="border" ~for="attr" style="min-width: 240px; height: 80px; margin: 4px; font-size: larger; padding: 4px;" @tap="showInfo($for.item)">
+                {{$for.item.k}}
             </oda-button>
         </div>
         <oda-property-grid slot="right-panel" class="vertical flex border" label="Theme settings"  :inspected-object="vars" style="padding:0"></oda-property-grid>
@@ -97,25 +101,44 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
     },
     vars: { $def() { return new themeVars() } },
     get attr() {
-        const a = {};
+        const a = [];
         Object.keys(cssRules).map(k => {
             if (cssRules[k].includes('var('))
-            if (k !== '--help-after' && k !== '--cover')
-                {
+                if (k !== '--help-after' && k !== '--cover' && k !== '--error-before') {
                     const group = k.split('-')[2];
-                    a[group] ||= [];
-                    a[group].push({ k: k.slice(2), v: cssRules[k] });
+                    a.push({ k: k.slice(2), v: cssRules[k] });
                 }
         })
-        console.log(a);
+        // console.log(a);
         return a;
     },
-    async showInfo(item) {
-        console.log(item);
-        const res = await ODA.showDropdown('oda-property-grid', { inspectedObject: item.vars }, { });
+    async showInfo(item = []) {
+        const props = new class props extends ROCKS({
+            $public: (() => {
+                const props = {};
+                const vars = item.v.split('\n');
+                    vars.map(i => {
+                        if (i.includes('var')) {
+                            const key = i.split('var(')[1].split(')')[0].split(',')[0];
+                            props[key] = {
+                                $group: item.k,
+                                $public: true,
+                                $editor: key?.includes('color') || key?.includes('background') ? '@oda/color-picker[oda-color-picker]' : 'oda-pg-string',
+                                $def: this.vars[key],
+                                set: (n) => { 
+                                    ODA.updateStyle({ [key]: n });
+
+                                }
+                            }
+                        }
+                    })
+                return props;
+            })()
+        }) {}
+        const res = await ODA.showDropdown('oda-property-grid', { inspectedObject: props }, { minWidth: '480px' });
     },
     async switchTheme(theme = this.theme) {
-        let wins = [ top ];
+        let wins = [top];
         wins = [...wins, ...Array.from(top)];
         wins.map(w => {
             let meta = w.document.getElementById('color-scheme');
