@@ -14,38 +14,13 @@ export class Embedding  extends NeuroModule{
             }}
         this.logits = new Linear(this.dim, this.dim, true);
     }
-    static cosSimilar(A, B) {
-        if (A && B) {
-            A = A.emb || A
-            A = tensor.from(A).data;
-            B = B.emb || B
-            B = tensor.from(B).data;
-            let scalar = 0;
-            let avgA = 0;
-            let avgB = 0;
-            let a, b
-            for (let i = 0; i < A.length; i++){
-                a = A[i];
-                b = B[i];
-                scalar += a * b;
-                avgA += a * a;
-                avgB += b * b;
-            }
-            if(scalar){
-                avgA = Math.sqrt(avgA);
-                avgB = Math.sqrt(avgB);
-                scalar /= avgA * avgB;
-                return Math.abs(scalar);
-            }
-        }
-        return 0;
-    }
     forward(x){
         if(typeof x === 'string')
-            x = this._tokenize(x);
+            x = this._text2emb(x);
         x = tensor.from(x);
-        const result = this.logits(x);
-        return result.softmax();
+        let result = this.logits(x);
+        result = result.softmax();
+        return result;
     }
     plus(...tokens){
         let token = this._plus(...tokens);
@@ -68,7 +43,7 @@ export class Embedding  extends NeuroModule{
             token = this._plus(...this._tokenize(t));
         token = tensor.from(token.emb || token);
         const res = this.tokens.map(t=>{
-            const v = Embedding.cosSimilar(t, token);
+            const v = tensor.cosSimilar(t, token);
             return {w:t.w, v};
         }).sort((a,b)=>{
             return (a.v>b.v)?-1:1
@@ -105,7 +80,7 @@ export class Embedding  extends NeuroModule{
             this.trainStep(token, window);
         }
         tokens = this.tokens.map(i=>i.emb);
-        tokens = tensor.stack(tokens);
+        // tokens = tensor.stack(tokens);
         let softmax = this.forward(tokens);
         const target = tensor.eye(this.tokens.length,  this.dim);
         const losses = softmax.crossEntropy(target);
@@ -143,6 +118,12 @@ export class Embedding  extends NeuroModule{
         if(this.char_step)
             return this._tokenizeByChars(text);
         return this._tokenizeByWord(text);
+    }
+    _text2emb(text){
+        let t = this._tokenize(text);
+        t = t.map(i=>i.emb);
+        t = tensor.from(t);
+        return t;
     }
     _tokenizeByWord(text){
         text = text.toLowerCase();

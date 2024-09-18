@@ -1190,6 +1190,32 @@ tensor.parse_shape = (expr, src)=>{
         return r
     },{})
 }
+tensor.cosSimilar = (A, B) => {
+    if (A && B) {
+        A = A.emb || A
+        A = tensor.from(A).data;
+        B = B.emb || B
+        B = tensor.from(B).data;
+        let scalar = 0;
+        let avgA = 0;
+        let avgB = 0;
+        let a, b
+        for (let i = 0; i < A.length; i++){
+            a = A[i];
+            b = B[i];
+            scalar += a * b;
+            avgA += a * a;
+            avgB += b * b;
+        }
+        if(scalar){
+            avgA = Math.sqrt(avgA);
+            avgB = Math.sqrt(avgB);
+            scalar /= avgA * avgB;
+            return Math.abs(scalar);
+        }
+    }
+    return 0;
+}
 
 tensor.rearrange = (expr, src)=>{
     //todo
