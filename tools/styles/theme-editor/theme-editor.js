@@ -1,3 +1,4 @@
+let allVars;
 class themeVars extends ROCKS({
     $public: (() => {
         const styles = {}, media = [];
@@ -46,10 +47,7 @@ class themeVars extends ROCKS({
                     $group,
                     $editor: key.includes('color') || key.includes('background') ? '@oda/color-picker[oda-color-picker]' : 'oda-pg-string',
                     $def: val,
-                    set: (n) => { 
-                        ODA.updateStyle({ [key]: n });
-
-                    }
+                    set: (n) => updateStyle(key, n)
                 }
             })
         })
@@ -57,10 +55,28 @@ class themeVars extends ROCKS({
             i.$group = groups[i.$group]?.length > 1 ? i.$group : 'vars';
         })
         // console.log(vars);
+        allVars = vars;
         return vars;
     })()
 }) { }
 
+const changes = {};
+let isDark = false;
+const updateStyle = (key, val) => {
+    if (allVars[key].$def?.includes('light-dark')) {
+        val = val.replaceAll(',', ' ');
+        console.log(allVars[key].$def);
+        let v = (allVars[key].$def).split('light-dark(');
+        if (isDark) {
+            val = 'light-dark(' + v[1].split(',')[0] + ', ' + val + ')';
+        } else {
+            val = 'light-dark(' + val + ', ' + v[1].split(',')[1];
+        }
+        console.log(val)
+    }
+    ODA.updateStyle({ [key]: val });
+    changes[key] = val;
+}
 
 ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker',
     template: `
@@ -85,6 +101,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
     toggled: {
         $def: false,
         set(n) {
+            isDark = n;
             this.theme = n ? 'dark' : 'light';
             this.switchTheme();
         }
@@ -124,11 +141,8 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
                                 $group: item.k,
                                 $public: true,
                                 $editor: key?.includes('color') || key?.includes('background') ? '@oda/color-picker[oda-color-picker]' : 'oda-pg-string',
-                                $def: this.vars[key],
-                                set: (n) => { 
-                                    ODA.updateStyle({ [key]: n });
-
-                                }
+                                $def: changes[key] || this.vars[key],
+                                set: (n) => { updateStyle(key, n) }
                             }
                         }
                     })
@@ -136,6 +150,9 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
             })()
         }) {}
         const res = await ODA.showDropdown('oda-property-grid', { inspectedObject: props }, { minWidth: '480px' });
+    },
+    get changes() { 
+        return changes;
     },
     async switchTheme(theme = this.theme) {
         let wins = [top];

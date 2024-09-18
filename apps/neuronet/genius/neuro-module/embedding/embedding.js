@@ -80,7 +80,6 @@ export class Embedding  extends NeuroModule{
             this.trainStep(token, window);
         }
         tokens = this.tokens.map(i=>i.emb);
-        // tokens = tensor.stack(tokens);
         let softmax = this.forward(tokens);
         const target = tensor.eye(this.tokens.length,  this.dim);
         const losses = softmax.crossEntropy(target);

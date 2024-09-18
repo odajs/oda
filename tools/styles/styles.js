@@ -27,7 +27,7 @@ let style = /*css*/`
     /* --selected-filter: light-dark(brightness(0.8) contrast(1.2), brightness(1.2) contrast(0.9)); */
     --pointer-color: light-dark(magenta, magenta);
 
-    --dark-color: light-dark(white, rgb(20, 20, 20));
+    --dark-color: light-dark(white, rgb(20 20 20));
     --dark-background: light-dark(gray, gray);
 
     --body-background: light-dark(transparent, transparent);

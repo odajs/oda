@@ -341,35 +341,38 @@ export class tensor{
         return result;
 
     }
-    static stack(tensors, dim= 0){
-        let shape = [...tensors[0].shape];
-        if ((dim > 0)?(shape.length < dim):(shape.length + dim)<-1)
-            throw new Error(`Dimension out of range (expected to be in range of [-${this.dim+1}, ${this.dim}], but got ${dim})`)
-        let size = tensors[0].size;
+    static stack(tensors, dim = 0){
+        let first = tensors[0];
+
+        if (((dim > 0)?(first.dim < dim):((first.dim + dim)<-1)))
+            throw new Error(`Dimension out of range (expected to be in range of [-${dim+1}, ${dim}], but got ${dim})`);
+        let shape = [tensors.length];
+        let next;
+        while ((next = data[0]) && Array.isArray(next)){
+            shape.push(next.length);
+            tensors = tensors.flat();
+        }
+        let dType = first.dType;
+        let size = first.size;
         let step = size;
         if (dim < 0)
             dim = this.dim + 1 + dim
         let d = dim;
-        for (let s of shape){
+        let old_shape = [...first.shape];
+        for (let s of old_shape){
             if (!d) break;
             step /= s;
             d--;
         }
-        const max = Math.max(...tensors.map(t=>t.dType.BYTES_PER_ELEMENT));
-        let t = tensors.find(t => {
-            return t.dType.BYTES_PER_ELEMENT === max;
-        });
+        const data = new dType(shape.reduce((r,v)=>r*v, 1));
 
-        const data = new t.dType(size * tensors.length);
-        let idx = -1;
         for (let i = 0; i < size; i += step){
             for (let t of tensors){
                 for (let j = i; j<i + step; j++)
                     data[++idx] = t.data[j];
             }
         }
-        shape.splice(dim, 0, tensors.length);
-        const out = tensor.from(data)._shape(shape)._label(`stack(${tensors.length} tensors with shape(${tensors[0].shape}) by ${dim} axis)`)._src(tensors);
+        const out = tensor.from(data)._shape(shape)._label(`stack(${tensors.length} tensors with shape(${first.shape}) by ${dim} axis)`)._src(tensors);
         out._back = ()=>{
             for(let start = 0; start<size; start += step){
                 let delta = start
