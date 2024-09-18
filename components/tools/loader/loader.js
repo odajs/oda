@@ -18,7 +18,7 @@ ODA({is: 'oda-loader',  extends: 'oda-icon', imports: '@oda/icon',
         }
         @keyframes spin {
                 0% { transform: rotate(0deg) scale(1); }
-                50% { transform: rotate(180deg) scale(.5); }
+                50% { transform: rotate(180deg) scale(.9); }
                 100% { transform: rotate(360deg) scale(1); }
             }
     </style>
