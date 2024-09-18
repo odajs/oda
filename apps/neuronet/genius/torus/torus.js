@@ -1,96 +1,5 @@
-const USE_TESTS = false;
 globalThis.LEARNING_RATE = 0.1;
 globalThis.GRADIENT_DIVIDER = 1;
-
-BigInt.prototype.toBin = function (dim = 64){
-    return this.toString(2).padStart(dim, '0');
-}
-globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
-    _binSize = 0;
-    #length = 0;
-    #bins = undefined;
-    _self = undefined;
-    bit_mask = BigInt(1);
-    constructor(size) {
-        super(Math.ceil((Array.isArray(size)?size.length:size)/64));
-        if (Array.isArray(size)){
-            let data = size;
-            this.#length = this._binSize = data.length;
-            const str = data.map(i=>i>0?1:0).join('');
-            let step = 0;
-            let v;
-            while (v = str.substr(step * 64, step * 64 + 64)){
-                this[step] = '0b'+v.padEnd(64, '0');
-                step++
-            }
-        }
-        else{
-            this.#length = this._binSize = size;
-        }
-        this._self = this;
-        return new Proxy(this, {
-            get: (target, key, receiver) =>{
-                const v =  target[key];
-                if(typeof v == "function")
-                    return v.bind(target);
-                return v;
-            },
-            set: (target, key, value) => {
-                switch (value?.constructor){
-                    case BigInt:{
-                        target[key] = value;
-                    } break;
-                    case Number:{
-                        target[key] = BigInt(value);
-                    } break;
-                    case Boolean:
-                        value = value?'1':'0';
-                    case String:{
-                        switch (value){
-                            case '1':
-                            case '0':{
-                                key = +key
-                                let idx = (key / 64);
-                                key = Math.floor(idx);
-                                idx = (idx - key) * 64;
-                                let bin = target[key].toBin();
-                                bin = '0b' + bin.substr(0, idx) + value + bin.substr(idx + 1);
-                                target[key] = BigInt(bin);
-                            } break;
-                            default:{
-                                if (value.startsWith('0b'))
-                                    target[key] = BigInt(value);
-                                else
-                                    target[key] = BigInt('0b'+value.padStart(64, '0'));
-                            }
-                        }
-                    } break;
-                }
-                return true;
-            },
-        })
-    }
-    get bins(){
-        return this.#bins ??= Array.prototype.map.call(this.data, d => d.toBin());
-    }
-    get binLength(){
-        return this.#length
-    }
-    get binSize(){
-        return this._binSize;
-    }
-    map(h){
-        return this._self.reduce((res, v, i)=>{
-            res[i] = h(v, i, this._self);
-            return res;
-        }, new BinaryArray(this._binSize))
-    }
-    getBit(idx){
-        const data_idx = idx>>6;
-        idx = 63-(idx&63);
-        return (this[data_idx]>>BigInt(idx))&this.bit_mask;
-    }
-}
 export class tensor{
     #shape = [];
     #data = null;
@@ -109,18 +18,30 @@ export class tensor{
             this.#data = new this.dType(data);
         }
         else{
-            this.#dType = dType;
+
             if (Array.isArray(data)){
-                let shape = [];
-                let d = data;
-                while(Array.isArray(d) && d.length){
-                    shape.push(d.length);
-                    d = d[0];
-                    data = data.flat()
+                let shape = [data.length];
+                let next;
+                while ((next = data[0]) && Array.isArray(next)){
+                    shape.push(next.length);
+                    data = data.flat();
+                }
+                if (next instanceof tensor){
+                    dType = next.dType
+                    shape.push(...next.shape);
+                    let size = next.size;
+                    next = new dType(shape.reduce((r, v)=> r * v,  1));
+                    data = data.reduce((r, v, i)=>{
+                        r.set(v.data, i * size);
+                        return r
+                    }, next);
+                }
+                else{
+                    if (!(data instanceof dType))
+                        data = new dType(data);
                 }
                 this.#shape = shape;
-                if (!(data instanceof this.dType))
-                    data = new this.dType(data);
+                this.#dType = dType;
 
             }
             else if(this.dType === BinaryArray) {
@@ -1062,116 +983,6 @@ function genId(){
     return ++_id;
 }
 let _id = 0;
-
-
-//einops
-
-
-const tests = [
-    (check = 15)=>{
-        const v = Tensor.from([1, 2, 3, 4, 5]);
-        const res = tensor.einsum("i->", [v]);
-        if (res.data !== check) throw new Error('Сумма всех значений вектора');
-    },
-    (check = 21)=>{
-        const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
-        const res = tensor.einsum("ij->", [v]);
-        if (res.data !== check) throw new Error('Сумма всех значений матрицы');
-    },
-    (check = [9, 12])=>{
-        const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
-        const res = tensor.einsum("ij->j", [v]);
-        for(let i = 0; i<check.length; i++){
-            if (res.data[i] !== check[i]) throw new Error('Сумма значений по столбцам');
-        }
-    },
-    (check = [3, 7, 11])=>{
-        const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
-        const res = tensor.einsum("ij->i", [v]);
-        for(let i = 0; i<check.length; i++){
-            if (res.data[i] !== check[i]) throw new Error('Сумма значений по строкам');
-        }
-    },
-    (check = [[1, 3, 5], [2, 4, 6]])=>{
-        const v = Tensor.from([[1, 2], [3, 4], [5, 6]]);
-        const res = tensor.einsum("ij->ji", [v]);
-        check = check.flat();
-        for(let i = 0; i<check.length; i++){
-            if (res.data[i] !== check[i]) throw new Error('Транспонирование');
-        }
-    },
-    (check = [[5], [11], [17]])=>{
-        const v1 = Tensor.from([[1, 2], [3, 4], [5, 6]]);
-        const v2 = Tensor.from([[1, 2]]);
-        const res = tensor.einsum("ij,kj->ik", [v1,  v2]);
-        check = check.flat();
-        for(let i = 0; i<check.length; i++){
-            if (res.data[i] !== check[i]) throw new Error('Умножение матрицы на вектор');
-        }
-    },
-    (check = [[1, 2], [3, 4], [5, 6]])=>{
-        const v1 = Tensor.from([[1, 2], [3, 4], [5, 6]]);
-        const v2 = Tensor.from([[1, 0], [0, 1]]);
-        const res = tensor.einsum("ik,kj->ij", [v1,  v2]);
-        check = check.flat();
-        for(let i = 0; i<check.length; i++){
-            if (res.data[i] !== check[i]) throw new Error('Умножение матрицы на матрицу');
-        }
-    },
-    (check = 6)=>{
-        const v1 = Tensor.from([[1, 2, 3]]);
-        const v2 = Tensor.from([[1, 1, 1]]);
-        const res = tensor.einsum("ik,jk->", [v1,  v2]);
-        if (res.data !== check) throw new Error('Скалярное произведение векторов');
-    },
-    (check = 15)=>{
-        const v1 = Tensor.from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
-        const res = tensor.einsum("ii->", [v1]);
-        if (res.data !== check) throw new Error('След матрицы');
-    },
-    (check = [[1, 0, 0], [0, 5, 0], [0, 0, 9]])=>{
-        const v1 = Tensor.from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
-        const v2 = Tensor.from([[1, 0, 0], [0, 1, 0], [0, 0, 1]]);
-        const res = tensor.einsum("ij,ij->ij", [v1,  v2]);
-        check = check.flat();
-        for(let i = 0; i<check.length; i++){
-            if (res.data[i] !== check[i]) throw new Error('Адамарово (покомпонентное) произведение');
-        }
-    },
-    (check = [[1, 0, 0], [2, 0, 0], [3, 0, 0]])=>{
-        const v1 = Tensor.from([1, 2, 3]);
-        const v2 = Tensor.from([1, 0, 0]);
-        const res = tensor.einsum("i,j->ij", [v1,  v2]);
-        check = check.flat();
-        for(let i = 0; i<check.length; i++){
-            if (res.data[i] !== check[i]) throw new Error('Кронекерово (внешнее) произведение векторов');
-        }
-    },
-    (check = [[[0, 1, 2], [1, 2, 3]], [[1, 2, 3], [2, 3, 4]], [[2, 3, 4], [3, 4, 5]]])=>{
-        const v1 = Tensor.from([[[0, 1], [1, 2], [2, 3]], [[1, 2], [2, 3], [3, 4]], [[2, 3], [3, 4], [4, 5]]]);
-        const res = tensor.einsum("ijk->jki", [v1]);
-        check = check.flat().flat();
-        for(let i = 0; i<check.length; i++){
-            if (res.data[i] !== check[i]) throw new Error('Транспонирование тензора');
-        }
-    },
-    (check = [[[2, 3], [5, 8], [8, 13]], [[5, 8], [8, 13], [11, 18]], [[8, 13], [11, 18], [14, 23]]])=>{
-        const v1 = Tensor.from([[[0, 1], [1, 2], [2, 3]], [[1, 2], [2, 3], [3, 4]], [[2, 3], [3, 4], [4, 5]]]);
-        const v2 = Tensor.from([[1, 2], [2, 3]]);
-        const res = tensor.einsum("ijk,nk->ijn", [v1,  v2]);
-        check = check.flat().flat();
-        for(let i = 0; i<check.length; i++){
-            if (res.data[i] !== check[i]) throw new Error('Произведение тензора на матрицу по третьей модев');
-        }
-    },
-]
-if (USE_TESTS){
-    setTimeout(()=>{
-        for (let test of tests)
-            test()
-    })
-}
-
 tensor.parse_shape = (expr, src)=>{
     const shape = src.shape;
     const vars = expr.split('');
@@ -1595,5 +1406,94 @@ tensor.prototype.pad = function(paddings, mode = 'constant', constant_value = 0)
         this.grad = unpadded_grad;
     }
     return result;
+}
+BigInt.prototype.toBin = function (dim = 64){
+    return this.toString(2).padStart(dim, '0');
+}
+globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
+    _binSize = 0;
+    #length = 0;
+    #bins = undefined;
+    _self = undefined;
+    bit_mask = BigInt(1);
+    constructor(size) {
+        super(Math.ceil((Array.isArray(size)?size.length:size)/64));
+        if (Array.isArray(size)){
+            let data = size;
+            this.#length = this._binSize = data.length;
+            const str = data.map(i=>i>0?1:0).join('');
+            let step = 0;
+            let v;
+            while (v = str.substr(step * 64, step * 64 + 64)){
+                this[step] = '0b'+v.padEnd(64, '0');
+                step++
+            }
+        }
+        else{
+            this.#length = this._binSize = size;
+        }
+        this._self = this;
+        return new Proxy(this, {
+            get: (target, key, receiver) =>{
+                const v =  target[key];
+                if(typeof v == "function")
+                    return v.bind(target);
+                return v;
+            },
+            set: (target, key, value) => {
+                switch (value?.constructor){
+                    case BigInt:{
+                        target[key] = value;
+                    } break;
+                    case Number:{
+                        target[key] = BigInt(value);
+                    } break;
+                    case Boolean:
+                        value = value?'1':'0';
+                    case String:{
+                        switch (value){
+                            case '1':
+                            case '0':{
+                                key = +key
+                                let idx = (key / 64);
+                                key = Math.floor(idx);
+                                idx = (idx - key) * 64;
+                                let bin = target[key].toBin();
+                                bin = '0b' + bin.substr(0, idx) + value + bin.substr(idx + 1);
+                                target[key] = BigInt(bin);
+                            } break;
+                            default:{
+                                if (value.startsWith('0b'))
+                                    target[key] = BigInt(value);
+                                else
+                                    target[key] = BigInt('0b'+value.padStart(64, '0'));
+                            }
+                        }
+                    } break;
+                }
+                return true;
+            },
+        })
+    }
+    get bins(){
+        return this.#bins ??= Array.prototype.map.call(this.data, d => d.toBin());
+    }
+    get binLength(){
+        return this.#length
+    }
+    get binSize(){
+        return this._binSize;
+    }
+    map(h){
+        return this._self.reduce((res, v, i)=>{
+            res[i] = h(v, i, this._self);
+            return res;
+        }, new BinaryArray(this._binSize))
+    }
+    getBit(idx){
+        const data_idx = idx>>6;
+        idx = 63-(idx&63);
+        return (this[data_idx]>>BigInt(idx))&this.bit_mask;
+    }
 }
 const fn_cache = Object.create(null);

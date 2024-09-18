@@ -123,25 +123,9 @@
     import {tensor} from "./torus.js";
 
     btn.onclick = (e)=>{
-        console.time('time')
-        let _x = 3;
-        let _y = 4;
-        let _z = 5;
-        let t = tensor.arange(_x * _y * _z)._shape(_x, _y, _z);
-        let idx = -1;
-        for (let x = x_b; x < x_e; x += x_s){
-            x = (x + 0) * _y;
-            for (let y = y_b; y < y_e; y += y_s){
-                y = (y + x) * _z;
-                for (let z = z_b; z < z_e; z += z_s){
-                    z = (z + y) ;
-                    out[++idx] =  t.data[z];
-                }
-            }
-        }
+        let t = [[[[tensor.random([2, 1, 10]), tensor.random([2, 1, 10]), tensor.random([2, 1, 10])]]]];
+        t = tensor.from(t);
 
-
-        console.timeEnd('time')
     }
 
 
