@@ -1,13 +1,13 @@
 ODA({is: 'oda-loss-chart', template: /*html*/ `
     <h3 ~if='label.length>0'>{{label}}</h3>
-    <svg class='box' :width :height xmlns='http://www.w3.org/2000/svg' :viewBox="'0 0 ' + width + ' ' + height">
+    <svg width='100%' :height xmlns='http://www.w3.org/2000/svg' :view-box="'0 0 ' + width + ' ' + height" preserveAspectRatio="none">
         <rect x="0" y="0" :width :height :fill='background'/>
         <path :d='pathD' fill="none" :stroke :stroke-width="strokeWidth"/>
     </svg>`,
     data: [],
+    width:1000,
     $public: {
         label:'',
-        width:1000,
         height:300,
         maxPoint:100,
         stroke:"#070637",

@@ -60,9 +60,11 @@ class themeVars extends ROCKS({
     })()
 }) { }
 
-const changes = {};
+let changes = {};
 let isDark = false;
 const updateStyle = (key, val) => {
+    changes[key] ||= {};
+    changes[key].oldVal ||= allVars[key].$def;
     if (allVars[key].$def?.includes('light-dark')) {
         val = val.replaceAll(',', ' ');
         console.log(allVars[key].$def);
@@ -75,7 +77,7 @@ const updateStyle = (key, val) => {
         console.log(val)
     }
     ODA.updateStyle({ [key]: val });
-    changes[key] = val;
+    changes[key].val = val;
 }
 
 ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker',
@@ -87,9 +89,10 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
                 background: var(--content-background);
             }
         </style>
-        <div class="horizontal" ~if="!hideSwitchBtn" style="align-items: center; margin-left: 8px;" >
+        <div class="horizontal" ~if="!hideSwitchBtn" style="align-items: center; margin: 8px;" >
             <div>Switch Light/Dark mode: </div>
             <oda-toggle size="24" ::toggled></oda-toggle>
+            <oda-button class="border" @tap="clearChanges">Clear changes</oda-button>
         </div>
         <div class="horizontal wrap no-flex" style=" justify-content: center; position: relative; overflow: auto; flex-wrap: wrap; white-space:wrap; overflow-y: auto;">
             <oda-button ~class="$for.item.k" class="border" ~for="attr" style="min-width: 240px; height: 80px; margin: 4px; font-size: larger; padding: 4px;" @tap="showInfo($for.item)">
@@ -134,25 +137,33 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
             $public: (() => {
                 const props = {};
                 const vars = item.v.split('\n');
-                    vars.map(i => {
-                        if (i.includes('var')) {
-                            const key = i.split('var(')[1].split(')')[0].split(',')[0];
-                            props[key] = {
-                                $group: item.k,
-                                $public: true,
-                                $editor: key?.includes('color') || key?.includes('background') ? '@oda/color-picker[oda-color-picker]' : 'oda-pg-string',
-                                $def: changes[key] || this.vars[key],
-                                set: (n) => { updateStyle(key, n) }
-                            }
+                vars.map(i => {
+                    if (i.includes('var')) {
+                        const key = i.split('var(')[1].split(')')[0].split(',')[0];
+                        props[key] = {
+                            $group: item.k,
+                            $public: true,
+                            $editor: key?.includes('color') || key?.includes('background') ? '@oda/color-picker[oda-color-picker]' : 'oda-pg-string',
+                            $def: changes[key]?.val || this.vars[key],
+                            set: (n) => { updateStyle(key, n) }
                         }
-                    })
+                    }
+                })
                 return props;
             })()
-        }) {}
+        }) { }
         const res = await ODA.showDropdown('oda-property-grid', { inspectedObject: props }, { minWidth: '480px' });
     },
-    get changes() { 
+    get changes() {
         return changes;
+    },
+    clearChanges() {
+        this.vars = new themeVars();
+        this.attr = undefined;
+        Object.keys(changes || {}).map(key => {
+            ODA.updateStyle({ [key]: changes[key].oldVal });
+        })
+        changes = {};
     },
     async switchTheme(theme = this.theme) {
         let wins = [top];

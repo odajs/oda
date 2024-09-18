@@ -356,6 +356,12 @@ body[context-menu-show] *:not(oda-context-menu){
         background-color: var(--error-background) !important;
 
     };
+    --error-invert: {
+        color: var(--error-background) !important;
+        border-color: var(--error-background) !important;
+        fill: var(--error-background) !important;
+        background-color: var(--error-color) !important;
+    };
     --error-before: {
         content: attr(error);
         background-image: url("/web/oda/tools/styles/error.png");
@@ -374,11 +380,6 @@ body[context-menu-show] *:not(oda-context-menu){
         @apply --border;
         border-radius: 6px;
         min-height: 10px;
-    };
-    --error-invert: {
-        background-color: var(--error-color) !important;
-        fill: white !important;
-        color: white !important;
     };
 
     --accent: {
