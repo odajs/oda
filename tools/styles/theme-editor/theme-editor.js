@@ -33,18 +33,25 @@ class themeVars extends ROCKS({
             })
         })
         // console.log(styles)
-        let vars = {}
+        let vars = {}, groups = [];
         Object.keys(styles).map(s => {
             styles[s].vars?.map(v => {
                 const key = Object.keys(v.var)[0],
-                    val = Object.values(v.var)[0];
+                    val = Object.values(v.var)[0],
+                    $group = key.split('-')[2];
+                groups[$group] ||= [];
+                groups[$group].push($group);
                 vars[key] = {
                     $public: true,
-                    $group: s,
+                    $group,
                     $editor: key.includes('color') || key.includes('background') ? '@oda/color-picker[oda-color-picker]' : 'oda-pg-string',
-                    $def: val
+                    $def: val,
+                    set: (n) => { ODA.updateStyle({ [key]: n }) }
                 }
             })
+        })
+        Object.values(vars).map(i => {
+            i.$group = groups[i.$group]?.length > 1 ? i.$group : 'vars';
         })
         // console.log(vars);
         return vars;
@@ -65,11 +72,9 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
             <oda-toggle size="24" ::toggled></oda-toggle>
         </div>
         <div class="horizontal wrap no-flex" style="position: relative; overflow: auto; flex-wrap: wrap; white-space:wrap; overflow-y: auto;">
-            <div class="border no-flex" ~for="elements" style="width: 160px; margin: 4px; position: relative; border-radius: 2px">
-                <oda-button style="font-size: larger; padding: 4px;" ~style="$for.item.style" @tap="showInfo($for.item)">
-                    {{$for.key}}
-                </oda-button>
-            </div>
+            <oda-button ~class="$for.item.length === 1 ? $for.item[0].k : $for.key" class="border" ~for="attr" style="width: 240px; height: 80px; margin: 4px; font-size: larger; padding: 4px;" @tap="showInfo($for.item)">
+                {{$for.item.length === 1 ? $for.item[0].k : $for.key}}
+            </oda-button>
         </div>
         <oda-property-grid slot="right-panel" class="vertical flex border" label="Theme settings"  :inspected-object="vars" style="padding:0"></oda-property-grid>
     `,
@@ -91,19 +96,19 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
         }
     },
     vars: { $def() { return new themeVars() } },
-    get elements() {
-        const elms = {};
-        Object.keys(this.vars.constructor.__rocks__.descrs).map(k => {
-            const i = this.vars.constructor.__rocks__.descrs[k],
-                v = this.vars[k],
-                group = k.split('-')[2];
-            elms[group] ||= { vars: {}, style: {} };
-            elms[group].vars[k] = i;
-            if (k.includes('-color')) elms[group].style.color = v;
-            if (k.includes('-background')) elms[group].style.background = v;
+    get attr() {
+        const a = {};
+        Object.keys(cssRules).map(k => {
+            if (cssRules[k].includes('var('))
+            if (k !== '--help-after' && k !== '--cover')
+                {
+                    const group = k.split('-')[2];
+                    a[group] ||= [];
+                    a[group].push({ k: k.slice(2), v: cssRules[k] });
+                }
         })
-        // console.log(elms);
-        return elms;
+        console.log(a);
+        return a;
     },
     async showInfo(item) {
         console.log(item);
@@ -125,6 +130,9 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
             this.vars = new themeVars();
         }, 100)
         return theme;
+    },
+    pgChanged(e) {
+        console.log(e)
     },
     ready() {
         this.theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
