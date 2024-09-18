@@ -24,7 +24,7 @@ let style = /*css*/`
     --focused-color: var(--accent-color);
     --selected-color: light-dark(navy, rgb(0 153 255));
     --selected-background: var(--header-background);
-    --selected-filter: light-dark(brightness(0.8) contrast(1.2), brightness(1.2) contrast(0.9));
+    --selected-filter: brightness(0.8) contrast(1.2)/*', 'brightness(1.2) contrast(0.9)')*/;
     --pointer-color: light-dark(magenta, magenta);
 
     --dark-color: light-dark(white, rgb(20 20 20));
