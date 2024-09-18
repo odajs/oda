@@ -1,4 +1,4 @@
-let allVars;
+let _vars;
 class themeVars extends ROCKS({
     $public: (() => {
         const styles = {}, media = [];
@@ -55,7 +55,7 @@ class themeVars extends ROCKS({
             i.$group = groups[i.$group]?.length > 1 ? i.$group : 'vars';
         })
         // console.log(vars);
-        allVars = vars;
+        _vars = vars;
         return vars;
     })()
 }) { }
@@ -64,20 +64,22 @@ let changes = {};
 let isDark = false;
 const updateStyle = (key, val) => {
     changes[key] ||= {};
-    changes[key].oldVal ||= allVars[key].$def;
-    if (allVars[key].$def?.includes('light-dark')) {
+    changes[key].defValue ||= _vars[key].$def;
+    if (_vars[key].$def?.includes('light-dark')) {
         val = val.replaceAll(',', ' ');
-        console.log(allVars[key].$def);
-        let v = (allVars[key].$def).split('light-dark(');
+        // console.log(_vars[key].$def);
+        let v = (_vars[key].$def).split('light-dark(');
         if (isDark) {
             val = 'light-dark(' + v[1].split(',')[0] + ', ' + val + ')';
         } else {
             val = 'light-dark(' + val + ', ' + v[1].split(',')[1];
         }
-        console.log(val)
+        // console.log(val)
     }
     ODA.updateStyle({ [key]: val });
     changes[key].val = val;
+    changes[key].isDark = isDark;
+    console.log(changes)
 }
 
 ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker',
@@ -95,7 +97,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
             <oda-button class="border" @tap="clearChanges">Clear changes</oda-button>
         </div>
         <div class="horizontal wrap no-flex" style=" justify-content: center; position: relative; overflow: auto; flex-wrap: wrap; white-space:wrap; overflow-y: auto;">
-            <oda-button ~class="$for.item.k" class="border" ~for="attr" style="min-width: 240px; height: 80px; margin: 4px; font-size: larger; padding: 4px;" @tap="showInfo($for.item)">
+            <oda-button ~class="$for.item.k" class="border" ~for="btns" style="min-width: 240px; height: 80px; margin: 4px; font-size: larger; padding: 4px;" @tap="showPropertyGrid($for.item)">
                 {{$for.item.k}}
             </oda-button>
         </div>
@@ -120,19 +122,19 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
         }
     },
     vars: { $def() { return new themeVars() } },
-    get attr() {
-        const a = [];
+    get btns() {
+        const btns = [];
         Object.keys(cssRules).map(k => {
             if (cssRules[k].includes('var('))
                 if (k !== '--help-after' && k !== '--cover' && k !== '--error-before') {
                     const group = k.split('-')[2];
-                    a.push({ k: k.slice(2), v: cssRules[k] });
+                    btns.push({ k: k.slice(2), v: cssRules[k] });
                 }
         })
-        // console.log(a);
-        return a;
+        // console.log(btns);
+        return btns;
     },
-    async showInfo(item = []) {
+    async showPropertyGrid(item = []) {
         const props = new class props extends ROCKS({
             $public: (() => {
                 const props = {};
@@ -159,9 +161,9 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
     },
     clearChanges() {
         this.vars = new themeVars();
-        this.attr = undefined;
+        this.btns = undefined;
         Object.keys(changes || {}).map(key => {
-            ODA.updateStyle({ [key]: changes[key].oldVal });
+            ODA.updateStyle({ [key]: changes[key].defValue });
         })
         changes = {};
     },
@@ -179,6 +181,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
         })
         this.async(() => {
             this.vars = new themeVars();
+            this.btns = undefined;
         }, 100)
         return theme;
     },
