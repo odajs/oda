@@ -62,9 +62,10 @@ class themeVars extends ROCKS({
 
 let changes = {};
 let isDark = false;
-const updateStyle = (key, val) => {
+const updateStyle = (key, val, vars) => {
+    let newVal = val;
     changes[key] ||= {};
-    changes[key].defValue ||= _vars[key].$def;
+    changes[key].defVal ||= _vars[key].$def;
     if (_vars[key].$def?.includes('light-dark')) {
         val = val.replaceAll(',', ' ');
         // console.log(_vars[key].$def);
@@ -79,6 +80,8 @@ const updateStyle = (key, val) => {
     ODA.updateStyle({ [key]: val });
     changes[key].val = val;
     changes[key].isDark = isDark;
+    changes[key].newVal = newVal;
+    vars && (vars[key] = newVal);
     console.log(changes)
 }
 
@@ -147,7 +150,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
                             $public: true,
                             $editor: key?.includes('color') || key?.includes('background') ? '@oda/color-picker[oda-color-picker]' : 'oda-pg-string',
                             $def: changes[key]?.val || this.vars[key],
-                            set: (n) => { updateStyle(key, n) }
+                            set: (n) => { updateStyle(key, n, this.vars) }
                         }
                     }
                 })
@@ -156,14 +159,14 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
         }) { }
         const res = await ODA.showDropdown('oda-property-grid', { inspectedObject: props }, { minWidth: '480px' });
     },
-    get changes() {
+    changes() {
         return changes;
     },
     clearChanges() {
         this.vars = new themeVars();
         this.btns = undefined;
         Object.keys(changes || {}).map(key => {
-            ODA.updateStyle({ [key]: changes[key].defValue });
+            ODA.updateStyle({ [key]: changes[key].defVal });
         })
         changes = {};
     },
@@ -182,6 +185,10 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
         this.async(() => {
             this.vars = new themeVars();
             this.btns = undefined;
+            Object.keys(changes || {}).map(key => {
+                if (changes[key].isDark === this.toggled)
+                    this.vars[key] = changes[key].newVal;
+            })
         }, 100)
         return theme;
     },
