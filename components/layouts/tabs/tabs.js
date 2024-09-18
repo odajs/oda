@@ -51,13 +51,17 @@ ODA({is: 'oda-tabs', imports: '@oda/button',
                 border-{{direction === 'horizontal' ? 'top-right' : 'top-right'}}-radius: 8px;
             }
             :host .fixed-tab{
-                position: sticky;
-                z-index: 10;
+                opacity: 1;
+                margin-{{direction === 'horizontal' ? 'left' : 'top'}}: -4px;
+                @apply --content;
                 @apply --shadow;
+                position: sticky !important; /* --focused */
+                z-index: 10;
+                {{direction === 'horizontal' ? 'left' : 'top'}}: 0px;
             }
             {{''}}
         </style>
-        <oda-button ~if="overflow" icon="icons:chevron-left" :rotate="direction === 'vertical' ? '90' : '0'" @tap="_scroll(-1)" class="raised"></oda-button>
+        <oda-button ~if="overflow" icon="icons:chevron-left" :disabled="scrollIsMin" :rotate="direction === 'vertical' ? '90' : '0'" @tap="_scroll(-1)" class="raised"></oda-button>
         <div class="scroll-container">
             <div id="container" ~if="direction" ~class="{horizontal: direction === 'horizontal', vertical: direction === 'vertical'}">
                 <div ~for="items"
@@ -71,7 +75,7 @@ ODA({is: 'oda-tabs', imports: '@oda/button',
             </div>
             <div class="pseudo-scroll"></div>
         </div>
-        <oda-button ~if="overflow" icon="icons:chevron-right" :rotate="direction === 'vertical' ? '90' : '0'" @tap="_scroll(1)" class="raised"></oda-button>
+        <oda-button ~if="overflow" icon="icons:chevron-right" :disabled="scrollIsMax" :rotate="direction === 'vertical' ? '90' : '0'" @tap="_scroll(1)" class="raised"></oda-button>
         <oda-button ~if="items.some(i => typeof i.close === 'function')"  icon="icons:close" style="fill: red;" title="close all tabs" @tap="_closeAll"></oda-button>
     `,
     $public: {
@@ -89,6 +93,8 @@ ODA({is: 'oda-tabs', imports: '@oda/button',
         closeCallback: null
     },
     overflow: false,
+    scrollIsMin: false,
+    scrollIsMax: false,
     get _sizeSuffix() {
         return this.direction === 'horizontal' ? 'Width' : 'Height';
     },
@@ -139,6 +145,8 @@ ODA({is: 'oda-tabs', imports: '@oda/button',
             else {
                 this.pseudoScroll.style.display = 'none';
             }
+            this.scrollIsMin = this.container.scrollTop === 0;
+            this.scrollIsMax = this.container.scrollHeight === this.container.scrollTop + this.container.offsetHeight;
         }
         else if (this.direction === 'horizontal') {
             this.container.scrollLeft += e.deltaY / 3;
@@ -155,6 +163,8 @@ ODA({is: 'oda-tabs', imports: '@oda/button',
             else {
                 this.pseudoScroll.style.display = 'none';
             }
+            this.scrollIsMin = this.container.scrollLeft === 0;
+            this.scrollIsMax = this.container.scrollWidth === this.container.scrollLeft + this.container.offsetWidth;
         }
     },
     /**
