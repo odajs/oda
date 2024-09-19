@@ -37,8 +37,12 @@ ODA({
     },
     get icon(){
         switch (this.item.type){
-            case 'code':
-                return 'bootstrap:code';
+            case 'code': {
+                if (this.item.autoRun)
+                    return 'carbon:executable-program';
+                return 'carbon:cics-program';
+             }
+                
             case 'html':
                 return 'box:i-code-alt';
         }

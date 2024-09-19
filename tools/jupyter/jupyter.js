@@ -1003,6 +1003,7 @@ class JupyterCell extends ROCKS({
     async run(jupyter){
         this.metadata.hideOutput = false;
         this.time = '';
+        this.status = '';
         this.isRun = true;
         try{
             let time = Date.now();
@@ -1019,7 +1020,7 @@ class JupyterCell extends ROCKS({
                 time_str += t + ' s\n';
             t = time.getMilliseconds();
             time_str += t + ' ms';
-            this.status = time_str;
+            this.time = time_str;
             if (res){
                 jupyter.output_data.push(res);
             }
