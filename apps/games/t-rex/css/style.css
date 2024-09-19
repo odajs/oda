@@ -1,9 +1,9 @@
 :root {
-    --base-color: #e2e2e2;
-    --dino-color: var(--base-color);
-    --cloud-color: var(--base-color);
-    --pterodactyl-color: var(--base-color);
-    --horizon-color: var(--base-color);
+    --item-base-color: #e2e2e2;
+    --dino-color: var(--item-base-color);
+    --cloud-color: var(--item-base-color);
+    --pterodactyl-color: var(--item-base-color);
+    --horizon-color: var(--item-base-color);
 
     --dark-color: #121212 !important;
     --background-color: var(--dark-color);

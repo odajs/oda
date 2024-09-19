@@ -348,7 +348,7 @@ export class tensor{
             throw new Error(`Dimension out of range (expected to be in range of [-${dim+1}, ${dim}], but got ${dim})`);
         let shape = [tensors.length];
         let next;
-        while ((next = data[0]) && Array.isArray(next)){
+        while ((next = tensors[0]) && Array.isArray(next)){
             shape.push(next.length);
             tensors = tensors.flat();
         }
@@ -358,21 +358,20 @@ export class tensor{
         if (dim < 0)
             dim = this.dim + 1 + dim
         let d = dim;
-        let old_shape = [...first.shape];
-        for (let s of old_shape){
+        for (let s of first.shape){
             if (!d) break;
             step /= s;
             d--;
         }
-        const data = new dType(shape.reduce((r,v)=>r*v, 1));
-
+        const data = new dType(shape.reduce((r,v)=>r*v, 1) * size);
+        let offset = 0;
         for (let i = 0; i < size; i += step){
             for (let t of tensors){
-                for (let j = i; j<i + step; j++)
-                    data[++idx] = t.data[j];
+                data.set(t.data.slice(i, step), offset);
+                offset += step;
             }
         }
-        const out = tensor.from(data)._shape(shape)._label(`stack(${tensors.length} tensors with shape(${first.shape}) by ${dim} axis)`)._src(tensors);
+        const out = tensor.from(data)._shape(...shape,  ...first.shape)._label(`stack(${tensors.length} tensors with shape(${first.shape}) by ${dim} axis)`)._src(tensors);
         out._back = ()=>{
             for(let start = 0; start<size; start += step){
                 let delta = start

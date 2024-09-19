@@ -50,11 +50,11 @@
 
 ```css
 :root {
-    --base-color: #e2e2e2;
-    --dino-color: var(--base-color);
-    --cloud-color: var(--base-color);
-    --pterodactyl-color: var(--base-color);
-    --horizon-color: var(--base-color);
+    --item-base-color: #e2e2e2;
+    --dino-color: var(--item-base-color);
+    --cloud-color: var(--item-base-color);
+    --pterodactyl-color: var(--item-base-color);
+    --horizon-color: var(--item-base-color);
 
     --dark-color: #121212 !important;
     --background-color: var(--dark-color);
@@ -68,7 +68,7 @@
 }
 ```
 
-Здесь предусмотрено, что кактусы и фон игры будут отображаться серым цветом «**grey**», а непосредственная область игры будет темной («**--dark-color: #121212**»). Динозавр, облака и птеродактили в этой темной области будут отображаться более светлым цветом («**--base-color: #e2e2e2**»).
+Здесь предусмотрено, что кактусы и фон игры будут отображаться серым цветом «**grey**», а непосредственная область игры будет темной («**--dark-color: #121212**»). Динозавр, облака и птеродактили в этой темной области будут отображаться более светлым цветом («**--item-base-color: #e2e2e2**»).
 
 Все эти переменные можно будет использовать для стилизации элементов внутри теневого дерева всех остальных компонентов, задавая общий визуальный дизайн игры.
 

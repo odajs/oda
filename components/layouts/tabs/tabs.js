@@ -40,7 +40,7 @@ ODA({is: 'oda-tabs', imports: '@oda/button',
                 outline-offset: -2px;
             }
             :host .tab[focused]{
-                @apply --content;
+                @apply --accent-invert;
                 opacity: 1;
                 box-shadow:
                     inset 0 2px 3px 0 rgba(0, 0, 0, 0.05),

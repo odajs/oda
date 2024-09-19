@@ -2796,7 +2796,7 @@
   --dropdown-btn-bg-color:rgb(215 215 219);
   --dropdown-btn-border:none;
   --separator-color:rgb(0 0 0 / 0.3);
-  --field-color:rgb(6 6 6);
+  --item-field-color:rgb(6 6 6);
   --field-bg-color:rgb(255 255 255);
   --field-border-color:rgb(187 187 188);
   --treeitem-color:rgb(0 0 0 / 0.8);
@@ -2887,7 +2887,7 @@
     --toggled-hover-active-btn-color:rgb(0 0 0 / 0.4);
     --dropdown-btn-bg-color:rgb(74 74 79);
     --separator-color:rgb(0 0 0 / 0.3);
-    --field-color:rgb(250 250 250);
+    --item-field-color:rgb(250 250 250);
     --field-bg-color:rgb(64 64 68);
     --field-border-color:rgb(115 115 115);
     --treeitem-color:rgb(255 255 255 / 0.8);
@@ -2928,7 +2928,7 @@
     --toggled-hover-active-btn-color:rgb(0 0 0 / 0.4);
     --dropdown-btn-bg-color:rgb(74 74 79);
     --separator-color:rgb(0 0 0 / 0.3);
-    --field-color:rgb(250 250 250);
+    --item-field-color:rgb(250 250 250);
     --field-bg-color:rgb(64 64 68);
     --field-border-color:rgb(115 115 115);
     --treeitem-color:rgb(255 255 255 / 0.8);
@@ -3900,7 +3900,7 @@ a:is(.toolbarButton, .secondaryToolbarButton)[href="#"]{
   background-clip:padding-box;
   border:1px solid var(--field-border-color);
   box-shadow:none;
-  color:var(--field-color);
+  color:var(--item-field-color);
   font-size:12px;
   line-height:16px;
   outline:none;
