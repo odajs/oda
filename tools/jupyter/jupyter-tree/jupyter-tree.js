@@ -29,6 +29,12 @@ ODA({
             return !!this.item?.h
         }
     },
+    error:{
+        $attr: true,
+        get(){
+            return this.item?.status === 'error'
+        }
+    },
     get icon(){
         switch (this.item.type){
             case 'code':

@@ -7,7 +7,7 @@ export class NeuroModule extends Function{
         super()
 
         if (argumetns.length === 1 && argumetns[0].constructor === Object){
-            this.setModel(this.#params = argumetns[0]);
+            this.setModel(Object.assign(this.#params, argumetns[0]));
         }
         else{
             let expr = this.constructor.toString();
@@ -116,13 +116,14 @@ export class NeuroModule extends Function{
         return this;
     }
     get label(){
-        return this.#label ??= `${this.constructor.name} (${Object.keys(this.params).filter(p=>typeof p !== 'object').map(k=>k+': '+(this.params[k].name || this.params[k])).join(', ')})`;
+        return this.#label ??= `${this.constructor.name} (${Object.keys(this.params).filter(p=>typeof this.params[p] !== "object").map(p => p+': ' + this.params[p]).join(', ')})`;
     }
     toJSON(){
         const props = Object.getOwnPropertyDescriptors(this);
         const res = Object.assign({$: this.constructor.name},this.params);
         for(let key in props){
             const obj = props[key];
+            if (!obj.enumerable) continue;
             if(obj?.value && typeof obj.value === 'object'){ // вложенный модуль
                 res[key] = JSON.parse(JSON.stringify(obj.value));
             }
