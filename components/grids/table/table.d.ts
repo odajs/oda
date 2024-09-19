@@ -3,18 +3,41 @@ interface Table extends odaComponent {
     $height: number;
     rowHeight: number;
     $scrollTop: number;
+
     allowSelection: 'all' | 'level' | 'type' | 'none';
+    allowFocus: boolean;
+    allowFocusCell: 'none' | 'single' | 'rows' | 'cols' | 'all';
+
+    focusedCell: {row: TableRow, col: TableColumn}
     selectedRows: TableRow[];
+    focusedRow: TableRow;
+
     headerColumns: TableColumn[];
     filter: string;
     columnId: string;
+
     items: TableRow[];
     filteredItems: TableRow[];
+    sortedItems: TableRow[];
+    rows: TableRow[];
+    visibleRows: TabRow[];
+    raisedRows: TableRow[];
+
     columns: TableColumn[];
     rowColumns: TableColumn[];
+    activeCols: TableColumn[];
+
+    screenLength: number;
+
+    $scrollTop: number;
 
     focusRow(e: MouseEvent): void;
     _applyFilter(items: TableRow[]);
+}
+//table $pdp interface
+
+interface TableBody extends odaComponent{
+    activeCell: HTMLElement;
 }
 
 interface TableRow {

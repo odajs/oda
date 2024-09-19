@@ -4,7 +4,6 @@ ODA({is: 'oda-tree', imports: '@oda/table', extends: 'oda-table',
         focusedRow: Object,
         autoWidth: true,
         keyName: 'name',
-        hideFocusCell: true,
         disableColumnsSave: true,
     },
     get columns() {

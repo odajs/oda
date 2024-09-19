@@ -870,7 +870,7 @@ if (!window.ODA?.IsReady) {
                     name = name.replace(/^@/g, '');
                     const params = ['$this', '$event', '$detail', ...(vars || [])];
                     const fn = new Function(params.join(','), `with (this) {${expr}}`);
-                    src.listeners = src.listeners || {};
+                    src.listeners ??= src.listeners;
                     // const handler = prototype[expr];
                     const func = attr.value.trim();
                     src.listeners[name] = async function (e) {
@@ -893,6 +893,7 @@ if (!window.ODA?.IsReady) {
                             }
                         }
                     };
+                    src.listeners[name].modifiers = modifiers;
                 }
                 else if (name === 'is')
                     src.tag = expr.toUpperCase();
@@ -1156,7 +1157,7 @@ if (!window.ODA?.IsReady) {
                 const event = (ev) => {
                     src.listeners[e].call(this, ev);
                 }
-                $el.addEventListener(e, event, { passive: ['wheel'].some(i => i === e) });
+                $el.addEventListener(e, event, { passive: ['wheel'].some(i => i === e), capture: src.listeners[e].modifiers?.capture });
             }
         }
         $el.$node = src;
