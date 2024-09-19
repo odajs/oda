@@ -810,7 +810,6 @@ class JupyterCell extends ROCKS({
     data: null,
     notebook: null,
     isRun: false,
-    time: '',
     status: {
         get(){
             return this.readMetadata('status', '')
@@ -940,7 +939,7 @@ class JupyterCell extends ROCKS({
 
     },
     set time(n){
-        this.writeMetadata('time', n);
+        //this.writeMetadata('time', n);
     },
     get h() {
         let h = this.sources[0]?.trim().toLowerCase();
