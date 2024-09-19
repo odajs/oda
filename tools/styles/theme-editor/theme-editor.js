@@ -100,7 +100,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
             <oda-button class="border" @tap="clearChanges">Clear changes</oda-button>
         </div>
         <div class="horizontal wrap no-flex" style=" justify-content: center; position: relative; overflow: auto; flex-wrap: wrap; white-space:wrap; overflow-y: auto;">
-            <oda-button ~class="$for.item.k" class="border" ~for="btns" style="min-width: 240px; height: 80px; margin: 4px; font-size: larger; padding: 4px;" @tap="showPropertyGrid($for.item)">
+            <oda-button ~class="$for.item.k" class="border" ~for="btns" style="pointer-events: unset; position: unset; min-width: 240px; height: 80px; margin: 4px; font-size: larger; padding: 4px;" @tap="showPropertyGrid($for.item)">
                 {{$for.item.k}}
             </oda-button>
         </div>
@@ -129,11 +129,9 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
         const btns = [];
         Object.keys(cssRules).map(k => {
             if (cssRules[k].includes('var('))
-                if (k !== '--help-after' && k !== '--cover' && k !== '--error-before') {
-                    const group = k.split('-')[2];
-                    btns.push({ k: k.slice(2), v: cssRules[k] });
-                }
+                btns.push({ k: k.slice(2), v: cssRules[k] });
         })
+        btns.sort((a, b) =>  a.k < b.k ? -1 : a.k > b.k ? 1 : 0);
         // console.log(btns);
         return btns;
     },

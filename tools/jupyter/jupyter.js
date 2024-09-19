@@ -5,8 +5,11 @@ window.run_context = Object.create(null);
 run_context.output_data = undefined;
 window.print = window.log = (...e) => {
     e = e.map(i=>{
-        if (i && typeof i === 'object')
-            return JSON.stringify(i, undefined, 2)
+        if (i && typeof i === 'object'){
+            if (i === Object)
+                return JSON.stringify(i, undefined, 2)
+            return i.toString();
+        }
         return i
     })
     run_context.output_data?.push([...e].join('\n'));

@@ -356,7 +356,7 @@ export class tensor{
         let size = first.size;
         let step = size;
         if (dim < 0)
-            dim = this.dim + 1 + dim
+            dim = first.dim + 1 + dim
         let d = dim;
         for (let s of first.shape){
             if (!d) break;
@@ -367,7 +367,7 @@ export class tensor{
         let offset = 0;
         for (let i = 0; i < size; i += step){
             for (let t of tensors){
-                data.set(t.data.slice(i, step), offset);
+                data.set(t.data.slice(i, i + step), offset);
                 offset += step;
             }
         }
