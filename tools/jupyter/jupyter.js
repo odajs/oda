@@ -370,7 +370,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         }
     },
     get status(){
-        return this.cell.status;
+        return this.cell?.status;
     },
     async run() {
         return new Promise(resolve => {
@@ -668,10 +668,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 z-index: 1;
             }
         </style>
-        <div  class="horizontal border" style="min-height: 32px;">
+        <div  class="horizontal" :border="!hideCode" style="min-height: 32px;">
             <oda-code-editor  ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>   
-            <div ~if="hideCode" class="horizontal left header flex" style="padding: 4px 4px; font-size: small;">
-                <span style="margin-top: 4px;cursor: pointer;" @tap="hideCode=false">code hidden...</span>
+            <div ~if="hideCode" class="horizontal left content flex" style="padding: 4px 4px; text-decoration: underline;">
+                <span style="margin-top: 4px;cursor: pointer;" @tap="hideCode=false">Show hidden code...</span>
             </div>                  
         </div>
  
@@ -789,8 +789,8 @@ class JupyterNotebook extends ROCKS({
 class JupyterCell extends ROCKS({
     data: null,
     notebook: null,
-    status: '',
     isRun: false,
+    status: '',
     type: {
         $def: 'text',
         $list: ['text', 'code'],

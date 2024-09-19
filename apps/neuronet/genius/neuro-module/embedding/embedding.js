@@ -4,8 +4,10 @@ export class Embedding  extends NeuroModule{
     constructor(dim = 1024, char_step = 0, win_size = 8, negative_size = 3) {
         super(arguments);
     }
+    get BINS(){
+        return this._BINS ??= Array(this.win_size).fill().map((v, i)=>(2. ** -(i+1) + .5));
+    }
     __init__(){
-        this.BINS = Array(this.win_size).fill().map((v, i)=>(2. ** -(i+1) + .5));
         this.vocabulary = {"<end>":{
                 id: 0,
                 w: "<end>",
