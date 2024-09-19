@@ -121,14 +121,14 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 this.async(async () => {
                     const auto_run = this.$$('oda-jupyter-cell').filter(i=>i.cell.autoRun).last
                     if(auto_run)
-                        await auto_run.run();
+                        await auto_run.run(true);
                     if (!this.selectedCell && this.cells?.[this.savedIndex]) {
                         this.selectedCell = this.cells[this.savedIndex];
                         this.scrollToCell();
                     }
                     this.style.visibility = 'visible';
                     this.style.opacity = 1;
-                }, 1000);
+                }, 100);
             })
             nb.listen('changed', async (e) => {
                 if(this.selectedCell) {
@@ -376,7 +376,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     get status(){
         return this.cell?.status || '';
     },
-    async run() {
+    async run(autorun) {
         return new Promise(resolve => {
             const task = ODA.addTask();
             this.outputsStep = 0;
@@ -405,6 +405,8 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
 
                 } finally {
                     ODA.removeTask(task);
+                    if(!autorun)
+                        this.notebook?.change();
                     resolve();
                 }
             }, 50)
@@ -736,11 +738,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 this.cell?.writeMetadata('maxRow', n)
             }
         }
-    },
-    // attached() {
-    //     if (this.autoRun)
-    //         this.run();
-    // }
+    }
 })
 
 class JupyterNotebook extends ROCKS({
@@ -810,14 +808,7 @@ class JupyterCell extends ROCKS({
     data: null,
     notebook: null,
     isRun: false,
-    status: {
-        get(){
-            return this.readMetadata('status', '')
-        },
-        set(n){
-            this.writeMetadata('status', n)
-        }
-    },
+    time: '',
     type: {
         $def: 'text',
         $list: ['text', 'code'],
@@ -935,11 +926,13 @@ class JupyterCell extends ROCKS({
     get allowExpand() {
         return (this.h && this.next && (this.next?.h > this.h || !this.next?.h));
     },
-    get time(){
-
-    },
-    set time(n){
-        //this.writeMetadata('time', n);
+    status: {
+        get(){
+            return this.data.status || '';
+        },
+        set(n){
+            this.data.status = n;
+        }
     },
     get h() {
         let h = this.sources[0]?.trim().toLowerCase();
@@ -1034,17 +1027,7 @@ class JupyterCell extends ROCKS({
             this.controls = jupyter.output_data.filter(i=>i instanceof HTMLElement).map(i=>({data:{"text/plain": i}}));
         }
         catch (e){
-            let error = e.toString();//e.stack.split('\n');
-            // let pos = error[1];
-            // if (pos){
-            //     pos = pos.substring(pos.indexOf('>') + 1);
-            //     pos = pos.split(':');
-            //     pos[1] = +pos[1] - 2;
-            //     pos.shift();
-            //     pos = pos.join(':');
-            //     error = error[0].replace(': ', ':\n') + '\n(' +  pos;
-            // }
-
+            let error = e.toString();
             this.outputs = [{data:{"text/plain": error}}];
             this.status = 'error';
         }
