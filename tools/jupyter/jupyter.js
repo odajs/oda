@@ -288,7 +288,8 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             <div class="left-panel vertical" :error-invert="status === 'error'">
                 <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: -4px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run" style="margin: 4px;"></oda-button>
-                    {{status}}
+                    <div>{{time}}</div>
+                    <div>{{status}}</div>
                 </div>
             </div>
             <div  class="vertical no-flex" style="width: calc(100% - 34px); position: relative;">
@@ -369,8 +370,11 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             }
         }
     },
+    get time(){
+        return this.cell?.time || '';
+    },
     get status(){
-        return this.cell?.status;
+        return this.cell?.status || '';
     },
     async run() {
         return new Promise(resolve => {
@@ -388,7 +392,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 try {
                     for (let code of this.notebook.codes){
                         if (code === this.cell) break;
-                        if (code.status) continue;
+                        if (code.time) continue;
                         await new Promise(async (resolve)=>{
                             await code.run(this.jupyter);
                             this.async(resolve)
@@ -485,7 +489,7 @@ ODA({ is: 'oda-jupyter-divider',
         </style>
         <div class="horizontal center" style="z-index: 2">
             <oda-button ~if="!readOnly" :icon-size icon="icons:add" ~for="editors" @tap.stop="add($for.key)">{{$for.key}}</oda-button>
-            <oda-button ~if="showInsertBtn()" :icon-size icon="icons:add" @tap.stop="insert">Insert copied cell</oda-button>
+            <oda-button ~if="showInsertBtn()" :icon-size icon="icons:add" @tap.stop="insert" style="color: red; fill: red">Insert cell</oda-button>
         </div>
     `,
     get last() {
@@ -539,7 +543,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="move(1)"></oda-button>
             <oda-button ~show="cell?.type === 'code' || cell?.type === 'html'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
             <oda-button :icon-size icon="icons:delete" @tap.stop="deleteCell"></oda-button>
-            <oda-button :icon-size icon="icons:content-copy" @tap.stop="copyCell"></oda-button>
+            <oda-button :icon-size icon="icons:content-copy" @tap.stop="copyCell" ~style="{fill: top._jupyterCellData ? 'red' : ''}"></oda-button>
             <oda-button ~if="cell.type!=='code'" allow-toggle ::toggled="editMode"  :icon-size :icon="editMode?'icons:close':'editor:mode-edit'"></oda-button>
         </div>
     `,
@@ -806,7 +810,15 @@ class JupyterCell extends ROCKS({
     data: null,
     notebook: null,
     isRun: false,
-    status: '',
+    time: '',
+    status: {
+        get(){
+            return this.readMetadata('status', '')
+        },
+        set(n){
+            this.writeMetadata('status', n)
+        }
+    },
     type: {
         $def: 'text',
         $list: ['text', 'code'],
@@ -998,7 +1010,7 @@ class JupyterCell extends ROCKS({
     }
     async run(jupyter){
         this.metadata.hideOutput = false;
-        this.status = '';
+        this.time = '';
         this.isRun = true;
         try{
             let time = Date.now();
