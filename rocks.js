@@ -826,6 +826,18 @@ in the <${host.localName}>`;
                 return [this[i1], this[i2]] = [this[i2], this[i1]];
             }
         });
+        Object.defineProperty(Array.prototype, 'sum', {
+            enumerable: false, configurable: true,
+            value: function () {
+                return this.reduce((r,v)=>r+v);
+            }
+        });
+        Object.defineProperty(Array.prototype, 'mul', {
+            enumerable: false, configurable: true,
+            value: function () {
+                return this.reduce((r,v)=>r*v,1);
+            }
+        });
     }
     String:{
         const kebabGlossary = Object.create(null);

@@ -133,33 +133,40 @@ export class NeuroModule extends Function{
     }
 }
 export class Linear extends NeuroModule{
-    constructor(d_in, d_out, bias = false, dType = Float32Array) {
+    constructor(in_shape, out_shape, bias = false, dType = Float32Array) {
+        if(!Array.isArray(in_shape))
+            in_shape = [in_shape];
+        if(!Array.isArray(out_shape))
+            out_shape = [out_shape];
         super(arguments);
     }
     __init__() {
-        this.W = tensor.param(tensor.rand([this.d_in, this.d_out], this.dType).minus_(.5).mul_(.1));
+        this.W = tensor.param(tensor.rand([...this.in_shape, ...this.out_shape], this.dType).minus_(.5).mul_(.1));
         this.W._label(this.W.label + ': Weights');
         if(this.bias){
-            this.B = tensor.param(tensor.rand([this.d_out], this.dType).minus_(.5).mul_(.1));
+            this.B = tensor.param(tensor.rand(this.out_shape, this.dType).minus_(.5).mul_(.1));
             this.B._label(this.B.label + ': Bias');
         }
 
     }
-    updateOutSize(new_size){
-        if (new_size <= this.d_out)
+    updateOutSize(new_shape){ //Изменение выходного размера слоя!!!
+        if(!Array.isArray(new_shape))
+            new_shape = [new_shape];
+
+        if (new_shape <= this.out_shape)
             return;
-        this.d_out = this.params.d_out = new_size;
-        let data = new this.W.dType(this.d_in * this.d_out);
+        this.out_shape = this.params.out_shape = new_shape;
+        let data = new this.W.dType(this.d_in * this.out_shape.mul());
         data = data.map((_,i)=>{
             return this.W.data[i] ?? (Math.random()-.5) * .1;
         })
-        this.W._resize_data(data, this.d_in, this.d_out);
+        this.W._resize_data(data, this.d_in, this.out_shape);
         if (this.bias){
-            data = new this.B.dType(this.d_out);
+            data = new this.B.dType(this.out_shape);
             data = data.map((_,i)=>{
                 return this.B.data[i] ?? (Math.random()-.5) * .1;
             })
-            this.B._resize_data(data, this.d_out);
+            this.B._resize_data(data, this.out_shape);
         }
     }
     forward(x){
