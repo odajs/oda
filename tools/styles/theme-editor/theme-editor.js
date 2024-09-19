@@ -160,6 +160,9 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
     get changes() {
         return changes;
     },
+    _isChanged() {
+        return Object.keys(changes || {})?.length;
+    },
     clearChanges() {
         this.vars = new themeVars();
         this.btns = undefined;

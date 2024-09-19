@@ -6,7 +6,7 @@ run_context.output_data = undefined;
 window.print = window.log = (...e) => {
     e = e.map(i=>{
         if (i && typeof i === 'object'){
-            if (i === Object)
+            if (i === Object || Array.isArray(i))
                 return JSON.stringify(i, undefined, 2)
             return i.toString();
         }

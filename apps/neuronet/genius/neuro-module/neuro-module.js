@@ -116,7 +116,7 @@ export class NeuroModule extends Function{
         return this;
     }
     get label(){
-        return this.#label ??= `${this.constructor.name} (${Object.keys(this.params).map(k=>k+': '+(this.params[k].name || this.params[k])).join(', ')})`;
+        return this.#label ??= `${this.constructor.name} (${Object.keys(this.params).filter(p=>typeof p !== 'object').map(k=>k+': '+(this.params[k].name || this.params[k])).join(', ')})`;
     }
     toJSON(){
         const props = Object.getOwnPropertyDescriptors(this);

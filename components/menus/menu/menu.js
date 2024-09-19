@@ -19,7 +19,7 @@ ODA({ is: 'oda-menu', imports: '@oda/button',
     </style>
     <div class="vertical flex">
         <div style="overflow: hidden" ~for="items" ~if="!$for.item.hidden" :selected="selectedItem && ($for.item === selectedItem || $for.item?.value === selectedItem)"  class="menuitems horizontal item no-flex" @tap.stop.prev="_tap" :item="$for.item" :not-group="!$for.item.group" ~style="getStyle($for.item)">
-            <div @tap="$for.item.group && $event.stopPropagation();showSubMenu($event);" style="overflow: hidden" class="flex horizontal row" ~class="$for.item.group?'dark':'content'">
+            <div @tap="$for.item.group && $event.stopPropagation() && showSubMenu($event)" style="overflow: hidden" class="flex horizontal row" ~class="$for.item.group?'dark':'content'">
                 <div style="overflow: hidden" ~is="getTemplate($for.item)" class="flex row horizontal" :icon-size :item="$for.item"></div>
                 <oda-button ~if="$for.item?.items?.length" icon="icons:arrow-drop-up:90" :item="$for.item" @tap.stop.prev="showSubMenu"></oda-button>
             </div>

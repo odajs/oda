@@ -518,7 +518,7 @@ export class tensor{
             let data = this.array.toTensorString(step, max, this.shape).split('\n');
             data = data.join('\n')
             let tab = ('  ').repeat(step)
-            return tab +`tensor[${this.label}]: dType=${this.dType.name}, shape(${this.shape}), size(${this.size.toLocaleString()})\n${tab}(${data})`;
+            return tab +`tensor[${this.label}]: dType=${this.dType.name}, shape(${this.shape}), size(${this.size})\n${tab}(${data})`;
         }
         return this.data;
     }
