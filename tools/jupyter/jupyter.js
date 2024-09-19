@@ -485,6 +485,7 @@ ODA({ is: 'oda-jupyter-divider',
         </style>
         <div class="horizontal center" style="z-index: 2">
             <oda-button ~if="!readOnly" :icon-size icon="icons:add" ~for="editors" @tap.stop="add($for.key)">{{$for.key}}</oda-button>
+            <oda-button ~if="showInsertBtn()" :icon-size icon="icons:add" @tap.stop="insert">Insert copied cell</oda-button>
         </div>
     `,
     get last() {
@@ -499,6 +500,13 @@ ODA({ is: 'oda-jupyter-divider',
     },
     add(key) {
         this.selectedCell = this.notebook.add(this.cell, key);
+    },
+    showInsertBtn() {
+        return top._jupyterCellData;
+    },
+    insert() {
+        this.selectedCell = this.notebook.add(this.cell, '', top._jupyterCellData);
+        top._jupyterCellData = undefined;
     }
 })
 
@@ -531,6 +539,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="move(1)"></oda-button>
             <oda-button ~show="cell?.type === 'code' || cell?.type === 'html'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
             <oda-button :icon-size icon="icons:delete" @tap.stop="deleteCell"></oda-button>
+            <oda-button :icon-size icon="icons:content-copy" @tap.stop="copyCell"></oda-button>
             <oda-button ~if="cell.type!=='code'" allow-toggle ::toggled="editMode"  :icon-size :icon="editMode?'icons:close':'editor:mode-edit'"></oda-button>
         </div>
     `,
@@ -576,6 +585,10 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
     control: null,
     showSettings(e) {
         ODA.showDropdown('oda-property-grid', { inspectedObject: this.control, filterByFlags: '' }, { minWidth: '480px', parent: e.target, anchor: 'top-right', align: 'left', title: 'Settings', hideCancelButton: true })
+    },
+    copyCell() {
+        top._jupyterCellData = this.cell.data;
+        this.jupyter.$render();
     }
 })
 
@@ -752,9 +765,12 @@ class JupyterNotebook extends ROCKS({
         //todo save
         this.isChanged = false;
     },
-    add(cell, cell_type = 'text') {
+    add(cell, cell_type = 'text', data) {
         let id = getID();
-        const data = {
+        if (data?.metadata) {
+            data.metadata.id = id;
+        }
+        data ||= {
             cell_type,
             metadata: {
                 id
