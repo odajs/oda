@@ -364,23 +364,19 @@ export class tensor{
             d--;
         }
         const data = new dType(shape.reduce((r,v)=>r*v, 1) * size);
-        let offset = 0;
         for (let i = 0; i < size; i += step){
             let delta = i + step;
             for (let t of tensors){
-                data.set(t.data.slice(i, delta), offset);
-                offset += step;
+                data.set(t.data.slice(i, delta), i);
             }
         }
         const out = tensor.from(data)._shape(...shape,  ...first.shape)._label(`stack(${tensors.length} tensors with shape(${first.shape}) by ${dim} axis)`)._src(tensors);
         out._back = ()=>{
-            offset = 0;
             for (let i = 0; i < size; i += step){
                 let delta = i + step
                 for (let t of tensors){
                     const slice = out.grad.slice(i, delta);
-                    t.grad.set(t.data.slice(i, delta), offset);
-                    offset += step;
+                    t.grad.set(slice, i);
                 }
             }
         }
