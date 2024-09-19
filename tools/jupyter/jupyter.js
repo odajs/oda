@@ -198,7 +198,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
                 overflow-x: auto;
             }
         </style>
-        <div :src="outSrc" ~is="outIs" vertical info ~html="outHtml" ~style="{whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning :error></div>
+        <div :src="outSrc" ~is="outIs" vertical  ~html="outHtml" ~style="{whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning :error></div>
         <div ~if="curRowsLength<maxRowsLength && !showAll" class="horizontal left header flex" style="font-size: small; align-items: center;">
             <span style="padding: 9px;">Rows: {{curRowsLength.toLocaleString()}} of {{maxRowsLength.toLocaleString()}}</span>
             <oda-button ~if="!showAll" :icon-size class="dark border" style="margin: 4px; border-radius: 2px;" @tap="setStep($event, 1)">Show next {{max.toLocaleString()}}</oda-button>
@@ -244,10 +244,10 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
         return array.join('\n');
     },
     get warning() {
-        return this.row?.item?.startsWith?.('<b>warn');
+        return this.cell?.status === 'warning';
     },
     get error() {
-        return this.row?.item?.startsWith?.('<b>err');
+        return this.cell?.status === 'error';
     },
     attached(){
         this.$wake = true;
@@ -1007,16 +1007,16 @@ class JupyterCell extends ROCKS({
             this.controls = jupyter.output_data.filter(i=>i instanceof HTMLElement).map(i=>({data:{"text/plain": i}}));
         }
         catch (e){
-            let error = e.stack.split('\n');
-            let pos = error[1];
-            if (pos){
-                pos = pos.substring(pos.indexOf('>') + 1);
-                pos = pos.split(':');
-                pos[1] = +pos[1] - 2;
-                pos.shift();
-                pos = pos.join(':');
-                error = error[0].replace(': ', ':\n') + '\n(' +  pos;
-            }
+            let error = e.toString();//e.stack.split('\n');
+            // let pos = error[1];
+            // if (pos){
+            //     pos = pos.substring(pos.indexOf('>') + 1);
+            //     pos = pos.split(':');
+            //     pos[1] = +pos[1] - 2;
+            //     pos.shift();
+            //     pos = pos.join(':');
+            //     error = error[0].replace(': ', ':\n') + '\n(' +  pos;
+            // }
 
             this.outputs = [{data:{"text/plain": error}}];
             this.status = 'error';
