@@ -32,8 +32,6 @@ interface Table extends odaComponent {
 
     fillingNewLineMode: boolean;
 
-    $scrollTop: number;
-
     body: TableBody;
 
     focusRow(e: MouseEvent): void;
