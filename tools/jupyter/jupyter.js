@@ -928,10 +928,10 @@ class JupyterCell extends ROCKS({
     },
     status: {
         get(){
-            return this.data.status || '';
+            return this.data.state || '';
         },
         set(n){
-            this.data.status = n;
+            this.data.state = n;
         }
     },
     get h() {
