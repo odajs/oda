@@ -1,17 +1,27 @@
-<meta charset="UTF-8">
-<oda-tester>
-    <oda-loss-chart id="chart"></oda-loss-chart>
-</oda-tester>
-<script type="module">
-    import '../../../../../oda.js';
-    import './loss-chart.js';
-    let data = [1,2,3,4,4,5];
-    chart.data = data;
-    tester.addButton({
-        label: 'ADD',
-        tap: (e)=>{
-            data.push(Math.random())
-        }
-    })
+<!DOCTYPE html>
 
-</script>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <oda-tester>
+        <oda-loss-chart id="chart"></oda-loss-chart>
+    </oda-tester>
+    <script type="module">
+        import '../../../../../oda.js';
+        import './loss-chart.js';
+        let [n,m] = [Math.floor(Math.random()*5)+2, 30];
+        let data = (new Array(m)).fill(0).map(_=> (new Array(n)).fill(0).map(_=>Math.random()) )
+        console.log(data)
+
+
+        chart.data = data;
+
+    </script>
+
+</body>
+</html>
