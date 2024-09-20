@@ -133,18 +133,18 @@ export class NeuroModule extends Function{
     }
 }
 export class Linear extends NeuroModule{
-    constructor(in_shape, out_shape, bias = false, dType = Float32Array) {
-        if(!Array.isArray(in_shape))
-            in_shape = [in_shape];
-        if(!Array.isArray(out_shape))
-            out_shape = [out_shape];
+    constructor(shape_in, shape_out, bias = false, dType = Float32Array) {
+        if(!Array.isArray(shape_in))
+            shape_in = [shape_in];
+        if(!Array.isArray(shape_out))
+            shape_out = [shape_out];
         super(arguments);
     }
     __init__() {
-        this.W = tensor.param(tensor.rand([...this.in_shape, ...this.out_shape], this.dType).minus_(.5).mul_(.1));
+        this.W = tensor.param(tensor.rand([...this.shape_in, ...this.shape_out], this.dType).minus_(.5).mul_(.1));
         this.W._label(this.W.label + ': Weights');
         if(this.bias){
-            this.B = tensor.param(tensor.rand(this.out_shape, this.dType).minus_(.5).mul_(.1));
+            this.B = tensor.param(tensor.rand(this.shape_out, this.dType).minus_(.5).mul_(.1));
             this.B._label(this.B.label + ': Bias');
         }
 
@@ -153,30 +153,34 @@ export class Linear extends NeuroModule{
         if(!Array.isArray(new_shape))
             new_shape = [new_shape];
 
-        if (new_shape <= this.out_shape)
+        if (new_shape <= this.shape_out)
             return;
-        this.out_shape = this.params.out_shape = new_shape;
-        let data = new this.W.dType(this.d_in * this.out_shape.mul());
+        this.shape_out = this.params.shape_out = new_shape;
+        let data = new this.W.dType(this.d_in * this.shape_out.mul());
         data = data.map((_,i)=>{
             return this.W.data[i] ?? (Math.random()-.5) * .1;
         })
-        this.W._resize_data(data, this.d_in, this.out_shape);
+        this.W._resize_data(data, this.d_in, this.shape_out);
         if (this.bias){
-            data = new this.B.dType(this.out_shape);
+            data = new this.B.dType(this.shape_out);
             data = data.map((_,i)=>{
                 return this.B.data[i] ?? (Math.random()-.5) * .1;
             })
-            this.B._resize_data(data, this.out_shape);
+            this.B._resize_data(data, this.shape_out);
         }
     }
-    forward(x){
-        x = tensor.from(x);
-        x._label(`INPUT (${x.shape})`);
-        let axis = (x.shape.length>1)?Array(x.shape.length-1).fill(65).map((v,i)=>String.fromCharCode(v+i)).join(''):'';
-        x = tensor.einsum(`${axis}i, io -> ${axis}o`, [x, this.W]);
+    forward(input){
+        input = tensor.from(input);
+        input._label(`INPUT (${input.shape})`);
+
+        this.axis_ext ??= (()=>{
+            let input_shape
+            (input.shape.length>1)?Array(input.shape.length-1).fill(65).map((v,i)=>String.fromCharCode(v+i)).join(''):'';
+        })()
+        let output = tensor.einsum(`${this.axis_ext + this.axis_in}, ${this.axis_in + this.axis_out} -> ${this.axis_ext + this.axis_out}`, [input, this.W]);
         if (this.bias)
-            x = x.plus(this.B)._label('plus BIAS');
-        x._label(`Linear (${x.shape}): bias=`+this.bias);
+            output = output.plus(this.B)._label('plus BIAS');
+        output._label(`Linear (${output.shape}): bias=`+this.bias);
         return x;
     }
 }
@@ -237,9 +241,9 @@ export class conv1D extends NeuroModule {
 
         let batches = over_axis.reduce((r,v)=>r*v,1);
         let dim_out = (padded_size - dilation * (k_size - 1) - 1) / stride + 1;
-        const out_shape = [this.out_channels, dim_out];
-        out_shape.unshift(...over_axis)
-        const out_size = out_shape.reduce((r, v) => r * v, 1);
+        const shape_out = [this.out_channels, dim_out];
+        shape_out.unshift(...over_axis)
+        const out_size = shape_out.reduce((r, v) => r * v, 1);
         let data = new Float32Array(out_size);
 
         let outs = this.out_channels;
@@ -278,7 +282,7 @@ export class conv1D extends NeuroModule {
                 }
             }
         }
-        const out = tensor.from(data)._src(x, this.weights)._label(this.label)._shape(out_shape);
+        const out = tensor.from(data)._src(x, this.weights)._label(this.label)._shape(shape_out);
         out._back = ()=>{
             let out_idx = -1;
             let in_idx = -1;
