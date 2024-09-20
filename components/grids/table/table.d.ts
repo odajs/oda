@@ -11,6 +11,7 @@ interface Table extends odaComponent {
     focusedCell: {row: TableRow, col: TableColumn}
     selectedRows: TableRow[];
     focusedRow: TableRow;
+    activeCell: HTMLElement;
 
     headerColumns: TableColumn[];
     filter: string;
@@ -29,7 +30,11 @@ interface Table extends odaComponent {
 
     screenLength: number;
 
+    fillingNewLineMode: boolean;
+
     $scrollTop: number;
+
+    body: TableBody;
 
     focusRow(e: MouseEvent): void;
     _applyFilter(items: TableRow[]);

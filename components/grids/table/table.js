@@ -195,6 +195,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             return div.offsetWidth;
         },
         activeCell: null,
+        fillingNewLineMode: false,
     },
     pointerRow: Object,
     expandLevel: -1,
@@ -241,8 +242,15 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         },
         focusCell(row, col) {
             if (col.$flex) return;
-            if (this.focusedCell?.row === row && this.focusedCell?.col === col)
-                return;
+            if (this.focusedCell?.row === row && this.focusedCell?.col === col) return;
+
+            if (this.focusedCell
+                && (this.visibleRows.findIndex(r => r === row) !== this.visibleRows.findIndex(r => r === this.focusedCell.row)
+                || this.activeCols.indexOf(this.focusedCell.col) === this.activeCols.length - 1 && this.activeCell && this.fillingNewLineMode)
+            ) {
+                this.fillingNewLineMode = false;
+            }
+
             this.focusedCell = { row, col };
         },
         get activeCols() {
@@ -930,8 +938,15 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         if (newPos.col > maxColIdx) {
             newPos.col = curPos.col;
         }
-        this.focusedCell = { row: this.visibleRows[newPos.row], col: this.activeCols[newPos.col] };
+        this.focusCell(this.visibleRows[newPos.row], this.activeCols[newPos.col]);
+        // this.focusedCell = { row: this.visibleRows[newPos.row], col: this.activeCols[newPos.col] };
 
+        // if (
+        //     newPos.row !== curPos.row
+        //     || this.activeCols.indexOf(this.focusedCell.col) === this.activeCols.length - 1 && this.activeCell && this.fillingNewLineMode
+        // ) {
+        //     this.fillingNewLineMode = false;
+        // }
         // if (this.selectedRows.length === 1) {
         //     this.selectRow(this.focusedCell.row);
         // }
@@ -1257,7 +1272,19 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         if (this.activeCell === cellElement) return;
         if (typeof cellElement?.activate === 'function' && !(cellElement.readOnly || cellElement.readonly)) {
             this.activeCell = cellElement;
-            this.listen('blur', () => { if (this.activeCell === cellElement) { this.activeCell = null; this.focus(); } }, { target: cellElement, once: true });
+            this.listen('blur', () => {
+                this.async(() => {
+                    if (this.activeCell === cellElement) {
+                        this.focus();
+                        if (this.fillingNewLineMode) {
+                            this.moveCellPointer(1, 0);
+                        }
+                        else {
+                            this.activeCell = null;
+                        }
+                    }
+                }, 300);
+            }, { target: cellElement, once: true });
             cellElement.activate?.();
         }
         else {
@@ -1719,10 +1746,10 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
             const row = this.focusedCell.row;
 
             this.onSelectRow(e, { value: row });
-            const elem = this.body.getFocusedCellElement();
-            if (this.activeCell) {
-                // this.moveCellPointer(1, 0); //todo: только в режиме заполнения новой строки
+            if (this.activeCell && this.fillingNewLineMode) {
+                this.moveCellPointer(1, 0);
             } else {
+                const elem = this.body.getFocusedCellElement();
                 this.activateCell(elem);
             }
         },
