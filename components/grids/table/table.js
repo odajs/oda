@@ -831,7 +831,10 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     },
     /**@this {Table} */
     selectRow(row, { range = false, add = false } = {}) {
-        if (this.allowSelection === 'none') return;
+        if (this.allowSelection === 'none') {
+            this.focusRow(row);
+            return;
+        }
 
         if (this.selectByCheck) {
             if (!row.disabled) {
