@@ -1,23 +1,30 @@
 ODA({is: 'oda-loss-chart', template: /*html*/ `
+    <style>
+        :host {
+            @apply --flex;
+        }
+    </style>
     <h3 ~if='label.length>0'>{{label}}</h3>
-    <svg width='100%' :height xmlns='http://www.w3.org/2000/svg' :view-box="'0 0 ' + width + ' ' + height" preserveAspectRatio="none">
-        <rect x="0" y="0" :width :height :fill='background'/>
-        <path ~for='pointsL' :d='pathD($for.item)' fill="none" :stroke :stroke-width="strokeWidth"/>
+    <svg width='100%' height='100%' xmlns='http://www.w3.org/2000/svg' :view-box="'0 0 ' + width + ' ' + height" preserveAspectRatio="none">
+        <rect x="0" y="0" :width :height fill='var(--dark-background)'/>
+        <path ~for='pointsL' ~if='kvo>1' :d='pathD($for.item)' fill="none" :stroke='lineColor($for.index)' stroke-width="2"/>
     </svg>`,
     data: [],
     width:1000,
+    height:300,
     $public: {
         label:'',
-        height:300,
-        maxPoint:100,
-        stroke:"#070637",
-        strokeWidth:2,
-        background:'#f0f0f0',
+        strokeWidth:{
+            $def:2,
+            set(v) {
+                this.$$('svg path').forEach(el => el.setAttribute('stroke-width',v) )
+            }
+        },
         bezier:false,
     },
 
 
-    get kvo() {return pointsL.length},
+    get kvo() {return this.pointsL.length},
 
     get minMax() {
         let ollP = this.data.flat()
@@ -26,7 +33,10 @@ ODA({is: 'oda-loss-chart', template: /*html*/ `
     get padding() {return Math.min(this.width,this.height)/10},
     get wh() { return [this.width,this.height].map(x=>x-this.padding*2) },
 
-
+    lineColor(i) {
+        let c = Math.floor(360/this.kvo*i)+100
+        return `hsl(${c}, 100%, 80%)`
+    },
 
     pathD(ps){
         let [w,h] = this.wh
@@ -52,6 +62,7 @@ ODA({is: 'oda-loss-chart', template: /*html*/ `
             return rez
         }
         else return [this.data]
+
     }
 
     // get pointsL() {
