@@ -173,11 +173,32 @@ export class Linear extends NeuroModule{
         input = tensor.from(input);
         input._label(`INPUT (${input.shape})`);
 
-        this.axis_ext ??= (()=>{
-            let input_shape
-            (input.shape.length>1)?Array(input.shape.length-1).fill(65).map((v,i)=>String.fromCharCode(v+i)).join(''):'';
-        })()
-        let output = tensor.einsum(`${this.axis_ext + this.axis_in}, ${this.axis_in + this.axis_out} -> ${this.axis_ext + this.axis_out}`, [input, this.W]);
+        this._axis_ext ??= (()=>{
+            let shape_input = [...input.shape];
+            let shape_in = [...this.shape_in];
+            let shape_out = [...this.shape_out];
+            this._axis_ext = '';
+            this._axis_in = '';
+            this._axis_out = ''
+            let char_code = 65;
+            let d1;
+            while(d1 = shape_input.pop()){
+                let char = String.fromCharCode(char_code++);
+                let d2 = shape_in.pop();
+                if(d2 !== undefined){
+                    if(d1 !== d2)
+                        throw new Error('Error input shape!');
+                    this._axis_ext += char
+                }
+                else
+                    this._axis_in += char
+            }
+            while(d1 = shape_out.pop()){
+                this._axis_out += String.fromCharCode(char_code++);
+            }
+            return this._axis_ext;
+        })();
+        let output = tensor.einsum(`${this._axis_ext + this._axis_in}, ${this._axis_in + this._axis_out} -> ${this._axis_ext + this._axis_out}`, [input, this.W]);
         if (this.bias)
             output = output.plus(this.B)._label('plus BIAS');
         output._label(`Linear (${output.shape}): bias=`+this.bias);
