@@ -138,6 +138,8 @@ export class Linear extends NeuroModule{
             shape_in = [shape_in];
         if(!Array.isArray(shape_out))
             shape_out = [shape_out];
+        arguments[0] = shape_in;
+        arguments[1] = shape_out;
         super(arguments);
     }
     __init__() {
@@ -202,7 +204,7 @@ export class Linear extends NeuroModule{
         if (this.bias)
             output = output.plus(this.B)._label('plus BIAS');
         output._label(`Linear (${output.shape}): bias=`+this.bias);
-        return x;
+        return output;
     }
 }
 export class BinLayer extends NeuroModule{
