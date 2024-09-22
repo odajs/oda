@@ -134,12 +134,14 @@ export class NeuroModule extends Function{
 }
 export class Linear extends NeuroModule{
     constructor(shape_in, shape_out, bias = false, dType = Float32Array) {
-        if(!Array.isArray(shape_in))
-            shape_in = [shape_in];
-        if(!Array.isArray(shape_out))
-            shape_out = [shape_out];
-        arguments[0] = shape_in;
-        arguments[1] = shape_out;
+        if(arguments.length>1){
+            if(!Array.isArray(shape_in))
+                shape_in = [shape_in];
+            if(!Array.isArray(shape_out))
+                shape_out = [shape_out];
+            arguments[0] = shape_in;
+            arguments[1] = shape_out;
+        }
         super(arguments);
     }
     __init__() {
@@ -190,10 +192,10 @@ export class Linear extends NeuroModule{
                 if(d2 !== undefined){
                     if(d1 !== d2)
                         throw new Error('Error input shape!');
-                    this._axis_ext += char
+                    this._axis_in += char
                 }
                 else
-                    this._axis_in += char
+                    this._axis_ext += char
             }
             while(d1 = shape_out.pop()){
                 this._axis_out += String.fromCharCode(char_code++);
