@@ -86,7 +86,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter', extends: 
     </style>
     <div ~show="!isMinimized" id="appHeader" class="top title">
 <!--        <slot name="title" class="horizontal"></slot>-->
-        <slot name="header" class="horizontal"></slot>
+        <slot name="header" class="vertical"></slot>
     </div>
     <div
         ~show="!isMinimized"
@@ -120,7 +120,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter', extends: 
             <slot :name="$for.item.pos + '-panel'"></slot>
         </app-layout-drawer>
     </div>
-    <slot ~show="!isMinimized" name="footer" class="horizontal no-flex" style="overflow: visible;"></slot>
+    <slot ~show="!isMinimized" name="footer" class="vertical no-flex" style="overflow: visible;"></slot>
     `,
     leftButtons: [],
     rightButtons: [],
@@ -215,9 +215,12 @@ ODA({is: 'app-layout-toolbar',
             @apply --raised;
         }
     </style>
-    <slot name="left" class="horizontal no-flex" style="justify-content: flex-start; min-width: 1px;"></slot>
-    <slot name="center" class="horizontal flex" style="justify-content: center;"></slot>
-    <slot name="right" class="horizontal no-flex" style="justify-content: flex-end; flex-shrink: 0;"></slot>`,
+    <slot :name="name+'-left'" class="horizontal no-flex" style="justify-content: flex-start; min-width: 1px;"></slot>
+    <slot :name="name+'-center'" class="horizontal flex" style="justify-content: center;"></slot>
+    <slot :name="name+'-right'" class="horizontal no-flex" style="justify-content: flex-end; flex-shrink: 0;"></slot>`,
+    get name(){
+        return this.slot;
+    }
 });
 
 ODA({is: 'app-layout-drawer', imports: '@oda/tabs',

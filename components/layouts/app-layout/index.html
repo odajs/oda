@@ -9,12 +9,13 @@
     ODA({is:'oda-test-layout', imports:'@oda/app-layout', extends:'oda-app-layout',
         template: /*html*/`
         <app-layout-toolbar slot="header">
-                <oda-button icon="class" slot="header-left">left toolbar</oda-button>
+             <oda-button icon="class" slot="header-left">header left toolbar</oda-button>
         </app-layout-toolbar>
+        <oda-button icon="icons:warning" slot="header"></oda-button>
         <app-layout-toolbar slot="top">
-            <oda-button icon="class" slot="left">left toolbar</oda-button>
-            <oda-button icon="class" slot="right">right toolbar</oda-button>
-            <oda-button icon="class" slot="center">center toolbar</oda-button>
+            <oda-button icon="class" slot="top-left">left toolbar</oda-button>
+            <oda-button icon="class" slot="top-right">right toolbar</oda-button>
+            <oda-button icon="class" slot="top-center">center toolbar</oda-button>
         </app-layout-toolbar>
 
         <div slot="top">TOP qw erpiqwerop iqwpeopoqweirpqpowporq ikqwep wepp oeqpiqwer
@@ -33,7 +34,7 @@
         <div slot="footer">FOOTER</div>
 
         <app-layout-toolbar slot="footer">
-            <div slot="left">left footer</div>
+            <div slot="footer-left">left footer</div>
             <div slot="right">right footer</div>
             <div slot="center">center footer</div>
         </app-layout-toolbar>
