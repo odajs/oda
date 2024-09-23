@@ -45,7 +45,7 @@ class themeVars extends ROCKS({
                 vars[key] = {
                     $public: true,
                     $group,
-                    $editor: key.includes('color') || key.includes('background') ? '@oda/color-picker[oda-color-picker]' : 'oda-pg-string',
+                    $editor: key.includes('color') || key.includes('background') ? 'oda-theme-editor-color-picker' : 'oda-pg-string',
                     $def: val,
                     set: (n) => updateStyle(key, n)
                 }
@@ -104,7 +104,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
                 {{$for.item.k}}
             </oda-button>
         </div>
-        <oda-property-grid slot="right-panel" class="vertical flex border" label="Theme settings"  :inspected-object="vars" style="padding:0"></oda-property-grid>
+        <oda-property-grid slot="right-panel" class="vertical flex border" label="Theme settings" :inspected-object="vars" style="padding:0"></oda-property-grid>
     `,
     toggled: {
         $def: false,
@@ -146,7 +146,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
                         props[key] = {
                             $group: item.k,
                             $public: true,
-                            $editor: key?.includes('color') || key?.includes('background') ? '@oda/color-picker[oda-color-picker]' : 'oda-pg-string',
+                            $editor: key?.includes('color') || key?.includes('background') ? 'oda-theme-editor-color-picker' : 'oda-pg-string',
                             $def: changes[key]?.val || this.vars[key],
                             set: (n) => { updateStyle(key, n, this.vars) }
                         }
@@ -200,5 +200,42 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
         this.theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         this.toggled = this.theme === 'dark';
         this.switchTheme();
+    }
+})
+
+import '../../../components/colors/color-picker-oklch/color-picker-oklch.js';
+
+ODA({ is: 'oda-theme-editor-color-picker',
+    template: `
+        <style>
+            :host {
+                @apply --horizontal;
+                @apply --flex;
+                position: relative;
+            }
+        </style>
+        <div style="display: block; margin: 4px;align-items: center; width: calc(100% - 40px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">{{value}}</div>
+        <div class="border" style="width: 40px; margin: 4px; cursor: pointer;" ~style="{background: value}" @tap="openPicker"></div>
+    `,
+    value: '',
+    async openPicker(e) {
+        let val = this.value,
+        light, dark;
+        if (val.includes('light-dark')) {
+            let v = val.replace('light-dark(', '').replaceAll(')', '').split(',');
+            dark = v[1];
+            light = v[0];
+            val = isDark ? dark : light;
+        }
+        let res = await ODA.showDropdown('oda-color-picker-oklch', { value: val, _value: val }, { });
+        res = res.result;
+        if (res) {
+            // if (isDark) {
+            //     this.value = `light-dark(${light}, ${res})`;
+            // } else {
+            //     this.value = `light-dark(${res}, ${dark})`;
+            // }
+            this.value = res;
+        }
     }
 })

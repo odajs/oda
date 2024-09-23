@@ -3,7 +3,8 @@ ODA({ is: 'oda-color-picker-oklch',
         <style>
             :host {
                 @apply --horizontal;
-                @apply: --flex;
+                @apply --border;
+                @apply --shadow;
                 position: relative;
                 max-width: {{width + (showPalette ? height - 6 : 0)}}px;
                 width: {{width + (showPalette ? height - 6 : 0)}}px;
@@ -66,8 +67,11 @@ ODA({ is: 'oda-color-picker-oklch',
                 height: {{(height - 10) / 10}}px;
             }
         </style>
-        <div class="vertical" ~style="{minWidth: (width) - 8 + 'px'}" style="margin: 4px;">
-            <div class="flex border" style="border-radius: 4px;" ~style="{backgroundColor: value}"></div>
+        <div class="vertical" ~style="{minWidth: (width) - 8 + 'px'}" style="margin: 4px; border-radius: 4px;">
+            <div class="horizontal flex border">
+                <div style="width: 30%; height: 100%; cursor: pointer" ~style="{background: _value || value}" @tap="_value=value"></div>
+                <div class="flex" ~style="{backgroundColor: value}"></div>
+            </div>
             <input id="inp" class="no-flex border" type="text" :value="value" style="padding: 2px; font-size: 15px; margin: 4px 0; text-align: center;" @change="setValue">
             <div class="color-ranges h">
                 <label>l</label>
@@ -88,10 +92,10 @@ ODA({ is: 'oda-color-picker-oklch',
             <div class="color-input vertical">
                 <div ~if="storeLength > 0" class="vertical flex" style="cursor: pointer">
                     <div class="horizontal flex" style="width: 100%">
-                        <div ~for="storeLength" class="border" style="width: 100%; height: 16px;margin-right: 2px; margin-bootom: 1px;" @pointerdown="_storeDown($event, $for.index)" @pointerup="_storeUp($event, $for.index)" ~style="{background: store?.['s'+$for.index] || ''}"></div>
+                        <div ~for="storeLength" class="border" style="width: 100%; height: 16px;margin-right: 2px; margin-bootom: 1px;" @mousedown="_storeDown($event, $for.index)" @pointerup="_storeUp($event, $for.index)" ~style="{background: store?.['s'+$for.index] || ''}"></div>
                     </div>
                     <div class="horizontal flex">
-                        <div ~for="storeLength" class="border" style="width: 100%; height: 16px;margin-right: 2px; margin-top: 1px;" @pointerdown="_storeDown($event, $for.index+storeLength)" @pointerup="_storeUp($event, $for.index+storeLength)" ~style="{background: store?.['s'+($for.index+storeLength)] || ''}"></div>
+                        <div ~for="storeLength" class="border" style="width: 100%; height: 16px;margin-right: 2px; margin-top: 1px;" @mousedown="_storeDown($event, $for.index+storeLength)" @pointerup="_storeUp($event, $for.index+storeLength)" ~style="{background: store?.['s'+($for.index+storeLength)] || ''}"></div>
                     </div>
                 </div>
                 <div class="horizontal" style="justify-content: flex-end; margin: 4px 1px 1px 1px;">
@@ -117,18 +121,22 @@ ODA({ is: 'oda-color-picker-oklch',
         },
         l: {
             $def: 0,
+            set(n) { this.refreshValue() },
             $save: true
         },
         c: {
             $def: 0,
+            set(n) { this.refreshValue() },
             $save: true
         },
         h: {
             $def: 0,
+            set(n) { this.refreshValue() },
             $save: true
         },
         a: {
             $def: .5,
+            set(n) { this.refreshValue() },
             $save: true
         },
         width: {
@@ -151,6 +159,7 @@ ODA({ is: 'oda-color-picker-oklch',
                 return `oklch(${this.l} ${this.c} ${this.h})`;
             }
         },
+        _value: '',
         clickTime: 500
     },
     store: {
@@ -159,6 +168,7 @@ ODA({ is: 'oda-color-picker-oklch',
     },
     attached() {
         this._init();
+        this.isReady = true;
     },
     _init() {
         this.store['s5'] ||= 'oklch(0 0 0)';
@@ -172,8 +182,15 @@ ODA({ is: 'oda-color-picker-oklch',
         this.store['s18'] ||= 'oklch(.99 0.04 110)';
         this.store['s19'] ||= 'oklch(1 0 0)';
     },
-    setValue(e) {
-        const val = e?.target?.value || e;
+    refreshValue() {
+        if (this.isReady)
+            this.value = undefined;
+    },
+    setValue(e, skip) {
+        this.refreshValue();
+        const val = e?.target?.value || e || '';
+        if (!skip)
+            this._value = val;
         if (val?.includes('oklch(')) {
             const res = val.replace('oklch(', '').replaceAll(')', ' ').replaceAll('/', ' ').replace(/\s+/g, ' ').split(' ');
             let l = res[0],
@@ -186,7 +203,9 @@ ODA({ is: 'oda-color-picker-oklch',
                 this.h = h.includes('none') ? 0 : + h;
                 this.a = a ? a.includes('%') ? a.replace('%', '') / 100  : +a : 1;
             }
-        } 
+        } else {
+            this.value = val;
+        }
     },
     _storeDown(e, idx) {
         this.startStamp = e.timeStamp;
@@ -201,7 +220,7 @@ ODA({ is: 'oda-color-picker-oklch',
         this.store ||= {};
         if (ts < this.clickTime) {
             this._setsValue = true;
-            this.setValue(this.store['s' + idx]);
+            this.setValue(this.store['s' + idx], true);
         }
         this.store = {...this.store};
         this.async(() => this._setsValue = false, this.clickTime + 1);
