@@ -202,7 +202,8 @@ export class Linear extends NeuroModule{
             }
             return this._axis_ext;
         })();
-        let output = tensor.einsum(`${this._axis_ext + this._axis_in}, ${this._axis_in + this._axis_out} -> ${this._axis_ext + this._axis_out}`, [input, this.W]);
+        let expression = `${this._axis_ext + this._axis_in}, ${this._axis_in + this._axis_out} -> ${this._axis_ext + this._axis_out}`;
+        let output = tensor.einsum(expression, [input, this.W]);
         if (this.bias)
             output = output.plus(this.B)._label('plus BIAS');
         output._label(`Linear (${output.shape}): bias=`+this.bias);
