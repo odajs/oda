@@ -193,8 +193,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
 ODA ({ is: 'oda-jupyter-cell-out', template: `
         <style>
             [text-mode]{
-                padding: 4px; 
-                user-select: text; 
+                padding: 4px;
+                user-select: text;
                 overflow-x: auto;
             }
         </style>
@@ -223,7 +223,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
         if (i.key === 'image/png') {
             this.outSrc = 'data:image/png;base64,' + i.item;
             return 'img';
-        } 
+        }
         return 'div';
     },
     get maxRowsLength(){
@@ -258,15 +258,15 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     template: `
         <style>
             :host{
-                @apply --vertical; 
+                @apply --vertical;
                 @apply --no-flex;
                 position: relative;
                 padding-right: 4px;
                 padding-top: 4px;
-                min-height: 24px;  
+                min-height: 24px;
             }
             .sticky{
-                cursor: pointer; 
+                cursor: pointer;
                 position: sticky;
                 top: 0px;
             }
@@ -281,9 +281,9 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             :host(:hover) .left-panel {
                 @apply --header;
             }
-            
+
         </style>
-       
+
         <div class="horizontal">
             <div class="left-panel vertical" :error-invert="status === 'error'">
                 <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: -4px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
@@ -311,7 +311,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                             <div raised ~for="cell.controls" style="font-family: monospace;" >
                                 <oda-jupyter-cell-out ~for="$for.item.data" :row="$$for" :max="control().maxRow"></oda-jupyter-cell-out>
                             </div>
-                            <div raised ~for="cell.outputs.slice(0, maxOutputsRow * (outputsStep +1))" style="font-family: monospace;" >
+                            <div raised ~for="outputFor" style="font-family: monospace;" >
                                 <oda-jupyter-cell-out ~for="$for.item.data" :row="$$for" :max="control().maxRow"></oda-jupyter-cell-out>
                             </div>
                         </div>
@@ -319,7 +319,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <div ~if="cell?.metadata?.hideOutput" class="horizontal left header" style="padding: 0 4px; font-size: small;">
                         <oda-button :icon-size class="dark header no-flex" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="showOutput">Show hidden outputs data</oda-button>
                     </div>
-                </div>        
+                </div>
                 <div class="horizontal left header flex" ~if="!cell?.metadata?.hideOutput && showOutInfo" style="padding: 0 4px; font-size: small; align-items: center; font-family: monospace;">
                     <span style="padding: 9px;">{{outInfo}}</span>
                     <oda-button ~if="!showAllOutputsRow" :icon-size class="dark" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 1)">Show next {{maxOutputsRow.toLocaleString()}}</oda-button>
@@ -329,6 +329,11 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         </div>
         <oda-jupyter-divider></oda-jupyter-divider>
     `,
+    outputFor: {
+        get() {
+            return this.cell?.outputs.slice(0, this.maxOutputsRow * (this.outputsStep + 1));
+        }
+    },
     _value: '<b><u>Double click for edit...</u></b>',
     get maxOutputsRow() {
         return this.control().maxRow;
@@ -673,7 +678,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 position: relative;
             }
             .sticky{
-                cursor: pointer; 
+                cursor: pointer;
                 position: sticky;
                 top: 0px;
             }
@@ -688,12 +693,12 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             }
         </style>
         <div  class="horizontal" :border="!hideCode" style="min-height: 32px;">
-            <oda-code-editor  ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>   
+            <oda-code-editor  ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>
             <div ~if="hideCode" class="horizontal left content flex" style="padding: 4px 4px; text-decoration: underline;">
                 <span style="margin-top: 4px;cursor: pointer;" @tap="hideCode=false">Show hidden code...</span>
-            </div>                  
+            </div>
         </div>
- 
+
     `,
     focus() {
         this.$('oda-code-editor')?.focus();
