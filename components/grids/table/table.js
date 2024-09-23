@@ -1600,20 +1600,18 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
             position: -webkit-sticky;
         }
         .cell.focused-cell::before{
-            content: '';
+            content: "";
             pointer-events: none;
             position: absolute;
-            height: 100%;
-            width: 100%;
-            outline: auto;
             top: 0px;
+            bottom: 1px;
             right: 0px;
             left: 0px;
-            outline-offset: -1px;
-            outline-style: dashed;
-            outline-width: 1px !important;
+            outline-offset: -2px;
+            outline-style: auto;
             outline-color: var(--pointer-color);
             z-index: 1;
+            outline-width: 1px !important;
         }
     </style>
     <div ~wake="true" class="no-flex vertical" ~style="{height: $scrollHeight + rowHeight + 'px'}">

@@ -402,9 +402,6 @@ body[context-menu-show] *:not(oda-context-menu){
         pointer-events: none;
     };
 }
-// .focused, *[focused]{
-//     position: relative !important;
-// }
 .focused:after, *[focused]:after{
     content: '';
     position: absolute;
@@ -413,6 +410,7 @@ body[context-menu-show] *:not(oda-context-menu){
     left: 0px;
     height: 2px;
     right: 0px;
+    z-index: 1;
 }
 .focused.focused-left:after, *[focused].focused-left:after{
     bottom: 0px;
