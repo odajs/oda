@@ -52,7 +52,7 @@ class themeVars extends ROCKS({
             })
         })
         Object.values(vars).map(i => {
-            i.$group = groups[i.$group]?.length > 1 ? i.$group : 'vars';
+            i.$group = groups[i.$group]?.length > 1 ? i.$group : ' ';
         })
         // console.log(vars);
         _vars = vars;
