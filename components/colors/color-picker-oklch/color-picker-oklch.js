@@ -59,8 +59,6 @@ ODA({ is: 'oda-color-picker-oklch',
                 height: {{height - 6}};
             }
             .cell {
-                border-right: 1px solid lightgray;
-                border-bottom: 1px solid lightgray;
                 box-sizing: border-box;
                 cursor: pointer;
                 width: {{(height - 10) / 10}}px;
@@ -107,7 +105,7 @@ ODA({ is: 'oda-color-picker-oklch',
             </div>
         </div>
         <div ~if="showPalette" class="palette horizontal center" style="flex-wrap: wrap; ">
-            <div ~for="100" class="cell" ~style="{background: 'oklch(' + ($for.index / 100) + ' ' + c + ' ' + h + ' / ' + (a || 1) + ')'}" @click="l = $for.index / 100"></div>
+            <div ~for="100" class="cell" ~style="{borderBottom: $for.index<90 ? '1px solid lightgray' : '', borderRight: ($for.index+1)%10 ? '1px solid lightgray' : '', background: 'oklch(' + ($for.index / 100) + ' ' + c + ' ' + h + ' / ' + (a >= 0 ? a : 1) + ')'}" @click="l = $for.index / 100"></div>
         </div>
     `,
     $public: {
