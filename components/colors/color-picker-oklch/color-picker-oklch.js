@@ -41,16 +41,16 @@ ODA({ is: 'oda-color-picker-oklch',
                 cursor: pointer;
             }
             input.lightness {
-                background: linear-gradient(90deg, oklch(0% 0.37 265) 0%, oklch(100% 0.37 265) 100%);
+                background: linear-gradient(90deg, oklch(0 {{c}} {{h}}) 0%, oklch(1 {{c}} {{h}}) 100%);
             }
             input.chroma {
-                background: linear-gradient(90deg, oklch(50% 0 265) 0%, oklch(50% 0.37 265) 100%);
+                background: linear-gradient(90deg, oklch({{l}} 0 {{h}}) 0%, oklch({{l}} .37 {{h}}) 100%);
             }
             input.hue {
-                background: linear-gradient(90deg, oklch(90% 0.37 0) 0%, oklch(90% 0.37 36) 10%,oklch(90% 0.37 72) 20%, oklch(90% 0.37 108) 30%, oklch(90% 0.37 144) 40%, oklch(90% 0.37 180) 50%, oklch(90% 0.37 216) 60%, oklch(90% 0.37 252) 70%, oklch(90% 0.37 288) 80%, oklch(90% 0.37 324) 90%, oklch(90% 0.37 360) 100%);
+                background: linear-gradient(90deg, oklch({{l}} {{c}} 0) 0%, oklch({{l}} {{c}} 36) 10%,oklch({{l}} {{c}} 72) 20%, oklch({{l}} {{c}} 108) 30%, oklch({{l}} {{c}} 144) 40%, oklch({{l}} {{c}} 180) 50%, oklch({{l}} {{c}} 216) 60%, oklch({{l}} {{c}} 252) 70%, oklch({{l}} {{c}} 288) 80%, oklch({{l}} {{c}} 324) 90%, oklch({{l}} {{c}} 360) 100%);
             }
             input.alpha {
-                background: linear-gradient(90deg, oklch(50% 0.37 265 / 0) 0%, oklch(50% 0.37 265 / 1) 100%);
+                background: linear-gradient(90deg, oklch({{l}} {{c}} {{h}} / 0) 0%, oklch({{l}} {{c}} {{h}} / 1) 100%);
             }
             .palette {
                 box-sizing: border-box;
