@@ -171,14 +171,15 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
         return isDark;
     },
     isChanged: false,
+    isLoadChanges: false,
     clearChanges() {
         this.vars = new themeVars();
         this.btns = undefined;
         Object.keys(changes || {}).map(key => {
             ODA.updateStyle({ [key]: changes[key].defVal });
         })
-        changes = {};
-        this.isChanged = false;
+        this.changes = changes = {};
+        this.isChanged = this.isLoadChanges;
     },
     async switchTheme(theme = this.theme) {
         let wins = [top];
