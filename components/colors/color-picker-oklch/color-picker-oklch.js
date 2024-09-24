@@ -68,7 +68,7 @@ ODA({ is: 'oda-color-picker-oklch',
         <div class="vertical" ~style="{minWidth: (width) - 8 + 'px'}" style="margin: 4px; border-radius: 4px;">
             <div class="horizontal flex border">
                 <div style="width: 30%; height: 100%; cursor: pointer" ~style="{background: _value || value}" @tap="_value=value"></div>
-                <div class="flex" ~style="{backgroundColor: value}"></div>
+                <div class="flex" style="cursor: pointer" ~style="{backgroundColor: value}" @tap="_value=''"></div>
             </div>
             <input id="inp" class="no-flex border" type="text" :value="value" style="padding: 2px; font-size: 15px; margin: 4px 0; text-align: center;" @change="setValue">
             <div class="color-ranges h">
@@ -169,6 +169,7 @@ ODA({ is: 'oda-color-picker-oklch',
         this.isReady = true;
     },
     _init() {
+        this.store ||= {};
         this.store['s5'] ||= 'oklch(0 0 0)';
         this.store['s6'] ||= 'oklch(.321 0 0)';
         this.store['s7'] ||= 'oklch(.510 0 0)';
@@ -179,6 +180,9 @@ ODA({ is: 'oda-color-picker-oklch',
         this.store['s17'] ||= 'oklch(0.45 0.31 260)';
         this.store['s18'] ||= 'oklch(.99 0.04 110)';
         this.store['s19'] ||= 'oklch(1 0 0)';
+        if (this._values?.includes('oklch(')) {
+            this.setValue(this._value, true);
+        }
     },
     refreshValue() {
         if (this.isReady)
@@ -225,7 +229,7 @@ ODA({ is: 'oda-color-picker-oklch',
     },
     async _ok() {
         this.fire('ok', this.value);
-        await navigator.clipboard.writeText(this.value);
+        await navigator?.clipboard?.writeText(this.value);
     },
     _cancel() {
         this.fire('cancel');
