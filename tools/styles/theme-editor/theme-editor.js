@@ -203,9 +203,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
     }
 })
 
-import '../../../components/colors/color-picker-oklch/color-picker-oklch.js';
-
-ODA({ is: 'oda-theme-editor-color-picker',
+ODA({ is: 'oda-theme-editor-color-picker', imports: '@oda/color-picker-oklch',
     template: `
         <style>
             :host {

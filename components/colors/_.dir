@@ -14,6 +14,13 @@
         }
     },
     {
+        "name": "color-picker-oklch",
+        "label": "<b style='color: #73abfe'>oda-picker-oklch:</b> Пикер цвета (oklch)",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
         "name": "hsla-picker",
         "label": "<b style='color: #73abfe'>oda-hsla-picker:</b> Пикер цвета (hsla)",
         "content": {

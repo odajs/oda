@@ -1,5 +1,5 @@
 const libPath = import.meta.url.split('/').slice(0, -1).join('/') + '/lib/';
-ODA({ is: 'oda-rich-text-editor', imports: '@oda/button, @oda/hsla-picker, @oda/selector',
+ODA({ is: 'oda-rich-text-editor', imports: '@oda/button, @oda/color-picker-oklch, @oda/selector',
     template: `
         <style>
             .menu::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -51,8 +51,8 @@ ODA({ is: 'oda-rich-text-editor', imports: '@oda/button, @oda/hsla-picker, @oda/
             <oda-button :icon-size="iconSize" icon="bootstrap:type-strikethrough" title="strikeout" @tap="_exe('Strikeout')" ~style="{opacity: state?.strikeout ? '1' : '.3'}"></oda-button>
             <oda-button :icon-size="iconSize" icon="bootstrap:superscript" title="superscript" @tap="_exe('Superscript')" ~style="{opacity: state?.superscript ? '1' : '.3'}"></oda-button>
             <oda-button :icon-size="iconSize" icon="bootstrap:subscript" title="subscript" @tap="_exe('Subscript')" ~style="{opacity: state?.Subscript ? '1' : '.3'}"></oda-button>
-            <oda-hsla-picker size="16" :color="state?.color || 'hsla(0, 0%, 23%, 1.00)'" @change="_tap('color', $event)" style="margin-right: 8px"></oda-hsla-picker>
-            <oda-hsla-picker size="16" :color="state?.highlight || 'hsla(0, 0%, 100%, 1.00)'" @change="_tap('highlight', $event)"></oda-hsla-picker>
+            <oda-txt-picker-oklch size="16" :value="state?.color || 'oklch(0 0 0)'" @change="_tap('color', $event)" style="margin-right: 8px"></oda-txt-picker-oklch>
+            <oda-txt-picker-oklch size="16" :value="state?.highlight || 'oklch(1 0 0)'" @change="_tap('highlight', $event)"></oda-txt-picker-oklch>
             <div class="menu-divider"></div>
             <oda-selector :icon-size="iconSize" :items="titleItems" title="font title" :value="size" width="100px" style="width: 60px; border: 1px solid light gray; background: white; padding: 1px; margin-left: 4px;" @change="_tap('title', $event)"></oda-selector>
             <oda-button :icon-size="iconSize" icon="box:i-align-left" title="align left" @tap="_tap('left')"></oda-button>
@@ -299,8 +299,8 @@ ODA({ is: 'oda-rich-text-editor', imports: '@oda/button, @oda/hsla-picker, @oda/
             size: () => { cmd.executeSize(Number(e.detail.value.value || 16)) },
             rowmargin: () => { cmd.executeRowMargin(Number(e.detail.value.value || 1)) },
             list: () => { cmd.executeList(e.detail.value.result.$item.listType || null, e.detail.value.result.$item.listStyle || null) },
-            color: () => { cmd.executeColor(e.target.color) },
-            highlight: () => { cmd.executeHighlight(e.target.color) },
+            color: () => { cmd.executeColor(e.detail.value) },
+            highlight: () => { cmd.executeHighlight(e.detail.value) },
             left: () => { cmd.executeRowFlex(doc.RowFlex.LEFT) },
             center: () => { cmd.executeRowFlex(doc.RowFlex.CENTER) },
             right: () => { cmd.executeRowFlex(doc.RowFlex.RIGHT) },
@@ -693,3 +693,32 @@ const srcDoc = `
     document.ElementType = ElementType;
 </script>
 `
+
+ODA({ is: 'oda-txt-picker-oklch',
+    template: `
+        <style>
+            :host {
+                @apply --horizontal;
+                position: relative;
+            }
+        </style>
+        <div class="border" style="width: 20px; height: 20px; cursor: pointer;" ~style="{background: value}" @tap="openPicker"></div>
+    `,
+    value: '',
+    async openPicker(e) {
+        let val = this.value,
+        light, dark;
+        if (val.includes('light-dark')) {
+            let v = val.replace('light-dark(', '').replaceAll(')', '').split(',');
+            dark = v[1];
+            light = v[0];
+            val = isDark ? dark : light;
+        }
+        let res = await ODA.showDropdown('oda-color-picker-oklch', { value: val, _value: val }, { });
+        res = res.result;
+        if (res) {
+            this.value = res;
+            this.fire('change', this.value);
+        }
+    }
+})
