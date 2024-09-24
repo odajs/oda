@@ -60,9 +60,10 @@ class themeVars extends ROCKS({
     })()
 }) { }
 
-let changes = {};
-let isDark = false;
-const updateStyle = (key, val, vars) => {
+let changes = {},
+    isDark = false,
+    themeEditor;
+const updateStyle = (key, val) => {
     let newVal = val;
     changes[key] ||= {};
     changes[key].defVal ||= _vars[key].$def;
@@ -81,7 +82,10 @@ const updateStyle = (key, val, vars) => {
     changes[key].val = val;
     changes[key].isDark = isDark;
     changes[key].newVal = newVal;
-    vars && (vars[key] = newVal);
+    if (themeEditor) {
+        themeEditor.vars[key] = newVal;
+        themeEditor.isChanged = true;
+    }
     // console.log(changes)
 }
 
@@ -148,7 +152,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
                             $public: true,
                             $editor: key?.includes('color') || key?.includes('background') ? 'oda-theme-editor-color-picker' : 'oda-pg-string',
                             $def: changes[key]?.val || this.vars[key],
-                            set: (n) => { updateStyle(key, n, this.vars) }
+                            set: (n) => { updateStyle(key, n) }
                         }
                     }
                 })
@@ -160,9 +164,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
     get changes() {
         return changes;
     },
-    _isChanged() {
-        return Object.keys(changes || {})?.length;
-    },
+    isChanged: false,
     clearChanges() {
         this.vars = new themeVars();
         this.btns = undefined;
@@ -170,6 +172,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
             ODA.updateStyle({ [key]: changes[key].defVal });
         })
         changes = {};
+        this.isChanged = false;
     },
     async switchTheme(theme = this.theme) {
         let wins = [top];
@@ -197,6 +200,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
         console.log(e)
     },
     ready() {
+        themeEditor = this;
         this.theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         this.toggled = this.theme === 'dark';
         this.switchTheme();

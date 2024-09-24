@@ -318,7 +318,7 @@ ODA({is: 'app-layout-drawer', imports: '@oda/tabs',
             ~style="{ 'min-width': (controls?.length > 0 || buttons?.length > 0) ? (iconSize + 10) + 'px' : 'none' }">
             <oda-tabs
                 ~show="!hideTabs"
-                direction="vertical"
+                :content-align="({left: 'right', right: 'left'})[pos]"
                 class="flex"
                 :items="tabs"
                 ::index="focusedIndex"

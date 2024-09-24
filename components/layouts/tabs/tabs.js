@@ -47,8 +47,6 @@ ODA({is: 'oda-tabs', imports: '@oda/button',
                     inset 2px 0 3px 0 rgba(0, 0, 0, 0.05),
                     inset 0 -2px 3px 0 rgba(0, 0, 0, 0.05),
                     inset -2px 0 3px 0 rgba(0, 0, 0, 0.05);
-                border-{{direction === 'horizontal' ? 'top-left' : 'bottom-right'}}-radius: 8px;
-                border-{{direction === 'horizontal' ? 'top-right' : 'top-right'}}-radius: 8px;
             }
             :host .fixed-tab{
                 opacity: 1;
@@ -65,8 +63,9 @@ ODA({is: 'oda-tabs', imports: '@oda/button',
         <div class="scroll-container">
             <div id="container" ~if="direction" ~class="{horizontal: direction === 'horizontal', vertical: direction === 'vertical'}">
                 <div ~for="items"
-                    class="tab" :focused="index === $for.index"  ~class="{'fixed-tab': !!$for.item.fixed, 'focused-left' : direction === 'vertical'}"
-                    ~style="{transform: direction === 'vertical' && $for.item.label ? 'rotate(180deg)' : 'none', order: $for.item.order || 0}"
+                    class="tab" :focused="index === $for.index"
+                    ~class="{'fixed-tab': !!$for.item.fixed, 'focused-right' : contentAlign === 'left', 'focused-left' : contentAlign === 'right','focused-top' : contentAlign === 'top'}"
+                    ~style="calcTabStyle($for.item, index === $for.index)"
                     @mousedown="_tabOnMouseDown($for.item, $event)">
 
                     <div ~is="$for.item.componentName || componentName" :item="$for.item" :icon-size="iconSize * 0.8" @tap="tabTapped($for.index)" style="padding: 8px;"></div>
@@ -80,9 +79,22 @@ ODA({is: 'oda-tabs', imports: '@oda/button',
     `,
     $public: {
         $pdp: true,
+        contentAlign: {
+            $type: String,
+            $list: ['left', 'bottom', 'right', 'top'],
+            $def: 'bottom'
+        },
         direction: {
             $type: String,
-            $list: ['horizontal', 'vertical']
+            get() {
+                switch (this.contentAlign) {
+                    case 'left':
+                    case 'right': return 'vertical';
+                    case 'top':
+                    case 'bottom':
+                    default: return 'horizontal';
+                }
+            }
         },
         items: Array,
         index: 0,
@@ -206,6 +218,37 @@ ODA({is: 'oda-tabs', imports: '@oda/button',
     async _closeAll() {
         await ODA.showConfirm('Close all tabs?');
         this.items.forEach(i => i.close?.());
+    },
+    calcTabStyle(item, focused){
+        const style = {
+            transform: this.direction === 'vertical' && item.label ? 'rotate(180deg)' : 'none',
+            order: item.order || 0,
+        };
+        if (focused) {
+            switch (this.contentAlign) {
+                case 'left': {
+                    style['border-top-left-radius'] = '8px';
+                    style['border-bottom-left-radius'] = '8px';
+                } break;
+                case 'top': {
+                    style['border-bottom-left-radius'] = '8px';
+                    style['border-bottom-right-radius'] = '8px';
+                } break;
+                case 'right': {
+                    style['border-top-right-radius'] = '8px';
+                    style['border-bottom-right-radius'] = '8px';
+                } break;
+                case 'bottom': {
+                    style['border-top-left-radius'] = '8px';
+                    style['border-top-right-radius'] = '8px';
+                } break;
+            }
+        }
+        return style;
+        /*
+            border-{{contentAlign === 'left' ? 'top-left' : 'bottom-right'}}-radius: 8px;
+            border-{{contentAlign === 'bottom' ? 'top-right' : 'top-right'}}-radius: 8px;
+        */
     }
 })
 

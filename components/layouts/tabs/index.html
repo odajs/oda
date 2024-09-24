@@ -6,31 +6,31 @@
     <title>oda-tabs</title>
 </head>
 <body>
-    <div style="max-width: 500px;overflow: hidden;" class="flex vertical">
-        <oda-tabs id="tabsH" direction="horizontal"></oda-tabs>
+    <div style="max-width: 200px;max-height: 200px;overflow: hidden;" class="flex vertical">
+        left<oda-tabs id="tabsL" content-align="left"></oda-tabs>
     </div>
-    <div style="max-height: 500px;overflow: hidden;" class="flex horizontal">
-        <oda-tabs id="tabsV" direction="vertical"></oda-tabs>
+    <div style="max-height: 200px;max-height: 200px;overflow: hidden;" class="flex horizontal">
+        top<oda-tabs id="tabsT" content-align="top"></oda-tabs>
     </div>
-    <div style="max-width: 500px;overflow: hidden;" class="flex vertical">
-        <oda-tabs id="tabsH2" direction="horizontal"></oda-tabs>
+    <div style="max-width: 200px;max-height: 200px;overflow: hidden;" class="flex vertical">
+        right<oda-tabs id="tabsR" content-align="right"></oda-tabs>
     </div>
-    <div style="max-height: 500px;overflow: hidden;" class="flex horizontal">
-        <oda-tabs id="tabsV2" direction="vertical"></oda-tabs>
+    <div style="max-height: 200px;max-height: 200px;overflow: hidden;" class="flex horizontal">
+        bottom<oda-tabs id="tabsD" content-align="bottom"></oda-tabs>
     </div>
     <script type="module">
         import '../../../../oda/oda.js';
         import './tabs.js';
 
         const items = Array.from({length: 100}).map((_, i) => ({label: i}));
-        tabsH.index = 50;
-        tabsV.index = 50;
-        tabsH.items = items;
-        tabsV.items = items;
-
-        const items2 = Array.from({length: 3}).map((_, i) => ({label: i}));
-        tabsH2.items = items2;
-        tabsV2.items = items2;
+        tabsL.index = 50;
+        tabsT.index = 50;
+        tabsR.index = 50;
+        tabsD.index = 50;
+        tabsL.items = items;
+        tabsT.items = items;
+        tabsR.items = items;
+        tabsD.items = items;
     </script>
 </body>
 </html>
