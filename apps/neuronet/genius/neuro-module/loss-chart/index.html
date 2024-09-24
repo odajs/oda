@@ -9,17 +9,18 @@
 <body>
 
     <oda-tester>
-        <oda-loss-chart id="chart"></oda-loss-chart>
+        <oda-loss-chart id="chart" label="Тестовый график"></oda-loss-chart>
     </oda-tester>
     <script type="module">
         import '../../../../../oda.js';
         import './loss-chart.js';
-        let [n,m] = [Math.floor(Math.random()*5)+2, 30];
+        let [n,m] = [Math.floor(Math.random()*5)+2, 10];
         let data = (new Array(m)).fill(0).map(_=> (new Array(n)).fill(0).map(_=>Math.random()) )
         console.log(data)
 
 
         chart.data = data;
+        chart.legend = ['Линия предела','График']
 
     </script>
 
