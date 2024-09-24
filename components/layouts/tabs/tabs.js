@@ -1,4 +1,5 @@
-ODA({is: 'oda-tabs', imports: '@oda/button',
+ODA({
+    is: 'oda-tabs', imports: '@oda/button',
     template: /*html*/`
         <style>
             :host, :host > .scroll-container{
@@ -64,7 +65,7 @@ ODA({is: 'oda-tabs', imports: '@oda/button',
             <div id="container" ~if="direction" ~class="{horizontal: direction === 'horizontal', vertical: direction === 'vertical'}">
                 <div ~for="items"
                     class="tab" :focused="index === $for.index"
-                    ~class="{'fixed-tab': !!$for.item.fixed, 'focused-right' : contentAlign === 'left', 'focused-left' : contentAlign === 'right','focused-top' : contentAlign === 'top'}"
+                    ~class="calcTabClasses($for.item, index === $for.index)"
                     ~style="calcTabStyle($for.item, index === $for.index)"
                     @mousedown="_tabOnMouseDown($for.item, $event)">
 
@@ -111,7 +112,7 @@ ODA({is: 'oda-tabs', imports: '@oda/button',
         return this.direction === 'horizontal' ? 'Width' : 'Height';
     },
     get _scrollSuffix() {
-        return  this.direction === 'horizontal' ? 'Left' : 'Top';
+        return this.direction === 'horizontal' ? 'Left' : 'Top';
     },
     get container() {
         return this.$('#container') || undefined;
@@ -122,14 +123,14 @@ ODA({is: 'oda-tabs', imports: '@oda/button',
     $observers: {
         update(items, direction, index) {
             if (!this.items.length) return false;
-            if(!this.container) return false;
+            if (!this.container) return false;
             this.overflow = this.container[`scroll${this._sizeSuffix}`] > this.container[`offset${this._sizeSuffix}`];
             this.debounce('update-scroll', () => {
                 if (this.overflow) {
                     const btn = this.$('.tab[focused]');
                     if (!btn) return;
-                    if (!this._checkOnScreen(btn)){
-                        btn.scrollIntoView({inline: 'center', block: 'center'});
+                    if (!this._checkOnScreen(btn)) {
+                        btn.scrollIntoView({ inline: 'center', block: 'center' });
                     }
                 }
             }, this.autoScrollDelay);
@@ -164,7 +165,7 @@ ODA({is: 'oda-tabs', imports: '@oda/button',
             this.container.scrollLeft += e.deltaY / 3;
 
             if (this.container.scrollWidth > this.container.offsetWidth) {
-                this.pseudoScroll.style.display = '';'mousewheel'
+                this.pseudoScroll.style.display = ''; 'mousewheel'
                 const k = this.container.offsetWidth / this.container.scrollWidth;
                 this.pseudoScroll.style.bottom = '0px';
                 this.pseudoScroll.style.height = '4px';
@@ -203,11 +204,11 @@ ODA({is: 'oda-tabs', imports: '@oda/button',
         this.container[`scroll${this._scrollSuffix}`] += dir * 100;
         this._onScroll(new WheelEvent('mousewheel'));
     },
-    _checkOnScreen(element){
+    _checkOnScreen(element) {
         const offset = element[`offset${this._scrollSuffix}`];
         const size = element.parentElement[`offset${this._sizeSuffix}`];
         const elemSize = element[`offset${this._sizeSuffix}`];
-        const scroll =element.parentElement[`scroll${this._scrollSuffix}`];
+        const scroll = element.parentElement[`scroll${this._scrollSuffix}`];
         return (offset >= scroll) && (offset + elemSize <= (scroll + size));
     },
     tabTapped(index) {
@@ -219,7 +220,7 @@ ODA({is: 'oda-tabs', imports: '@oda/button',
         await ODA.showConfirm('Close all tabs?');
         this.items.forEach(i => i.close?.());
     },
-    calcTabStyle(item, focused){
+    calcTabStyle(item, focused) {
         const style = {
             transform: this.direction === 'vertical' && item.label ? 'rotate(180deg)' : 'none',
             order: item.order || 0,
@@ -227,28 +228,89 @@ ODA({is: 'oda-tabs', imports: '@oda/button',
         if (focused) {
             switch (this.contentAlign) {
                 case 'left': {
-                    style['border-top-left-radius'] = '8px';
-                    style['border-bottom-left-radius'] = '8px';
+                    if (item.label) {
+                        style['border-top-left-radius'] = '8px';
+                        style['border-bottom-left-radius'] = '8px';
+                        style['border-top-right-radius'] = '0xp';
+                        style['border-bottom-right-radius'] = '0px';
+                    }
+                    else {
+                        style['border-top-right-radius'] = '8px';
+                        style['border-bottom-right-radius'] = '8px';
+                        style['border-top-left-radius'] = '0xp';
+                        style['border-bottom-left-radius'] = '0px';
+                    }
                 } break;
                 case 'top': {
                     style['border-bottom-left-radius'] = '8px';
                     style['border-bottom-right-radius'] = '8px';
+                    style['border-top-left-radius'] = '0xp';
+                    style['border-top-right-radius'] = '0px';
                 } break;
                 case 'right': {
-                    style['border-top-right-radius'] = '8px';
-                    style['border-bottom-right-radius'] = '8px';
+                    if (item.label) {
+                        style['border-top-right-radius'] = '8px';
+                        style['border-bottom-right-radius'] = '8px';
+                        style['border-top-left-radius'] = '0xp';
+                        style['border-bottom-left-radius'] = '0px';
+                    }
+                    else {
+                        style['border-top-left-radius'] = '8px';
+                        style['border-bottom-left-radius'] = '8px';
+                        style['border-top-right-radius'] = '0xp';
+                        style['border-bottom-right-radius'] = '0px';
+                    }
                 } break;
-                case 'bottom': {
+                case 'bottom':
+                default: {
                     style['border-top-left-radius'] = '8px';
                     style['border-top-right-radius'] = '8px';
+                    style['border-bottom-left-radius'] = '0xp';
+                    style['border-bottom-right-radius'] = '0px';
                 } break;
             }
         }
+        else {
+            style['border-top-left-radius'] = '0px';
+            style['border-top-right-radius'] = '0px';
+            style['border-bottom-left-radius'] = '0xp';
+            style['border-bottom-right-radius'] = '0px';
+        }
         return style;
-        /*
-            border-{{contentAlign === 'left' ? 'top-left' : 'bottom-right'}}-radius: 8px;
-            border-{{contentAlign === 'bottom' ? 'top-right' : 'top-right'}}-radius: 8px;
-        */
+    },
+    calcTabClasses(item, focused) {
+        const classes = [];
+        if (item.fixed) {
+            classes.push('fixed-tab');
+        }
+        if (focused) {
+            switch (this.contentAlign) {
+                case 'left': {
+                    if (item.label) {
+                        classes.push('focused-right');
+                    }
+                    else {
+                        classes.push('focused-left');
+                    }
+                } break;
+                case 'top': {
+                    classes.push('focused-top');
+                } break;
+                case 'right': {
+                    if (item.label) {
+                        classes.push('focused-left');
+                    }
+                    else {
+                        classes.push('focused-right');
+                    }
+                } break;
+                case 'bottom':
+                default: {
+                    classes.push('focused-bottom');
+                } break;
+            }
+        }
+        return classes;
     }
 })
 
