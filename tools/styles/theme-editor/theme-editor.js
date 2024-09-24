@@ -164,6 +164,12 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
     get changes() {
         return changes;
     },
+    set changes(v) {
+        changes = v;
+    },
+    get isDark() {
+        return isDark;
+    },
     isChanged: false,
     clearChanges() {
         this.vars = new themeVars();
