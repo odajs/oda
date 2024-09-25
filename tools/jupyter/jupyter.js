@@ -397,7 +397,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 try {
                     for (let code of this.notebook.codes){
                         if (code === this.cell) break;
-                        if (code.time && !autorun) continue;
+                        if (code.time) continue;
                         await new Promise(async (resolve)=>{
                             await code.run(this.jupyter);
                             this.async(resolve)
@@ -887,7 +887,7 @@ class JupyterCell extends ROCKS({
             if (codeCell === this)
                 clear = true;
             if (clear)
-                codeCell.status = '';
+                codeCell.status = codeCell.time = '';
         }
     },
     get collapsed() {
