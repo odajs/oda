@@ -436,7 +436,7 @@ export class tensor{
     static randNorm(shape){
         return this.fill(shape, ()=>Math.sqrt(-2 * Math.log(Math.random()))*Math.cos((2 * Math.PI) * Math.random()), Float32Array);
     }
-    static arange(shape, from = 0, to){
+    static arange(shape, from = 0, to, dType =Float32Array){
         if (!Array.isArray(shape))
             shape = [shape];
         let steps = shape.pop();
@@ -453,8 +453,8 @@ export class tensor{
             data[++idx] = (v += step);
 
         }
-        data = new Float32Array(Array(repeat).fill(data).flat());
-        return tensor.from(data)._shape(shape);
+        data = new dType(Array(repeat).fill(data).flat());
+        return tensor.from(data, dType)._shape(shape);
     }
     static hippo(size){
         const data = Array(size).fill().map((_,n)=>{
