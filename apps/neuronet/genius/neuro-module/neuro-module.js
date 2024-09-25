@@ -150,12 +150,10 @@ export class Linear extends NeuroModule{
         if (this.dType === Int8Array){
             multiplicator = 13
         }
-        this.W = tensor.param(w.mul_(multiplicator));
-        this.W._label(this.W.label + ': Weights');
+        this.W = tensor.param(w.mul_(multiplicator)._label(w.label + ': Weights'));
         if(this.bias){
             let b = tensor.rand(this.shape_out, this.dType).minus_(.5);
-            this.B = tensor.param(b.mul_(multiplicator));
-            this.B._label(this.B.label + ': Bias');
+            this.B = tensor.param(b.mul_(multiplicator)._label(b.label + ': Bias'));
         }
 
     }
