@@ -397,7 +397,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 try {
                     for (let code of this.notebook.codes){
                         if (code === this.cell) break;
-                        if (code.time) continue;
+                        if (code.time && !autorun) continue;
                         await new Promise(async (resolve)=>{
                             await code.run(this.jupyter);
                             this.async(resolve)
