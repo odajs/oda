@@ -231,12 +231,12 @@ ODA({ is: 'oda-theme-editor-color-picker', imports: '@oda/color-picker-oklch',
         let val = this.value,
         light, dark;
         if (val.includes('light-dark')) {
-            let v = val.replace('light-dark(', '').replaceAll(')', '').split(',');
+            let v = val.replace('light-dark(', '').replace(')', '').split(',');
             dark = v[1];
             light = v[0];
             val = isDark ? dark : light;
         }
-        let res = await ODA.showDropdown('oda-color-picker-oklch', { value: val, _value: val }, { });
+        let res = await ODA.showDropdown('oda-color-picker-oklch', { value: val, srcValue: val }, { });
         res = res.result;
         if (res) {
             // if (isDark) {

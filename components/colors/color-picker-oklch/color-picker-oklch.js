@@ -1,3 +1,6 @@
+import Color from "./dist/color.js";
+import rgbHex from './dist/rgb-hex.js';
+
 ODA({ is: 'oda-color-picker-oklch',
     template: `
         <style>
@@ -6,8 +9,8 @@ ODA({ is: 'oda-color-picker-oklch',
                 @apply --border;
                 @apply --shadow;
                 position: relative;
-                max-width: {{width + (showPalette ? height - 6 : 0)}}px;
-                width: {{width + (showPalette ? height - 6 : 0)}}px;
+                max-width: {{width + (showPalette ? height : 0)}}px;
+                width: {{width + (showPalette ? height : 0)}}px;
                 height: {{height}}px;
             }
             label {
@@ -54,9 +57,18 @@ ODA({ is: 'oda-color-picker-oklch',
             }
             .palette {
                 box-sizing: border-box;
-                width: {{height - 6}};
-                max-height: {{height - 6}};
-                height: {{height - 6}};
+                width: {{height}};
+                max-height: {{height}};
+                height: {{height}};
+            }
+            .convertor {
+                box-sizing: border-box;
+                width: {{width - 8}}px;
+                height: {{height - 46}}px;
+                position: absolute;
+                background: var(--content-background);
+                left: 4px;
+                top: 4px;
             }
             .cell {
                 box-sizing: border-box;
@@ -64,11 +76,17 @@ ODA({ is: 'oda-color-picker-oklch',
                 width: {{(height - 10) / 10}}px;
                 height: {{(height - 10) / 10}}px;
             }
+            .btn {
+                opacity: .1;
+            }
+            .btn:hover {
+                opacity: .5;
+            }
         </style>
-        <div class="vertical" ~style="{minWidth: (width) - 8 + 'px'}" style="margin: 4px; border-radius: 4px;">
+        <div class="vertical" ~style="{minWidth: width - 8 + 'px'}" style="margin: 4px; border-radius: 4px;">
             <div class="horizontal flex border">
-                <div style="width: 30%; height: 100%; cursor: pointer" ~style="{background: _value || value}" @tap="_value=value"></div>
-                <div class="flex" style="cursor: pointer" ~style="{backgroundColor: value}" @tap="_value=''"></div>
+                <div style="width: 30%; height: 100%; cursor: pointer" ~style="{background: srcValue || value}" @tap="srcValue=value"></div>
+                <div class="flex" style="cursor: pointer" ~style="{backgroundColor: value}" @tap="srcValue=''"></div>
             </div>
             <input id="inp" class="no-flex border" type="text" :value="value" style="padding: 2px; font-size: 15px; margin: 4px 0; text-align: center;" @change="setValue">
             <div class="color-ranges h">
@@ -97,15 +115,31 @@ ODA({ is: 'oda-color-picker-oklch',
                     </div>
                 </div>
                 <div class="horizontal" style="justify-content: flex-end; margin: 4px 1px 1px 1px;">
-                    <oda-button icon="carbon:clean" class="border" style="margin-right: 4px; padding: 4px; border-radius: 4px;" :flex="storeLength===0" @tap="_clear" title="clear history"></oda-button>
-                    <oda-button icon="carbon:color-palette" class="border" style="margin-right: 4px; padding: 4px; border-radius: 4px;" :flex="storeLength===0" @tap="_showPalette" title="show / hide palette"></oda-button>
-                    <oda-button class="border" style="margin-right: 4px; padding: 4px; border-radius: 4px;" :flex="storeLength===0" @tap="_cancel">Cancel</oda-button>
-                    <oda-button class="border" style="padding: 4px; border-radius: 4px;" :flex="storeLength===0" @tap="_ok">Ok</oda-button>
+                    <oda-button icon="carbon:clean" class="border flex" style="margin-right: 4px; padding: 4px; border-radius: 4px;" :flex="storeLength===0" @tap="_clear" title="clear history"></oda-button>
+                    <oda-button icon="iconoir:refresh-double" class="border flex" style="margin-right: 4px; padding: 4px; border-radius: 4px;" :flex="storeLength===0" allow-toggle ::toggled="showConvertor" title="show convertor"></oda-button>
+                    <oda-button icon="carbon:color-palette" class="border flex" style="margin-right: 4px; padding: 4px; border-radius: 4px;" :flex="storeLength===0" allow-toggle ::toggled="showPalette" title="show / hide palette"></oda-button>
+                    <oda-button class="border flex" style="margin-right: 4px; padding: 4px; border-radius: 4px;" :flex="storeLength===0" @tap="_cancel">Cancel</oda-button>
+                    <oda-button class="border flex" style="padding: 4px; border-radius: 4px;" :flex="storeLength===0" @tap="_ok">Ok</oda-button>
                 </div>
             </div>
         </div>
         <div ~if="showPalette" class="palette horizontal center" style="flex-wrap: wrap; ">
             <div ~for="100" class="cell" ~style="{borderBottom: $for.index<90 ? '1px solid lightgray' : '', borderRight: ($for.index+1)%10 ? '1px solid lightgray' : '', background: 'oklch(' + ($for.index / 100) + ' ' + c + ' ' + h + ' / ' + (a >= 0 ? a : 1) + ')'}" @click="l = $for.index / 100"></div>
+        </div>
+        <div ~if="showConvertor" class="convertor vertical border" style="flex-wrap: wrap; ">
+            <div class="flex" ~style="{backgroundColor: value}"></div>
+            <div class="vertical" ~for="['oklch','srgb','hsl']" style="padding: 2px; border-bottom: 1px solid lightgray">
+                <div class="horizontal flex" style="font-size: x-small; align-items: center">
+                    <div class="flex">{{$for.item}}</div>
+                    <oda-button class="btn" icon="carbon:copy"></oda-button>
+                </div>
+                <div style="font-size: small; border-radius: 4px;">{{this.vColor.to($for.item)}}</div>
+            </div>
+            <div class="horizontal" style="font-size: x-small; align-items: center; margin: 2px">
+                <div class="flex">hex</div>
+                <oda-button class="btn" icon="carbon:copy"></oda-button>
+            </div>
+            <div style="font-size: small;  border-radius: 4px;">{{rgbHexVal}}</div>
         </div>
     `,
     $public: {
@@ -157,8 +191,24 @@ ODA({ is: 'oda-color-picker-oklch',
                 return `oklch(${this.l} ${this.c} ${this.h})`;
             }
         },
-        _value: '',
-        clickTime: 500
+        srcValue: {
+            $def: '',
+            set(n) {
+                this.setValue(n, true);
+            }
+        },
+        clickTime: 500,
+        showConvertor: false
+    },
+    get vColor() {
+        return new Color(this.value);
+    },
+    get rgbHex() {
+        return rgbHex;
+    },
+    get rgbHexVal() {
+        let val = rgbHex(this.vColor?.to('srgb').toString());
+        return '#' + val;
     },
     store: {
         $def: undefined,
@@ -180,9 +230,6 @@ ODA({ is: 'oda-color-picker-oklch',
         this.store['s17'] ||= 'oklch(0.45 0.31 260)';
         this.store['s18'] ||= 'oklch(.99 0.04 110)';
         this.store['s19'] ||= 'oklch(1 0 0)';
-        if (this._values?.includes('oklch(')) {
-            this.setValue(this._value, true);
-        }
     },
     refreshValue() {
         if (this.isReady)
@@ -190,24 +237,23 @@ ODA({ is: 'oda-color-picker-oklch',
     },
     setValue(e, skip) {
         this.refreshValue();
-        const val = e?.target?.value || e || '';
-        if (!skip)
-            this._value = val;
-        if (val?.includes('oklch(')) {
-            const res = val.replace('oklch(', '').replaceAll(')', ' ').replaceAll('/', ' ').replace(/\s+/g, ' ').split(' ');
-            let l = res[0],
-                c = res[1],
-                h = res[2],
-                a = res[3];
-            if (l && c && h) {
-                this.l = l.includes('%') ? l.replace('%', '') / 100 : +l;
-                this.c = c.includes('%') ? c.replace('%', '') / 100  : +c;
-                this.h = h.includes('none') ? 0 : + h;
-                this.a = a ? a.includes('%') ? a.replace('%', '') / 100  : +a : 1;
-            }
-        } else {
+        let val = e?.target?.value || e || '';
+        try {
+            let color = new Color(val);
+            // console.log(color.toString())
+            let l = Math.round(color.oklch[0] * 100) / 100,
+                c = Math.round(color.oklch[1] * 1000) / 1000,
+                h = Math.round((color.oklch[2] || 0)* 100) / 100,
+                a = color.alpha >= 1 ? '' : ` / ${color.alpha}`;
+            val = `oklch(${l} ${c} ${h}${a})`;
+            if (!skip)
+                this.srcValue = val;
+            this.l = l;
+            this.c = c;
+            this.h = h;
+            this.a = color.alpha;
             this.value = val;
-        }
+        } catch (err) { }
     },
     _storeDown(e, idx) {
         this.startStamp = e.timeStamp;
@@ -237,9 +283,5 @@ ODA({ is: 'oda-color-picker-oklch',
     _clear() {
         this.store = {};
         // this._init();
-    },
-    _showPalette() {
-        this.showPalette = !this.showPalette;
-        this.fire('resize');
     }
 })
