@@ -116,7 +116,7 @@ ODA({ is: 'oda-color-picker-oklch',
                 </div>
                 <div class="horizontal" style="justify-content: flex-end; margin: 4px 1px 1px 1px;">
                     <oda-button icon="carbon:clean" class="border flex" style="margin-right: 4px; padding: 4px; border-radius: 4px;" :flex="storeLength===0" @tap="_clear" title="clear history"></oda-button>
-                    <oda-button icon="iconoir:refresh-double" class="border flex" style="margin-right: 4px; padding: 4px; border-radius: 4px;" :flex="storeLength===0" allow-toggle ::toggled="showConvertor" title="show convertor"></oda-button>
+                    <oda-button icon="carbon:copy" class="border flex" style="margin-right: 4px; padding: 4px; border-radius: 4px;" :flex="storeLength===0" allow-toggle ::toggled="showConvertor" title="show convertor"></oda-button>
                     <oda-button icon="carbon:color-palette" class="border flex" style="margin-right: 4px; padding: 4px; border-radius: 4px;" :flex="storeLength===0" allow-toggle ::toggled="showPalette" title="show / hide palette"></oda-button>
                     <oda-button class="border flex" style="margin-right: 4px; padding: 4px; border-radius: 4px;" :flex="storeLength===0" @tap="_cancel">Cancel</oda-button>
                     <oda-button class="border flex" style="padding: 4px; border-radius: 4px;" :flex="storeLength===0" @tap="_ok">Ok</oda-button>
@@ -133,13 +133,13 @@ ODA({ is: 'oda-color-picker-oklch',
                     <div class="flex">{{$for.item}}</div>
                     <oda-button class="btn" icon="carbon:copy"></oda-button>
                 </div>
-                <div style="font-size: small; border-radius: 4px;">{{this.vColor.to($for.item)}}</div>
+                <div style="font-size: small;">{{vColor.to($for.item)}}</div>
             </div>
             <div class="horizontal" style="font-size: x-small; align-items: center; margin: 2px">
                 <div class="flex">hex</div>
                 <oda-button class="btn" icon="carbon:copy"></oda-button>
             </div>
-            <div style="font-size: small;  border-radius: 4px;">{{rgbHexVal}}</div>
+            <div style="font-size: small;">{{rgbHexVal}}</div>
         </div>
     `,
     $public: {
@@ -240,18 +240,18 @@ ODA({ is: 'oda-color-picker-oklch',
         let val = e?.target?.value || e || '';
         try {
             let color = new Color(val);
-            // console.log(color.toString())
             let l = Math.round(color.oklch[0] * 100) / 100,
                 c = Math.round(color.oklch[1] * 1000) / 1000,
-                h = Math.round((color.oklch[2] || 0)* 100) / 100,
-                a = color.alpha >= 1 ? '' : ` / ${color.alpha}`;
-            val = `oklch(${l} ${c} ${h}${a})`;
+                h = Math.round((color.oklch[2] || 0) * 100) / 100,
+                a = Math.round(color.alpha * 100) / 100,
+                _a = a >= 1 ? '' : ` / ${color.alpha}`;
+            val = `oklch(${l} ${c} ${h}${_a})`;
             if (!skip)
                 this.srcValue = val;
             this.l = l;
             this.c = c;
             this.h = h;
-            this.a = color.alpha;
+            this.a = a;
             this.value = val;
         } catch (err) { }
     },
@@ -270,7 +270,7 @@ ODA({ is: 'oda-color-picker-oklch',
             this._setsValue = true;
             this.setValue(this.store['s' + idx], true);
         }
-        this.store = {...this.store};
+        this.store = { ...this.store };
         this.async(() => this._setsValue = false, this.clickTime + 1);
     },
     async _ok() {
