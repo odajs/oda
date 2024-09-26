@@ -116,10 +116,10 @@ ODA({ is: 'oda-color-picker-oklch',
             <div class="color-input vertical">
                 <div ~if="storeLength > 0" class="vertical flex" style="cursor: pointer">
                     <div class="horizontal flex" style="width: 100%">
-                        <div ~for="storeLength" class="border" style="width: 100%; height: 16px;margin-right: 2px; margin-bootom: 1px;" @mousedown="_storeDown($event, $for.index)" @pointerup="_storeUp($event, $for.index)" ~style="{background: store?.['s'+$for.index] || ''}"></div>
+                        <div ~for="storeLength" class="border" style="width: 100%;margin-right: 2px; margin-bootom: 1px;" @mousedown="_storeDown($event, $for.index)" @pointerup="_storeUp($event, $for.index)" ~style="{background: store?.['s'+$for.index] || '', height: storeH || '16px'}"></div>
                     </div>
                     <div class="horizontal flex">
-                        <div ~for="storeLength" class="border" style="width: 100%; height: 16px;margin-right: 2px; margin-top: 1px;" @mousedown="_storeDown($event, $for.index+storeLength)" @pointerup="_storeUp($event, $for.index+storeLength)" ~style="{background: store?.['s'+($for.index+storeLength)] || ''}"></div>
+                        <div ~for="storeLength" class="border" style="width: 100%;margin-right: 2px; margin-top: 1px;" @mousedown="_storeDown($event, $for.index+storeLength)" @pointerup="_storeUp($event, $for.index+storeLength)" ~style="{background: store?.['s'+($for.index+storeLength)] || '', height: storeH || '16px'}"></div>
                     </div>
                 </div>
                 <div class="horizontal" style="justify-content: flex-end; margin: 4px 1px 1px 1px;">
@@ -143,13 +143,13 @@ ODA({ is: 'oda-color-picker-oklch',
                     <div class="flex">{{$for.item}}</div>
                     <oda-button class="btn" icon="carbon:copy" @tap="_copyToClipboard(vColor.to($for.item).toString())"></oda-button>
                 </div>
-                <div style="font-size: small;">{{vColor.to($for.item).toString()}}</div>
+                <div style="font-size: small; white-space: nowrap; text-overflow: ellipsis; overflow: hidden">{{vColor.to($for.item).toString()}}</div>
             </div>
             <div class="horizontal" style="font-size: x-small; align-items: center; margin: 2px">
                 <div class="flex">hex</div>
                 <oda-button class="btn" icon="carbon:copy" @tap="_copyToClipboard(rgbHexVal)"></oda-button>
             </div>
-            <div style="font-size: small;">{{rgbHexVal}}</div>
+            <div style="font-size: small;  white-space: nowrap; text-overflow: ellipsis; overflow: hidden">{{rgbHexVal}}</div>
         </div>
     `,
     $public: {
@@ -193,6 +193,10 @@ ODA({ is: 'oda-color-picker-oklch',
             $def: 10,
             $save: true
         },
+        storeH: {
+            $def: 16,
+            $save: true
+        },
         value: {
             $def: '',
             get() {
@@ -231,16 +235,17 @@ ODA({ is: 'oda-color-picker-oklch',
     },
     _init() {
         this.store ||= {};
-        this.store['s5'] ||= 'oklch(0 0 0)';
-        this.store['s6'] ||= 'oklch(.321 0 0)';
-        this.store['s7'] ||= 'oklch(.510 0 0)';
-        this.store['s8'] ||= 'oklch(.683 0 0)';
-        this.store['s9'] ||= 'oklch(.845 0 0)';
-        this.store['s15'] ||= 'oklch(0.63 0.26 29)';
-        this.store['s16'] ||= 'oklch(0.52 0.18 140)';
-        this.store['s17'] ||= 'oklch(0.45 0.31 260)';
-        this.store['s18'] ||= 'oklch(.99 0.04 110)';
-        this.store['s19'] ||= 'oklch(1 0 0)';
+        let s = this.storeLength - 5;
+        this.store['s' + (s + 0)] ||= 'oklch(0 0 0)';
+        this.store['s' + (s + 1)] ||= 'oklch(.321 0 0)';
+        this.store['s' + (s + 2)] ||= 'oklch(.510 0 0)';
+        this.store['s' + (s + 3)] ||= 'oklch(.683 0 0)';
+        this.store['s' + (s + 4)] ||= 'oklch(.845 0 0)';
+        this.store['s' + (s * 2 + 5)] ||= 'oklch(0.63 0.26 29)';
+        this.store['s' + (s * 2 + 6)] ||= 'oklch(0.52 0.18 140)';
+        this.store['s' + (s * 2 + 7)] ||= 'oklch(0.45 0.31 260)';
+        this.store['s' + (s * 2 + 8)] ||= 'oklch(.99 0.04 110)';
+        this.store['s' + (s * 2 + 9)] ||= 'oklch(1 0 0)';
     },
     refreshValue() {
         if (this.isReady)
