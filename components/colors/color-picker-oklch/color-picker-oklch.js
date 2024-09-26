@@ -82,9 +82,17 @@ ODA({ is: 'oda-color-picker-oklch',
             .btn:hover {
                 opacity: .5;
             }
+            .result {
+                background-image: 
+                    linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee 100%),
+                    linear-gradient(45deg, #eee 25%, white 25%, white 75%, #eee 75%, #eee 100%);
+                background-position: 0px 0px, 10px 10px;
+                background-size: 20px 20px;
+                overflow: hidden;    
+            }
         </style>
         <div class="vertical" ~style="{minWidth: width - 8 + 'px'}" style="margin: 4px; border-radius: 4px;">
-            <div class="horizontal flex border">
+            <div class="result horizontal flex border">
                 <div style="width: 30%; height: 100%; cursor: pointer" ~style="{background: srcValue || value}" @tap="srcValue=value"></div>
                 <div class="flex" style="cursor: pointer" ~style="{backgroundColor: value}" @tap="srcValue=''"></div>
             </div>
@@ -127,7 +135,9 @@ ODA({ is: 'oda-color-picker-oklch',
             <div ~for="100" class="cell" ~style="{borderBottom: $for.index<90 ? '1px solid lightgray' : '', borderRight: ($for.index+1)%10 ? '1px solid lightgray' : '', background: 'oklch(' + ($for.index / 100) + ' ' + c + ' ' + h + ' / ' + (a >= 0 ? a : 1) + ')'}" @click="l = $for.index / 100"></div>
         </div>
         <div ~if="showConvertor" class="convertor vertical border" style="flex-wrap: wrap; ">
-            <div class="flex" ~style="{backgroundColor: value}"></div>
+            <div class="result horizontal flex w100 relative" style="border-radius: 4px;">
+                <div class="flex" ~style="{backgroundColor: value}"></div>
+            </div>
             <div class="vertical" ~for="['oklch','srgb','hsl']" style="padding: 2px; border-bottom: 1px solid lightgray">
                 <div class="horizontal flex" style="font-size: x-small; align-items: center">
                     <div class="flex">{{$for.item}}</div>
