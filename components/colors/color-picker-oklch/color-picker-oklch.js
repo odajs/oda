@@ -134,20 +134,20 @@ ODA({ is: 'oda-color-picker-oklch',
         <div ~if="showPalette" class="palette horizontal center" style="flex-wrap: wrap; ">
             <div ~for="100" class="cell" ~style="{borderBottom: $for.index<90 ? '1px solid lightgray' : '', borderRight: ($for.index+1)%10 ? '1px solid lightgray' : '', background: 'oklch(' + ($for.index / 100) + ' ' + c + ' ' + h + ' / ' + (a >= 0 ? a : 1) + ')'}" @click="l = $for.index / 100"></div>
         </div>
-        <div ~if="showConvertor" class="convertor vertical border" style="flex-wrap: wrap; ">
-            <div class="result horizontal flex w100 relative" style="border-radius: 4px;">
-                <div class="flex" ~style="{backgroundColor: value}"></div>
+        <div ~if="showConvertor" class="convertor vertical border">
+            <div class="result horizontal flex" style="position: relative">
+                <div class="flex" ~style="{backgroundColor: value}" style="border-bottom: 1px solid var(--border-color)"></div>
             </div>
             <div class="vertical" ~for="['oklch','srgb','hsl']" style="padding: 2px; border-bottom: 1px solid lightgray">
                 <div class="horizontal flex" style="font-size: x-small; align-items: center">
                     <div class="flex">{{$for.item}}</div>
-                    <oda-button class="btn" icon="carbon:copy"></oda-button>
+                    <oda-button class="btn" icon="carbon:copy" @tap="_copyToClipboard(vColor.to($for.item).toString())"></oda-button>
                 </div>
-                <div style="font-size: small;">{{vColor.to($for.item)}}</div>
+                <div style="font-size: small;">{{vColor.to($for.item).toString()}}</div>
             </div>
             <div class="horizontal" style="font-size: x-small; align-items: center; margin: 2px">
                 <div class="flex">hex</div>
-                <oda-button class="btn" icon="carbon:copy"></oda-button>
+                <oda-button class="btn" icon="carbon:copy" @tap="_copyToClipboard(rgbHexVal)"></oda-button>
             </div>
             <div style="font-size: small;">{{rgbHexVal}}</div>
         </div>
@@ -207,6 +207,7 @@ ODA({ is: 'oda-color-picker-oklch',
                 this.setValue(n, true);
             }
         },
+        clipValue: '',
         clickTime: 500,
         showConvertor: false
     },
@@ -285,7 +286,7 @@ ODA({ is: 'oda-color-picker-oklch',
     },
     async _ok() {
         this.fire('ok', this.value);
-        await navigator?.clipboard?.writeText(this.value);
+        await navigator?.clipboard?.writeText(this.clipValue || this.value);
     },
     _cancel() {
         this.fire('cancel');
@@ -293,5 +294,10 @@ ODA({ is: 'oda-color-picker-oklch',
     _clear() {
         this.store = {};
         // this._init();
+    },
+    async _copyToClipboard(v) {
+        // console.log(v);
+        this.clipValue = v;
+        await navigator?.clipboard?.writeText(v);
     }
 })
