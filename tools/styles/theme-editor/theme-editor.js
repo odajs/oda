@@ -239,11 +239,6 @@ ODA({ is: 'oda-theme-editor-color-picker', imports: '@oda/color-picker-oklch',
         let res = await ODA.showDropdown('oda-color-picker-oklch', { value: val, srcValue: val }, { });
         res = res.result;
         if (res) {
-            // if (isDark) {
-            //     this.value = `light-dark(${light}, ${res})`;
-            // } else {
-            //     this.value = `light-dark(${res}, ${dark})`;
-            // }
             this.value = res;
         }
     }

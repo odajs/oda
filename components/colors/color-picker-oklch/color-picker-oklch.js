@@ -58,6 +58,7 @@ ODA({ is: 'oda-color-picker-oklch',
             .palette {
                 box-sizing: border-box;
                 width: {{height}};
+                min-width: {{height}};
                 max-height: {{height}};
                 height: {{height}};
             }
@@ -91,6 +92,15 @@ ODA({ is: 'oda-color-picker-oklch',
                 overflow: hidden;    
             }
         </style>
+        <div ~if="showColors" class="vertical border" ~style="{width: width - 8 + 'px', height: height -10 + 'px'}" style="position: absolute; z-index: 1; margin: 4px; border-radius: 4px; background: white; height: 100%;">
+            <div class="verticl flex" style="overflow-y: auto;">
+                <div class="horizontal" ~for="namedColors" style="align-items: center; cursor: pointer;" @tap="_selectColor($for.item)">
+                    <div style="min-width: 60px; max-width: 60px; height: 24px; margin: 2px;" ~style="{background: $for.item}"></div>
+                    <div style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">{{$for.item}}</div>
+                </div>
+            </div>
+            <oda-button icon="iconoir:cancel" style="border-top: 1px solid lightgray"  @tap="showColors=false">cancel</oda-button>
+        </div>
         <div class="vertical" ~style="{minWidth: width - 8 + 'px'}" style="margin: 4px; border-radius: 4px;">
             <div class="result horizontal flex border">
                 <div style="width: 30%; height: 100%; cursor: pointer" ~style="{background: srcValue || value}" @tap="srcValue=value"></div>
@@ -123,11 +133,12 @@ ODA({ is: 'oda-color-picker-oklch',
                     </div>
                 </div>
                 <div class="horizontal" style="justify-content: flex-end; margin: 4px 1px 1px 1px;">
-                    <oda-button icon="carbon:clean" class="border flex" style="margin-right: 4px; padding: 4px; border-radius: 4px;" :flex="storeLength===0" @tap="_clear" title="clear history"></oda-button>
-                    <oda-button icon="carbon:copy" class="border flex" style="margin-right: 4px; padding: 4px; border-radius: 4px;" :flex="storeLength===0" allow-toggle ::toggled="showConvertor" title="show convertor"></oda-button>
-                    <oda-button icon="carbon:color-palette" class="border flex" style="margin-right: 4px; padding: 4px; border-radius: 4px;" :flex="storeLength===0" allow-toggle ::toggled="showPalette" title="show / hide palette"></oda-button>
-                    <oda-button class="border flex" style="margin-right: 4px; padding: 4px; border-radius: 4px;" :flex="storeLength===0" @tap="_cancel">Cancel</oda-button>
-                    <oda-button class="border flex" style="padding: 4px; border-radius: 4px;" :flex="storeLength===0" @tap="_ok">Ok</oda-button>
+                    <oda-button icon="carbon:clean" class="border flex" style="margin-right: 4px; padding: 4px; border-radius: 4px;"  @tap="_clear" title="clear history"></oda-button>
+                    <oda-button icon="box:s-color-fill" class="border flex" style="margin-right: 4px; padding: 4px; border-radius: 4px;"  @tap="showColors = true" title="select colors"></oda-button>
+                    <oda-button icon="carbon:copy" class="border flex" style="margin-right: 4px; padding: 4px; border-radius: 4px;"  allow-toggle ::toggled="showConvertor" title="show convertor"></oda-button>
+                    <oda-button icon="carbon:color-palette" class="border flex" style="margin-right: 4px; padding: 4px; border-radius: 4px;"  allow-toggle ::toggled="showPalette" title="show / hide palette"></oda-button>
+                    <oda-button icon="iconoir:cancel" class="border flex" style="margin-right: 4px; padding: 4px; border-radius: 4px;"  @tap="_cancel" title="cancel"></oda-button>
+                    <oda-button icon="bootstrap:check2-square" class="border flex" style="padding: 4px; border-radius: 4px;"  @tap="_ok" title="ok"></oda-button>
                 </div>
             </div>
         </div>
@@ -213,7 +224,11 @@ ODA({ is: 'oda-color-picker-oklch',
         },
         clipValue: '',
         clickTime: 500,
-        showConvertor: false
+        showConvertor: false,
+        showColors: false,
+    },
+    get namedColors() {
+        return namedColors;
     },
     get vColor() {
         return new Color(this.value);
@@ -236,16 +251,16 @@ ODA({ is: 'oda-color-picker-oklch',
     _init() {
         this.store ||= {};
         let s = this.storeLength - 5;
-        this.store['s' + (s + 0)] ||= 'oklch(0 0 0)';
-        this.store['s' + (s + 1)] ||= 'oklch(.321 0 0)';
-        this.store['s' + (s + 2)] ||= 'oklch(.510 0 0)';
-        this.store['s' + (s + 3)] ||= 'oklch(.683 0 0)';
-        this.store['s' + (s + 4)] ||= 'oklch(.845 0 0)';
-        this.store['s' + (s * 2 + 5)] ||= 'oklch(0.63 0.26 29)';
-        this.store['s' + (s * 2 + 6)] ||= 'oklch(0.52 0.18 140)';
-        this.store['s' + (s * 2 + 7)] ||= 'oklch(0.45 0.31 260)';
-        this.store['s' + (s * 2 + 8)] ||= 'oklch(.99 0.04 110)';
-        this.store['s' + (s * 2 + 9)] ||= 'oklch(1 0 0)';
+        this.store['s' + (s + 0)] ||= 'oklch(0 0 0)';                   // black
+        this.store['s' + (s + 1)] ||= 'oklch(.32 0 0)';                 // black lightness - 20%
+        this.store['s' + (s + 2)] ||= 'oklch(.51 0 0)';                 // black lightness - 40%
+        this.store['s' + (s + 3)] ||= 'oklch(.68 0 0)';                 // black lightness - 60%
+        this.store['s' + (s + 4)] ||= 'oklch(.85 0 0)';                 // black lightness - 80%
+        this.store['s' + (s * 2 + 5)] ||= 'oklch(0.63 0.258 29.23)';    // red
+        this.store['s' + (s * 2 + 6)] ||= 'oklch(0.52 0.177 142.5)';    // green
+        this.store['s' + (s * 2 + 7)] ||= 'oklch(0.45 0.313 264.05)';   // blue
+        this.store['s' + (s * 2 + 8)] ||= 'oklch(0.99 0.04 107.11)';    // lightyellow
+        this.store['s' + (s * 2 + 9)] ||= 'oklch(1 0 0)';               // white
     },
     refreshValue() {
         if (this.isReady)
@@ -289,6 +304,10 @@ ODA({ is: 'oda-color-picker-oklch',
         this.store = { ...this.store };
         this.async(() => this._setsValue = false, this.clickTime + 1);
     },
+    _selectColor(color) {; 
+        this.showColors = false;
+        this.setValue(color, true);
+    },
     async _ok() {
         this.fire('ok', this.value);
         await navigator?.clipboard?.writeText(this.clipValue || this.value);
@@ -306,3 +325,154 @@ ODA({ is: 'oda-color-picker-oklch',
         await navigator?.clipboard?.writeText(v);
     }
 })
+
+
+const namedColors = [
+    `AliceBlue`,
+    `AntiqueWhite`,
+    `Aqua`,
+    `Aquamarine`,
+    `Azure`,
+    `Beige`,
+    `Bisque`,
+    `Black`,
+    `BlanchedAlmond`,
+    `Blue`,
+    `BlueViolet`,
+    `Brown`,
+    `BurlyWood`,
+    `CadetBlue`,
+    `Chartreuse`,
+    `Chocolate`,
+    `Coral`,
+    `CornflowerBlue`,
+    `Cornsilk`,
+    `Crimson`,
+    `Cyan`,
+    `DarkBlue`,
+    `DarkCyan`,
+    `DarkGoldenRod`,
+    `DarkGray`,
+    `DarkGrey`,
+    `DarkGreen`,
+    `DarkKhaki`,
+    `DarkMagenta`,
+    `DarkOliveGreen`,
+    `Darkorange`,
+    `DarkOrchid`,
+    `DarkRed`,
+    `DarkSalmon`,
+    `DarkSeaGreen`,
+    `DarkSlateBlue`,
+    `DarkSlateGray`,
+    `DarkSlateGrey`,
+    `DarkTurquoise`,
+    `DarkViolet`,
+    `DeepPink`,
+    `DeepSkyBlue`,
+    `DimGray`,
+    `DimGrey`,
+    `DodgerBlue`,
+    `FireBrick`,
+    `FloralWhite`,
+    `ForestGreen`,
+    `Fuchsia`,
+    `Gainsboro`,
+    `GhostWhite`,
+    `Gold`,
+    `GoldenRod`,
+    `Gray`,
+    `Grey`,
+    `Green`,
+    `GreenYellow`,
+    `HoneyDew`,
+    `HotPink`,
+    `IndianRed`,
+    `Indigo`,
+    `Ivory`,
+    `Khaki`,
+    `Lavender`,
+    `LavenderBlush`,
+    `LawnGreen`,
+    `LemonChiffon`,
+    `LightBlue`,
+    `LightCoral`,
+    `LightCyan`,
+    `LightGoldenRodYellow`,
+    `LightGray`,
+    `LightGrey`,
+    `LightGreen`,
+    `LightPink`,
+    `LightSalmon`,
+    `LightSeaGreen`,
+    `LightSkyBlue`,
+    `LightSlateGray`,
+    `LightSlateGrey`,
+    `LightSteelBlue`,
+    `LightYellow`,
+    `Lime`,
+    `LimeGreen`,
+    `Linen`,
+    `Magenta`,
+    `Maroon`,
+    `MediumAquaMarine`,
+    `MediumBlue`,
+    `MediumOrchid`,
+    `MediumPurple`,
+    `MediumSeaGreen`,
+    `MediumSlateBlue`,
+    `MediumSpringGreen`,
+    `MediumTurquoise`,
+    `MediumVioletRed`,
+    `MidnightBlue`,
+    `MintCream`,
+    `MistyRose`,
+    `Moccasin`,
+    `NavajoWhite`,
+    `Navy`,
+    `OldLace`,
+    `Olive`,
+    `OliveDrab`,
+    `Orange`,
+    `OrangeRed`,
+    `Orchid`,
+    `PaleGoldenRod`,
+    `PaleGreen`,
+    `PaleTurquoise`,
+    `PaleVioletRed`,
+    `PapayaWhip`,
+    `PeachPuff`,
+    `Peru`,
+    `Pink`,
+    `Plum`,
+    `PowderBlue`,
+    `Purple`,
+    `Red`,
+    `RosyBrown`,
+    `RoyalBlue`,
+    `SaddleBrown`,
+    `Salmon`,
+    `SandyBrown`,
+    `SeaGreen`,
+    `SeaShell`,
+    `Sienna`,
+    `Silver`,
+    `SkyBlue`,
+    `SlateBlue`,
+    `SlateGray`,
+    `SlateGrey`,
+    `Snow`,
+    `SpringGreen`,
+    `SteelBlue`,
+    `Tan`,
+    `Teal`,
+    `Thistle`,
+    `Tomato`,
+    `Turquoise`,
+    `Violet`,
+    `Wheat`,
+    `White`,
+    `WhiteSmoke`,
+    `Yellow`,
+    `YellowGreen`,
+]
