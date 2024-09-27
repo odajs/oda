@@ -1,14 +1,20 @@
 interface Table extends odaComponent {
     table: Table;
+    $width: number;
+    _fixWidth: number;
     $height: number;
     rowHeight: number;
     $scrollTop: number;
+    $scrollLeft: number;
+
+    noLazy: boolean;
 
     allowSelection: 'all' | 'level' | 'type' | 'none';
     allowFocus: boolean;
-    allowFocusCell: 'none' | 'single' | 'rows' | 'cols' | 'all';
+    allowFocusCell: boolean;
+    allowDrag: boolean;
 
-    focusedCell: {row: TableRow, col: TableColumn}
+    focusedCell: TableFocusedCell;
     selectedRows: TableRow[];
     focusedRow: TableRow;
     activeCell: HTMLElement;
@@ -28,23 +34,36 @@ interface Table extends odaComponent {
     rowColumns: TableColumn[];
     activeCols: TableColumn[];
 
+    size: number;
+    screenFrom: number;
     screenLength: number;
 
     fillingNewLineMode: boolean;
 
     body: TableBody;
 
+    focusCell(rowIndex: number, colIndex: number): void;
     focusRow(e: MouseEvent): void;
-    _applyFilter(items: TableRow[]);
+    getRowByIndex(rowIndex: number): TableRow;
+    _applyFilter(items: TableRow[]): void;
+    activateCell(elem: HTMLElement): void;
 }
 //table $pdp interface
 
+type TableFocusedCell = {
+    rowIndex: number;
+    colIndex: number;
+}
+
 interface TableBody extends odaComponent{
     activeCell: HTMLElement;
+
+    getFocusedCellElement(): HTMLElement;
 }
 
 interface TableRow {
     items?: TableRow[];
+    __group__: boolean;
 }
 
 interface TableColumn {
