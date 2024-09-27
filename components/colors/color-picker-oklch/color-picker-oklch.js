@@ -92,14 +92,18 @@ ODA({ is: 'oda-color-picker-oklch',
                 overflow: hidden;    
             }
         </style>
-        <div ~if="showColors" class="vertical border" ~style="{width: width - 8 + 'px', height: height -10 + 'px'}" style="position: absolute; z-index: 1; margin: 4px; border-radius: 4px; background: white; height: 100%;">
+        <div ~if="showColors" class="vertical border" ~style="{width: width - 8 + 'px', height: height -10 + 'px'}" style="position: absolute; z-index: 1; margin: 4px; border-radius: 4px; background: var(--content-background); height: 100%;">
+            <div class="horizontal">
+                <input id="search" type="search" style="border-bottom: 1px solid  var(--border-color)" @input="searchString = $('#search').value">
+                <oda-button icon="bootstrap:search" icon-size="16" @tap="searchString = $('#search').value"></oda-button>
+            </div>
             <div class="verticl flex" style="overflow-y: auto;">
                 <div class="horizontal" ~for="namedColors" style="align-items: center; cursor: pointer;" @tap="_selectColor($for.item)">
                     <div style="min-width: 60px; max-width: 60px; height: 24px; margin: 2px;" ~style="{background: $for.item}"></div>
-                    <div style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">{{$for.item}}</div>
+                    <div style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14px;">{{$for.item}}</div>
                 </div>
             </div>
-            <oda-button icon="iconoir:cancel" style="border-top: 1px solid lightgray"  @tap="showColors=false">cancel</oda-button>
+            <oda-button icon="iconoir:cancel" style="border-top: 1px solid  var(--border-color)"  @tap="showColors=false; $('#search').value = this.searchString = '';">cancel</oda-button>
         </div>
         <div class="vertical" ~style="{minWidth: width - 8 + 'px'}" style="margin: 4px; border-radius: 4px;">
             <div class="result horizontal flex border">
@@ -226,9 +230,10 @@ ODA({ is: 'oda-color-picker-oklch',
         clickTime: 500,
         showConvertor: false,
         showColors: false,
+        searchString: ''
     },
     get namedColors() {
-        return namedColors;
+        return namedColors.filter(i => i.toLocaleLowerCase().includes(this.searchString.toLocaleLowerCase() || ''));
     },
     get vColor() {
         return new Color(this.value);
@@ -307,6 +312,7 @@ ODA({ is: 'oda-color-picker-oklch',
     _selectColor(color) {; 
         this.showColors = false;
         this.setValue(color, true);
+        this.$('#search').value = this.searchString = '';
     },
     async _ok() {
         this.fire('ok', this.value);
