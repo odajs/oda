@@ -915,12 +915,13 @@ tensor.prototype.MSE = function (target){
 }
 
 tensor.prototype.crossEntropy = function (target) {
-    let y = target.data ?? target;
+    target = tensor.from(target);
+    let y = target.data;
 
     const step = this.shape.last;
     const size = this.size/step;
 
-    let error = -this.data.reduce((r, x, i)=>r + y[i] * Math.log(x), 0)
+    let error = -this.data.reduce((r, x, i)=>r + y[i] * Math.log(x), 0);
     error /= this.size  // todo дополнительные измерения
     const out = tensor.from([error])._src(this)._label('crossEntropy');
     this._back = ()=>{
