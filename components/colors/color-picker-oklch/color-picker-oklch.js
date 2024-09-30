@@ -133,10 +133,10 @@ ODA({ is: 'oda-color-picker-oklch',
             <div class="color-input vertical">
                 <div ~if="storeLength > 0" class="vertical flex" style="cursor: pointer">
                     <div class="horizontal flex" style="width: 100%">
-                        <div ~for="storeLength" class="border" style="width: 100%;margin-right: 2px; margin-bootom: 1px;" @mousedown="_storeDown($event, $for.index)" @pointerup="_storeUp($event, $for.index)" ~style="{background: store?.['s'+$for.index] || '', height: storeH || '16px'}"></div>
+                        <div ~for="storeLength" class="border" style="width: 100%;margin-right: 2px; margin-bootom: 1px;" @mousedown="_storeDown($event, $for.index)" @pointerup="_storeUp($event, $for.index)" ~style="{background: store?.['s'+$for.index] || '', height: (storeH || 16)+'px'}"></div>
                     </div>
                     <div class="horizontal flex">
-                        <div ~for="storeLength" class="border" style="width: 100%;margin-right: 2px; margin-top: 1px;" @mousedown="_storeDown($event, $for.index+storeLength)" @pointerup="_storeUp($event, $for.index+storeLength)" ~style="{background: store?.['s'+($for.index+storeLength)] || '', height: storeH || '16px'}"></div>
+                        <div ~for="storeLength" class="border" style="width: 100%;margin-right: 2px; margin-top: 1px;" @mousedown="_storeDown($event, $for.index+storeLength)" @pointerup="_storeUp($event, $for.index+storeLength)" ~style="{background: store?.['s'+($for.index+storeLength)] || '', height: (storeH || 16)+'px'}"></div>
                     </div>
                 </div>
                 <div class="horizontal" style="justify-content: flex-end; margin: 4px 1px 1px 1px;">
