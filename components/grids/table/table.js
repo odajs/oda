@@ -243,9 +243,10 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 }
             }
             if (v && 'rowIndex' in v) {
-                if ((v.rowIndex + .8) * this.rowHeight > this.$height) {
-                    this.$scrollTop += this.rowHeight;
-                }
+                const idx = this.noLazy ? v.rowIndex : (v.rowIndex - this.screenFrom);
+                    if ((idx + .8) * this.rowHeight > this.$height) {
+                        this.$scrollTop += this.rowHeight;
+                    }
             }
             if (this.activeCell) {
                 const elem = this.body.getFocusedCellElement();
