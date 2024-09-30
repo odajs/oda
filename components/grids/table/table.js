@@ -148,12 +148,12 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         hideTop: false,
         icon: 'odant:grid',
         iconChecked: 'icons:check-box',
+        iconUnchecked: 'icons:check-box-outline-blank',
         iconCollapsed: 'icons:chevron-right',
         iconExpanded: 'icons:chevron-right:90',
         iconExpanding: 'odant:spin',
         iconIntermediate: 'icons:check-box-indeterminate',
         iconSize: 24,
-        iconUnchecked: 'icons:check-box-outline-blank',
         rowLines: {
             $def: false,
             $attr: true,
@@ -1848,13 +1848,30 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
             e.stopPropagation();
 
             const row = this.getRowByIndex(this.focusedCell.rowIndex);
+            const col = this.activeCols[this.focusedCell.colIndex];
 
-            this.onSelectRow(e, { value: row });
-            if (this.activeCell && this.fillingNewLineMode) {
-                this.moveCellPointer(1, 0);
-            } else {
-                const elem = this.body.getFocusedCellElement();
-                this.activateCell(elem);
+            if (col.treeMode) {
+                if (this.focusedRow === row) {
+                    const elem = this.body.getFocusedCellElement();
+                    if (row.$hasChildren && !row.__expanded__) {
+                        row.__expanded__ = true;
+                    }
+                    else {
+                        this.activateCell(elem);
+                    }
+                }
+                else {
+                    this.onSelectRow(e, { value: row });
+                }
+            }
+            else {
+                this.onSelectRow(e, { value: row });
+                if (this.activeCell && this.fillingNewLineMode) {
+                    this.moveCellPointer(1, 0);
+                } else {
+                    const elem = this.body.getFocusedCellElement();
+                    this.activateCell(elem);
+                }
             }
         },
     },
