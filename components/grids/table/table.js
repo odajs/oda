@@ -1677,7 +1677,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
             >
                 <div
                     ~for="$for.item.__group__ ? [$for.item] : rowColumns"
-                    ~class="_getCellClasses(noLazy ? $for.index : screenFrom + $for.index, $$for.index, $this)"
+                    ~class="_getCellClasses($for.item, $$for.item, $this)"
                     ~props="$$for.item?.props"
                     :draggable="getDraggable($for.item, $$for.item)"
                     :item="$for.item"
@@ -1896,10 +1896,8 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
         this.setScreen();
     },
     /**@this {Table} */
-    _getCellClasses(rowIndex, colIndex, elem) {
+    _getCellClasses(row, col, elem) {
         const res = ['cell'];
-        const col = this.activeCols[colIndex];
-        const row = this.getRowByIndex(rowIndex);
         if (col) {
             res.push(`col-${col.id}`);
         }
@@ -1909,6 +1907,8 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
         else {
             res.push('no-flex');
         }
+        const colIndex = this.activeCols.findIndex(c => c === col);
+        const rowIndex = this.rows.findIndex(r => r === row) + (this.noLazy ? 0 : this.screenFrom);
         if (this._cellIsFocused(rowIndex, colIndex, elem)) {
             res.push('focused-cell');
         }
