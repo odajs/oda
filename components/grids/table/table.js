@@ -243,8 +243,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 }
             }
             if (v && 'rowIndex' in v) {
-                const idx = this.noLazy ? v.rowIndex : (v.rowIndex - this.screenFrom);
-                    if ((idx + .8) * this.rowHeight > this.$height) {
+                    if ((v.rowIndex + .8) * this.rowHeight > this.$height) {
                         this.$scrollTop += this.rowHeight;
                     }
             }
@@ -922,9 +921,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         if (!this.allowFocusCell) return;
 
         if (!this.focusedCell) {
-            const rowIndex = (this.noLazy
-                ? (this.focusedRow && this.items.findIndex(i => i === this.focusedRow))
-                : (this.focusedRow && this.items.findIndex(i => i === this.focusedRow) + this.screenFrom)) || 0;
+            const rowIndex = (this.focusedRow && this.items.findIndex(i => i === this.focusedRow)) || 0;
             const colIndex = 0;
             this.focusedCell = { rowIndex: 0, colIndex: 0 };
         }
@@ -1692,9 +1689,9 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
                         :dark="raisedRows.includes($for.item)"
                         :column="$$for.item"
                         :item="$for.item"
-                        @pointerdown="table.focusCell(noLazy ? $for.index : screenFrom + $for.index, $$for.index)"
+                        @pointerdown="table.focusCell($for.index, $$for.index)"
                         @dblclick.stop="onDblclick($event);activateCell($this)"
-                        :cell-coordinates="{rowIndex: noLazy ? $for.index : screenFrom + $for.index, colIndex: $$for.index}"
+                        :cell-coordinates="{rowIndex: $for.index, colIndex: $$for.index}"
                     ></div>
                 </div>
             </div>
@@ -1762,7 +1759,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
             let v = 0;
             if (e.ctrlKey) {
                 this.scrollToRowIndex(0);
-                v = -(this.noLazy ? this.focusedCell.rowIndex : this.focusedCell.rowIndex - this.screenFrom);
+                v = -this.focusedCell.rowIndex;
             }
 
             this.moveCellPointer(h, v, e);
@@ -1777,7 +1774,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
             let v = 0;
             if (e.ctrlKey) {
                 this.scrollToRowIndex(this.rows.length - 1);
-                v = this.rows.length - (this.noLazy ? this.focusedCell.rowIndex : this.focusedCell.rowIndex - this.screenFrom) - 1;
+                v = this.rows.length - this.focusedCell.rowIndex - 1;
             }
 
             this.moveCellPointer(h, v, e);
@@ -1908,7 +1905,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
             res.push('no-flex');
         }
         const colIndex = this.activeCols.findIndex(c => c === col);
-        const rowIndex = this.rows.findIndex(r => r === row) + (this.noLazy ? 0 : this.screenFrom);
+        const rowIndex = this.rows.findIndex(r => r === row);
         if (this._cellIsFocused(rowIndex, colIndex, elem)) {
             res.push('focused-cell');
         }
@@ -1948,12 +1945,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
     },
     /**@this {Table} */
     getRowByIndex(index) {
-        if (this.noLazy) {
-            return this.items[index];
-        }
-        else {
-            return this.rows[index - this.screenFrom];
-        }
+        return this.rows[index];
     }
 });
 ODA({is: 'oda-table-footer-cell', extends: 'oda-table-cell',
