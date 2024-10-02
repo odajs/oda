@@ -3,117 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <style>
-        body {
-            background: -moz-linear-gradient(45deg, #02e1ba 0%, #26c9f2 29%, #d911f2 66%, #ffa079 100%);
-            background: -webkit-linear-gradient(45deg, #02e1ba 0%,#26c9f2 29%,#d911f2 66%,#ffa079 100%);
-            background: linear-gradient(45deg, #02e1ba 0%,#26c9f2 29%,#d911f2 66%,#ffa079 100%);
-            background-size: 400% 400%;
-            -webkit-animation: Gradient 15s ease infinite;
-            -moz-animation: Gradient 15s ease infinite;
-            animation: Gradient 15s ease infinite;
-            /*min-height: calc(100vh - 2rem);*/
-            //display: flex;
-            //flex-direction: column;
-           // align-items: stretch;
-           // justify-content: space-evenly;
-            overflow: hidden;
-            //position: relative;
-        }
 
-        body::before,
-        body::after {
-            content: "";
-            width: 70vmax;
-            height: 70vmax;
-            position: absolute;
-            background: rgba(255, 255, 255, 0.07);
-            left: -20vmin;
-            top: -20vmin;
-            animation: morph 15s linear infinite alternate, spin 20s linear infinite;
-            z-index: 1;
-            will-change: border-radius, transform;
-            transform-origin: 55% 55%;
-            pointer-events: none;
-        }
-
-        body::after {
-            width: 70vmin;
-            height: 70vmin;
-            left: auto;
-            right: -10vmin;
-            top: auto;
-            bottom: 0;
-            animation: morph 10s linear infinite alternate, spin 26s linear infinite reverse;
-            transform-origin: 20% 20%;
-        }
-
-        @-webkit-keyframes Gradient {
-            0% {
-                background-position: 0 50%
-            }
-            50% {
-                background-position: 100% 50%
-            }
-            100% {
-                background-position: 0 50%
-            }
-        }
-
-        @-moz-keyframes Gradient {
-            0% {
-                background-position: 0 50%
-            }
-            50% {
-                background-position: 100% 50%
-            }
-            100% {
-                background-position: 0 50%
-            }
-        }
-
-        @keyframes Gradient {
-            0% {
-                background-position: 0 50%
-            }
-            50% {
-                background-position: 100% 50%
-            }
-            100% {
-                background-position: 0 50%
-            }
-        }
-
-        @keyframes morph {
-            0% {
-                border-radius: 40% 60% 60% 40% / 70% 30% 70% 30%; }
-            100% {
-                border-radius: 40% 60%; }
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(1turn);
-            }
-        }
-        .st0{display:none;}
-        .st1{display:inline;}
-        .st2{opacity:0.29;}
-        .st3{fill:#FFFFFF;}
-        .st4{clip-path:url(#SVGID_2_);fill:#FFFFFF;}
-        .st5{clip-path:url(#SVGID_4_);}
-        .st6{clip-path:url(#SVGID_6_);}
-        .st7{clip-path:url(#SVGID_8_);}
-        .st8{clip-path:url(#SVGID_10_);}
-        .st9{fill:none;}
-        .st10{clip-path:url(#SVGID_12_);}
-        .st11{opacity:0.7;}
-        .st12{clip-path:url(#SVGID_14_);}
-        .st13{opacity:0.2;}
-        .st14{clip-path:url(#SVGID_16_);}
-        .st15{opacity:0.3;fill:#FFFFFF;enable-background:new    ;
-        }
-    </style>
 </head>
 <body>
     <button id="btn">PRESS</button>
@@ -123,9 +13,52 @@
     import {tensor} from "./torus.js";
 
     btn.onclick = (e)=>{
-        let t = [[[[tensor.random([2, 1, 10]), tensor.random([2, 1, 10]), tensor.random([2, 1, 10])]]]];
-        t = tensor.from(t);
+            const out = new Int8Array(10000 * 14 * 14);
+            let tens1 = tensor.random([10000, 14,14],-128, 128, Int8Array)
+            let tens2 = tensor.random([10000, 28,28],-128, 128, Int8Array)
+            console.time('einsum')
+            let _C = 10000;
+            let _D = 14;
+            let _E = 14;
+            let _A = 28;
+            let _B = 28;
+            let t0 = tens2.data;
+            let v0 = 0;
+            let t1 = tens1.data;
+            let v1 = 0;
+            let idx = -1;
+            let _A_B = _A * _B;
+            let _E_D = _E * _D;
+            for(let C = 0; C < _C; C++){
+                let _AC = _A * C;
+                let _B_AC = _A_B * C
+                for(let D = 0; D < _D; D++){
+                    let _ED = _E * D;
+                    for(let E = 0; E < _E; E++){
 
+                        let res = 0;
+
+                        for(let A = 0; A < _A; A++){
+
+                            let _BA = _B * A;
+                            let _BA_AС = _BA + _B_AC;
+                            let _E_D_BA = _E_D * _BA
+                            for(let B = 0; B < _B; B++){
+                                let i0 = B + _BA_AС
+                                v0 = t0[i0];
+                                let i1 = E + _ED + _E_D * B + _BA;
+                                v1 = t1[i1] * v0;
+                                // v1 *= v0;
+                                res += v1;
+                            }
+                        }
+                        out[++idx]  = res;
+                    }
+                }
+            }
+
+        console.timeEnd('einsum');
+        console.log(out)
     }
 
 

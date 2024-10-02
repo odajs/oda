@@ -316,7 +316,7 @@ ODA({is: 'app-layout-drawer', imports: '@oda/tabs',
     <div @touchmove="hideTabs=false" id="panel" class="raised buttons no-flex" ~if="!hidden" style="overflow: visible; z-index:1" ~style="{alignItems: pos ==='left'?'flex-start':'flex-end', maxWidth: hideTabs?'1px':'auto'}">
         <div class="vertical bt" style="height: 100%;"
             ~style="{ 'min-width': (controls?.length > 0 || buttons?.length > 0) ? (iconSize + 10) + 'px' : 'none' }">
-            <oda-tabs
+            <oda-tabs :dimmed="!opened"
                 ~show="!hideTabs"
                 :content-align="({left: 'right', right: 'left'})[pos]"
                 class="flex"
