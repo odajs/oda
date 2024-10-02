@@ -43,7 +43,7 @@ export class NeuroModule extends Function{
                 function recurse (obj){
                     if (Array.isArray(obj)){
                         return obj.map(i=> {
-                            if (i.$)
+                            if (i?.$)
                                 return new (eval(i.$))(i);
                             return recurse (i);
                         })
