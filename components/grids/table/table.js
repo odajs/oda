@@ -257,7 +257,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         focusCell(rowIndex, colIndex) {
             const col = this.activeCols[colIndex];
             if (col.$flex) return;
-
+            rowIndex -= this.raisedRows.length;
             if (this.focusedCell?.rowIndex === rowIndex && this.focusedCell?.colIndex === colIndex) return;
 
             if (this.focusedCell && (this.focusedCell.rowIndex !== rowIndex || colIndex === this.activeCols.length - 1) && this.activeCell && this.fillingNewLineMode) {
