@@ -26,14 +26,23 @@ ODA({is: 'oda-hexagon-layout', imports: '@oda/button',
             @apply --content;
             opacity: .5;
         }{}
+        oda-hexagon-row{
+            margin-top: {{h/4+distance}}px;
+        }
+        oda-hexagon-row:nth-child(odd){
+            transform: translateX({{(size / 2)+distance}}px);
+        }
+
     </style>
     <div class="flex vertical">
-    <oda-hexagon-row class="no-flex" :distance ~for="rows" :y="$for.index" ~style="{marginLeft: \`\${$for.index%2?0:(size / 2)+distance}px\`, marginTop: \`\${h/4+distance + 1}px\`, zIndex: + rows - $for.index}"></oda-hexagon-row>
+    <oda-hexagon-row class="no-flex" :distance ~for="rows" :y="$for.index" ~style="{zIndex: + rows - $for.index}"></oda-hexagon-row>
     </div>
     <oda-icon class="error shadow" ~show="showTrash" :icon-size="size" icon="icons:delete" ~style="{right: size + 'px', bottom: size+'px'}" style="position: absolute; z-index: 10000; border-radius: 25%" ></oda-icon>
     `,
     tr: {},
+
     $pdp: {
+        $public: true,
         get width() {
             return this.offsetWidth;
         },
@@ -70,7 +79,10 @@ ODA({is: 'oda-hexagon-layout', imports: '@oda/button',
             $editor: '@oda/color-picker[oda-color-picker]'
         },
         full: true,
-        distance: 1,
+        distance: {
+            $def: 1,
+            $save: true,
+        },
         data: {
             $def: [],
             $save: true,
@@ -186,7 +198,6 @@ ODA({is: 'oda-hexagon',
         }
         :host([active]):after {
             border-top: {{Math.floor(h/4)}}px solid {{background}};
-
                 z-index: -1;
         }
         :host:after {
@@ -201,7 +212,6 @@ ODA({is: 'oda-hexagon',
         }
         :host > * {
             overflow: visible;
-            /*z-index: 1;*/
         }
         :host(.drag-hover) > div {
             filter: brightness(.6) !important;
@@ -216,6 +226,7 @@ ODA({is: 'oda-hexagon',
         :host .block {
             transform: scale(1.5);
             transition: top .5s, transform  .5s;
+            position: initial;
         }
         :host([label]) > .container > label {
             white-space: normal;
@@ -234,9 +245,14 @@ ODA({is: 'oda-hexagon',
             @apply --text-shadow;
             background-color: transparent;
         }{}
+        .container{
+            overflow: visible; 
+            align-items: center; 
+            align-self: center;
+        }
     </style>
-    <div class="flex vertical container" style="overflow: visible; align-items: center; align-self: center;">
-        <div ~if="full || item" class="no-flex block" ~is="item?.is" ~props="item?.props" style="position: initial;"></div>
+    <div class="flex vertical container">
+        <div ~if="full || item" class="no-flex block" ~is="item?.is" ~props="item?.props"></div>
         <label ~html="label"></label>
     </div>
     `,
