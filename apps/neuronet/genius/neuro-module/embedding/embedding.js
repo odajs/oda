@@ -29,6 +29,11 @@ export class Embedding  extends NeuroModule{
         x = x.maxIndex();
         return x;
     }
+    print(x){
+        x = this.restore(x);
+        x = Array.from(x.data).map(i=>this.tokens[i].w).join('');
+        return x;
+    }
     plus(...tokens){
         let token = this._plus(...tokens);
         return this.near(token);
