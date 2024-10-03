@@ -24,6 +24,11 @@ export class Embedding  extends NeuroModule{
         result = result.softmax();
         return result;
     }
+    restore(x){
+        x = this.forward(x);
+        x = x.maxIndex();
+        return x;
+    }
     plus(...tokens){
         let token = this._plus(...tokens);
         return this.near(token);

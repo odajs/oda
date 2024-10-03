@@ -862,6 +862,18 @@ tensor.prototype.softmax = function (){
     }
     return out;
 }
+tensor.prototype.maxIndex = function () {
+    let step = this.shape.last;
+    let data = new Uint8Array(this.size / step);
+    let idx = -1;
+    for (let i = 0; i<this.size; i+=step){
+        const slice = this.data.slice(i, i + step)
+        const max = Math.max(...slice);
+        data[++idx] = slice.indexOf(max);
+    }
+    const out = tensor.from(data)._label('maxIndex')._shape(this.shape.slice(0, -1));
+    return out;
+}
 tensor.prototype.hardmax = function (){
     const step = this.shape[this.shape.length-1];
     const size = this.size/step;
