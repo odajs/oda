@@ -234,6 +234,13 @@ ODA({is: 'app-layout-drawer', imports: '@oda/tabs',
             @apply --horizontal;
             transition: opacity ease-in-out .5s, transform ease-in-out .2s;
             flex-direction: row{{pos === 'right'?'-reverse':''}};
+            border-color: var(--border-color);
+        }
+        :host([pos="left"]) > #panel{
+            border-right: 1px solid;
+        }
+        :host([pos="right"]) > #panel{
+            border-left: 1px solid;
         }
         .drawer {
             height: 100%;

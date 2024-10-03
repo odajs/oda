@@ -32,7 +32,6 @@ ODA({
             }
             :host .tab{
                 opacity: 0.5;
-                margin: 2px;
                 color: var(--content-color);
                 display: flex;
                 align-items: center;
@@ -124,7 +123,7 @@ ODA({
         update(items, direction, index) {
             if (!this.items.length) return false;
             if (!this.container) return false;
-            this.overflow = this.container[`scroll${this._sizeSuffix}`] > this.container[`offset${this._sizeSuffix}`];
+            this._updateOverflow();
             this.debounce('update-scroll', () => {
                 if (this.overflow) {
                     const btn = this.$('.tab[focused]');
@@ -137,7 +136,12 @@ ODA({
         }
     },
     $listeners: {
-        mousewheel: '_onScroll'
+        mousewheel: '_onScroll',
+        resize: '_updateOverflow'
+    },
+    _updateOverflow() {
+        if (!this.container) return;
+        this.overflow = this.container[`scroll${this._sizeSuffix}`] > this.container[`offset${this._sizeSuffix}`];
     },
     /**
      * @param {WheelEvent} e
@@ -231,41 +235,41 @@ ODA({
                     if (item.label) {
                         style['border-top-left-radius'] = '8px';
                         style['border-bottom-left-radius'] = '8px';
-                        style['border-top-right-radius'] = '0xp';
+                        style['border-top-right-radius'] = '0px';
                         style['border-bottom-right-radius'] = '0px';
                     }
                     else {
                         style['border-top-right-radius'] = '8px';
                         style['border-bottom-right-radius'] = '8px';
-                        style['border-top-left-radius'] = '0xp';
+                        style['border-top-left-radius'] = '0px';
                         style['border-bottom-left-radius'] = '0px';
                     }
-                } break;
-                case 'top': {
-                    style['border-bottom-left-radius'] = '8px';
-                    style['border-bottom-right-radius'] = '8px';
-                    style['border-top-left-radius'] = '0xp';
-                    style['border-top-right-radius'] = '0px';
                 } break;
                 case 'right': {
                     if (item.label) {
                         style['border-top-right-radius'] = '8px';
                         style['border-bottom-right-radius'] = '8px';
-                        style['border-top-left-radius'] = '0xp';
+                        style['border-top-left-radius'] = '0px';
                         style['border-bottom-left-radius'] = '0px';
                     }
                     else {
                         style['border-top-left-radius'] = '8px';
                         style['border-bottom-left-radius'] = '8px';
-                        style['border-top-right-radius'] = '0xp';
+                        style['border-top-right-radius'] = '0px';
                         style['border-bottom-right-radius'] = '0px';
                     }
+                } break;
+                case 'top': {
+                    style['border-bottom-left-radius'] = '8px';
+                    style['border-bottom-right-radius'] = '8px';
+                    style['border-top-left-radius'] = '0px';
+                    style['border-top-right-radius'] = '0px';
                 } break;
                 case 'bottom':
                 default: {
                     style['border-top-left-radius'] = '8px';
                     style['border-top-right-radius'] = '8px';
-                    style['border-bottom-left-radius'] = '0xp';
+                    style['border-bottom-left-radius'] = '0px';
                     style['border-bottom-right-radius'] = '0px';
                 } break;
             }
@@ -273,8 +277,26 @@ ODA({
         else {
             style['border-top-left-radius'] = '0px';
             style['border-top-right-radius'] = '0px';
-            style['border-bottom-left-radius'] = '0xp';
+            style['border-bottom-left-radius'] = '0px';
             style['border-bottom-right-radius'] = '0px';
+        }
+        switch (this.contentAlign) {
+            case 'left': {
+                style['margin'] = item.label
+                    ? '2px 2px 2px 0px'
+                    : '2px 2px 2px 0px';
+            } break;
+            case 'right': {
+                style['margin'] = item.label
+                    ? '2px 0px 2px 2px'
+                    : '2px 0px 2px 2px';
+            } break;
+            case 'top': {
+                style['margin'] = '0px 2px 2px 2px';
+            } break;
+            case 'bottom': {
+                style['margin'] = '2px 2px 0px 2px';
+            } break;
         }
         return style;
     },
