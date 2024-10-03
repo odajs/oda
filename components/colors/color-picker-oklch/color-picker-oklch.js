@@ -68,14 +68,12 @@ ODA({ is: 'oda-color-picker-oklch',
                 height: {{(height - 10) / 10}}px;
             }
             .result {
-                background-image: 
-                    linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee 100%),
-                    linear-gradient(45deg, #eee 25%, white 25%, white 75%, #eee 75%, #eee 100%);
+                background-image: linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee 100%), linear-gradient(45deg, #eee 25%, white 25%, white 75%, #eee 75%, #eee 100%);
                 background-position: 0px 0px, 10px 10px;
                 background-size: 20px 20px;
                 overflow: hidden;    
             }
-            [selected-story] {
+            [selected-history] {
                 outline: 1px outset blue;
             }
         </style>
@@ -106,15 +104,15 @@ ODA({ is: 'oda-color-picker-oklch',
             </div>
             <div class="horizontal" style="align-items: center;">
                 <div class="vertical">
-                    <oda-icon icon="icons:add" style="cursor: pointer; margin-right: 4px;" title="add color to story" @tap="_addToStory"></oda-icon>
-                    <oda-icon icon="icons:remove" style="cursor: pointer; margin-right: 4px;" title="remove color from story" @tap="_removeToStory"></oda-icon>
+                    <oda-icon icon="icons:add" style="cursor: pointer; margin-right: 4px;" title="add color to history" @tap="_historyAdd"></oda-icon>
+                    <oda-icon icon="icons:remove" style="cursor: pointer; margin-right: 4px;" title="remove color from history" @tap="_historyRemove"></oda-icon>
                 </div>
                 <div class="vertical flex" style="cursor: pointer">
                     <div class="horizontal flex" style="width: 100%; margin-bottom: 4px;">
-                        <div ~for="storeLength || 0" class="border" style="width: 100%; margin-right: 2px;" @tap="_storeTap($event, $for.index)" ~style="{background: store?.['s'+$for.index] || '', height: (storeH || 16)+'px'}" :selected-story="selectedStoryIdx === $for.index"></div>
+                        <div ~for="historyLength || 0" class="border" style="width: 100%; margin-right: 2px;" @tap="_historyTap($event, $for.index)" ~style="{background: history?.['s'+$for.index] || '', height: (historyH || 16)+'px'}" :selected-history="historyIdx === $for.index"></div>
                     </div>
                     <div class="horizontal flex">
-                        <div ~for="storeLength" class="border" style="width: 100%;margin-right: 2px;" @tap="_storeTap($event, $for.index+storeLength)" ~style="{background: store?.['s'+($for.index+storeLength)] || '', height: (storeH || 16)+'px'}" :selected-story="selectedStoryIdx === $for.index+storeLength"></div>
+                        <div ~for="historyLength" class="border" style="width: 100%;margin-right: 2px;" @tap="_historyTap($event, $for.index+historyLength)" ~style="{background: history?.['s'+($for.index+historyLength)] || '', height: (historyH || 16)+'px'}" :selected-history="historyIdx === $for.index+historyLength"></div>
                     </div>
                 </div>
                 <oda-button icon="carbon:color-palette" class="border no-flex" style="margin-left: 4px; padding: 4px; border-radius: 4px;"  allow-toggle ::toggled="showPalette" title="show / hide palette"></oda-button>
@@ -161,11 +159,11 @@ ODA({ is: 'oda-color-picker-oklch',
             $def: 300,
             $save: true
         },
-        storeLength: {
+        historyLength: {
             $def: 7,
             // $save: true
         },
-        storeH: {
+        historyH: {
             $def: 16,
             $save: true
         },
@@ -185,15 +183,16 @@ ODA({ is: 'oda-color-picker-oklch',
         },
         showColors: false
     },
-    selectedStoryIdx: 0,
+    historyIdx: 0,
     get vColor() {
         return new Color(this.value);
     },
-    store: {
-        $def: undefined,
+    history: {
+        $def: {},
         $save: true
     },
     attached() {
+        this.history ||= {};
         this.isReady = true;
     },
     refreshValue() {
@@ -220,20 +219,20 @@ ODA({ is: 'oda-color-picker-oklch',
             this.value = val;
         } catch (err) { }
     },
-    _storeTap(e, idx) {
-        if (this.store['s' + idx])
-            this.setValue(this.store['s' + idx], true);
-        this.selectedStoryIdx = idx;
+    _historyTap(e, idx) {
+        if (this.history['s' + idx])
+            this.setValue(this.history['s' + idx], true);
+        this.historyIdx = idx;
     },
-    _addToStory(e) {
-        const idx = this.selectedStoryIdx;
-        this.store['s' + idx] = this.value;
-        this.store = { ...this.store };
+    _historyAdd(e) {
+        const idx = this.historyIdx;
+        this.history['s' + idx] = this.value;
+        this.history = { ...this.history };
     },
-    _removeToStory(e) {
-        const idx = this.selectedStoryIdx;
-        this.store['s' + idx] = '';
-        this.store = { ...this.store };
+    _historyRemove(e) {
+        const idx = this.historyIdx;
+        this.history['s' + idx] = '';
+        this.history = { ...this.history };
     },
     async _selectNamedColors(e) {
         const res = await ODA.showDropdown('oda-select-colors', {}, { anchor: 'right-top', align: 'left', parent: e.target, maxHeight: this.height, minWidth: this.width, maxWidth: this.width, title: 'Select color' });
