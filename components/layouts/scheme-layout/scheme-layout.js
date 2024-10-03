@@ -302,6 +302,7 @@ ODA({ is: 'oda-scheme-pins', imports: '@oda/icon', template: /*html*/`
             min-width: {{iconSize}}px;
             min-height: {{iconSize}}px;
         }
+        {{''}}
     </style>
     <oda-scheme-pin ~for="pins" ~props="$for.item?.props" :draggable="designMode?'true':'false'" :pin="$for.item" @down.stop :focused="$for.item === focusedPin?.pin"></oda-scheme-pin>
     `,
@@ -325,7 +326,6 @@ ODA({ is: 'oda-scheme-pins', imports: '@oda/icon', template: /*html*/`
             i.links = undefined;
         });
     },
-
 });
 ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
     <style>
