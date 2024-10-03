@@ -4,47 +4,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
     <oda-scheme-container ~for="items" @resize="links = undefined" @tap.stop="select" :block="$for.item" ~props="$for.item?.props" @down="onDown" @up="onUp"></oda-scheme-container>
     </div>
     `,
-    showTrash: false,
-    onLinkToBlock(e) {
-        let pos = alterPos[this.focusedPin.pos];
-        this.block.pins ??= {};
-        this.block.pins[pos] ??= [];
-        const bind = { bind: [{ block: this.focusedPin.block.id, [this.focusedPin.pos]: this.focusedPin.pins.indexOf(this.focusedPin.pin) }] }
-        this.block.pins[pos].push(bind);
-        this.links = undefined;
-    },
-    onLinkToPin(e) {
-        console.log(this.focusedPin, this);
-    },
-    onTapPin(e) {
-    },
-    onDblClickPin(e) {
-    },
-    onContextMenuPin(e) {
-    },
     $wake: true,
-    dragLink: '',
-    get paths() {
-        const paths = this.links?.map(l => ({ is: 'path', props: { stroke: this.linkColor, 'stroke-width': '2', fill: 'transparent', d: l } }));
-        if (this.dragLink)
-            paths.push({ is: 'path', props: { stroke: 'red', 'stroke-width': '4', fill: 'transparent', d: this.dragLink } })
-        return paths;
-    },
-    onDown(e) {
-        this.lastdown = e.target;
-    },
-    onUp(e) {
-        if (!this.inTrack)
-            this.lastdown = null;
-    },
-    get links() {
-        return this.$$('oda-scheme-container').map(i => i.links).flat();
-    },
-    set links(n) {
-        this.$$('oda-scheme-container').forEach(i => {
-            i.links = undefined;
-        });
-    },
     $public: {
         lineSize: {
             $def: 30,
@@ -84,12 +44,12 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         }
     },
     $pdp: {
-        blockTemplate: 'div',
         layout: {
             get() {
                 return this;
             }
         },
+        blockTemplate: 'div',
         items: {
             $type: Array,
             set(n) {
@@ -111,6 +71,22 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
                 this.dragLink = '';
             }
         }
+    },
+    showTrash: false,
+    dragLink: '',
+    get paths() {
+        const paths = this.links?.map(l => ({ is: 'path', props: { stroke: this.linkColor, 'stroke-width': '2', fill: 'transparent', d: l } }));
+        if (this.dragLink)
+            paths.push({ is: 'path', props: { stroke: 'red', 'stroke-width': '4', fill: 'transparent', d: this.dragLink } })
+        return paths;
+    },
+    get links() {
+        return this.$$('oda-scheme-container').map(i => i.links).flat();
+    },
+    set links(n) {
+        this.$$('oda-scheme-container').forEach(i => {
+            i.links = undefined;
+        });
     },
     $listeners: {
         contextmenu(e) {
@@ -139,6 +115,30 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             if (!this.focusedPin) return;
             this.dragLink = `M ${e.layerX / this.scale} ${e.layerY / this.scale}` + endPoint.call(this.focusedPin);
         },
+    },
+    onDown(e) {
+        this.lastdown = e.target;
+    },
+    onUp(e) {
+        if (!this.inTrack)
+            this.lastdown = null;
+    },
+    onLinkToBlock(e) {
+        let pos = alterPos[this.focusedPin.pos];
+        this.block.pins ??= {};
+        this.block.pins[pos] ??= [];
+        const bind = { bind: [{ block: this.focusedPin.block.id, [this.focusedPin.pos]: this.focusedPin.pins.indexOf(this.focusedPin.pin) }] }
+        this.block.pins[pos].push(bind);
+        this.links = undefined;
+    },
+    onLinkToPin(e) {
+        console.log(this.focusedPin, this);
+    },
+    onTapPin(e) {
+    },
+    onDblClickPin(e) {
+    },
+    onContextMenuPin(e) {
     },
     $keyBindings: {
         delete(e) {
@@ -241,7 +241,7 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
     `,
     $wake: true,
     contextItem: null, // bug pdp contextItem buble
-    iconSize: 24, // bug pdp iconSize buble
+    // iconSize: 24, // bug pdp iconSize buble
     get pinsTranslate() {
         switch( this.allPinsVisible ) {
             case 'visible':
@@ -296,18 +296,25 @@ ODA({ is: 'oda-scheme-pins', imports: '@oda/icon', template: /*html*/`
     <style>
         :host {
             justify-content: center;
+            gap: 2px;
+        }
+        :host {
+            min-width: {{iconSize}}px;
+            min-height: {{iconSize}}px;
         }
     </style>
     <oda-scheme-pin ~for="pins" ~props="$for.item?.props" :draggable="designMode?'true':'false'" :pin="$for.item" @down.stop :focused="$for.item === focusedPin?.pin"></oda-scheme-pin>
     `,
     $wake: true,
-    attached() {
-        this.links = undefined;
-    },
     $pdp: {
         pos: String,
         get pins() {
             return this.allPins?.[this.pos]
+        },
+        interface: {
+            get() {
+                return this;
+            }
         },
     },
     get links() {
@@ -324,9 +331,8 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
     <style>
         :host {
             @apply --content;
-            @apply --border;
+            outline: 1px solid gray;
             border-radius: 50%;
-            margin: 2px;
             transition: transform ease-in-out .5s;
             cursor: pointer;
             @apply --shadow;
@@ -341,6 +347,9 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
     </style>
     `,
     $wake: true,
+    attached() {
+        this.interface.links = undefined;
+    },
     reserved: false,
     invisible: {
         $type: Boolean,
