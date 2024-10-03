@@ -74,7 +74,7 @@ ODA({ is: 'oda-color-picker-oklch',
                 overflow: hidden;    
             }
             [selected-history] {
-                outline: 1px outset blue;
+                outline: 1px outset light-dark(black, white);
             }
         </style>
         <div class="vertical" ~style="{minWidth: width - 8 + 'px'}" style="margin: 4px; border-radius: 4px;">
@@ -103,10 +103,6 @@ ODA({ is: 'oda-color-picker-oklch',
                 <input type="range" class="alpha" ::value="a" min="0" max="1" step="0.01">
             </div>
             <div class="horizontal" style="align-items: center;">
-                <div class="vertical">
-                    <oda-icon icon="icons:add" style="cursor: pointer; margin-right: 4px;" title="add color to history" @tap="_historyAdd"></oda-icon>
-                    <oda-icon icon="icons:remove" style="cursor: pointer; margin-right: 4px;" title="remove color from history" @tap="_historyRemove"></oda-icon>
-                </div>
                 <div class="vertical flex" style="cursor: pointer">
                     <div class="horizontal flex" style="width: 100%; margin-bottom: 4px;">
                         <div ~for="historyLength || 0" class="border" style="width: 100%; margin-right: 2px;" @tap="_historyTap($event, $for.index)" ~style="{background: history?.['s'+$for.index] || '', height: (historyH || 16)+'px'}" :selected-history="historyIdx === $for.index"></div>
@@ -160,7 +156,7 @@ ODA({ is: 'oda-color-picker-oklch',
             $save: true
         },
         historyLength: {
-            $def: 7,
+            $def: 8,
             // $save: true
         },
         historyH: {
@@ -181,9 +177,12 @@ ODA({ is: 'oda-color-picker-oklch',
                 this.setValue(n, true);
             }
         },
-        showColors: false
+        historyIdx: {
+            $def: 0,
+            $save: true
+        },
+        showColors: false,
     },
-    historyIdx: 0,
     get vColor() {
         return new Color(this.value);
     },
@@ -196,8 +195,14 @@ ODA({ is: 'oda-color-picker-oklch',
         this.isReady = true;
     },
     refreshValue() {
-        if (this.isReady)
+        if (this.isReady) {
             this.value = undefined;
+            this.async(() => {
+                const idx = this.historyIdx;
+                this.history['s' + idx] = this.value;
+                this.history = { ...this.history };
+            })
+        }
     },
     setValue(e, skip) {
         this.refreshValue();
@@ -219,20 +224,14 @@ ODA({ is: 'oda-color-picker-oklch',
             this.value = val;
         } catch (err) { }
     },
+    historyClear(e) {
+        this.history = {};
+        this.history = { ...this.history };
+    },
     _historyTap(e, idx) {
         if (this.history['s' + idx])
             this.setValue(this.history['s' + idx], true);
         this.historyIdx = idx;
-    },
-    _historyAdd(e) {
-        const idx = this.historyIdx;
-        this.history['s' + idx] = this.value;
-        this.history = { ...this.history };
-    },
-    _historyRemove(e) {
-        const idx = this.historyIdx;
-        this.history['s' + idx] = '';
-        this.history = { ...this.history };
     },
     async _selectNamedColors(e) {
         const res = await ODA.showDropdown('oda-select-colors', {}, { anchor: 'right-top', align: 'left', parent: e.target, maxHeight: this.height, minWidth: this.width, maxWidth: this.width, title: 'Select color' });
