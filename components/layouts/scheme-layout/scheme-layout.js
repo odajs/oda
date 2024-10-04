@@ -113,7 +113,7 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         dragover(e) {
             e.preventDefault();
             if (!this.focusedPin) return;
-            this.dragLink = `M ${e.layerX / this.scale} ${e.layerY / this.scale}` + endPoint.call(this.focusedPin);
+            this.dragLink = `M ${e.layerX} ${e.layerY}` + endPoint.call(this.focusedPin);
         },
     },
     onDown(e) {
