@@ -59,7 +59,7 @@ export class tensor{
         this.id = genId();
     }
     _resize_data(data, ...shape){
-        while (shape.any(i=>BinaryArray.isArray(i)))
+        while (shape.some(i=>Array.isArray(i)))
             shape = shape.flat();
         const size = shape.mul();
         if (size !== data.length)

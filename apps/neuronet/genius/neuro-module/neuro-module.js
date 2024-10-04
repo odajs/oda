@@ -166,13 +166,13 @@ export class Linear extends NeuroModule{
         if (new_shape.sum() <= this.shape_out.sum())
             return;
         this.shape_out = this.params.shape_out = new_shape;
-        let data = new this.W.dType(this.shape_out.mul() * this.shape_out.mul());
+        let data = new this.W.dType(this.shape_in.mul() * this.shape_out.mul());
         data = data.map((_,i)=>{
             return this.W.data[i] ?? (Math.random()-.5) * .1;
         })
         this.W._resize_data(data, this.shape_in, this.shape_out);
         if (this.bias){
-            data = new this.B.dType(this.shape_out);
+            data = new this.B.dType(this.shape_out.mul());
             data = data.map((_,i)=>{
                 return this.B.data[i] ?? (Math.random()-.5) * .1;
             })
