@@ -1646,6 +1646,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
             outline-offset: -2px;
             outline-style: auto;
             outline-color: var(--pointer-color);
+            outline-style: dashed;
             z-index: 1;
             outline-width: 1px !important;
         }

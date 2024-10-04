@@ -197,11 +197,10 @@ ODA({ is: 'oda-color-picker-oklch',
     refreshValue() {
         if (this.isReady) {
             this.value = undefined;
-            this.async(() => {
-                const idx = this.historyIdx;
-                this.history['s' + idx] = this.value;
-                this.history = { ...this.history };
-            })
+            const idx = this.historyIdx;
+            this.history['s' + idx] = this.value;
+            this.history = { ...this.history };
+            this.fire('color-changed', this.value);
         }
     },
     setValue(e, skip) {

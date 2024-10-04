@@ -205,8 +205,8 @@ export class Embedding  extends NeuroModule{
             res.id = Object.keys(this.vocabulary).length;
             res.emb = tensor.param(tensor.rand(this.dim).minus_(.5))._label('emb: '+word);
             res.cnt = tensor.param(tensor.rand(this.dim).minus_(.5))._label('cnt: '+word);
-            if(this['#size'] >= this.logits.d_out){
-                this.logits.updateOutSize(this.logits.d_out + this.dim);
+            if(this['#size'] >= this.logits.shape_out[0]){
+                this.logits.updateOutShape(this.logits.shape_out[0] + this.dim);
             }
             this._tokens = undefined
             this['#size']++;
@@ -219,9 +219,9 @@ ODA({is: 'oda-embedding',
         <style>
             :host{
                 @apply --vertical;
-                @apply --dark;
+                /*@apply --dark;*/
                 overflow: hidden;
-                max-height: 300px;
+                height: 300px;
             }
             span{
                 padding: 4px;
@@ -230,6 +230,11 @@ ODA({is: 'oda-embedding',
 
             }
         </style>
+        <div class="bold horizontal header">
+            <span>token</span>
+            <span flex>vector</span>
+            <span>error</span>
+        </div>
         <div flex style="overflow-y: auto;">
             <div stadow ~for="tokenizer?.vocabulary" vertical>
                 <div class="horizontal">
@@ -239,7 +244,7 @@ ODA({is: 'oda-embedding',
                 </div>
             </div>
         </div>
-        <div class="horizontal">
+        <div class="horizontal header">
             <span>tokens: {{this.tokenizer?.size || 0}}</span>
             <span>error:  {{tokenizer?.error.toLocaleString('ru-RU', {style: 'percent',  minimumFractionDigits: 2, maximumFractionDigits: 2})}}</span>
         </div>

@@ -159,7 +159,7 @@ ODA({ is: 'oda-theme-editor', imports: '@tools/property-grid, @oda/color-picker'
                 return props;
             })()
         }) { }
-        const res = await ODA.showDropdown('oda-property-grid', { inspectedObject: props }, { minWidth: '480px' });
+        const res = await ODA.showDropdown('oda-property-grid', { inspectedObject: props }, { anchor: 'right-top', align: 'left', title: 'Custom property\'s', minWidth: '480px' });
     },
     get changes() {
         return changes;
@@ -231,13 +231,21 @@ ODA({ is: 'oda-theme-editor-color-picker', imports: '@oda/color-picker-oklch',
         let val = this.value,
         light, dark;
         if (val.includes('light-dark')) {
-            let v = val.replace('light-dark(', '').replace(')', '').split(',');
-            dark = v[1];
+            let v = val.replace('light-dark(', '').split(',');
+            dark = v[1].replace(')', '');
             light = v[0];
             val = isDark ? dark : light;
         }
-        let res = await ODA.showDropdown('oda-color-picker-oklch', { value: val, srcValue: val }, { });
-        res = res.result;
+        const el = ODA.createElement('oda-color-picker-oklch');
+        el.listen('color-changed', e => {
+            this.throttle('colorChanged', () => {
+                this.value = e.detail.value;
+                // console.log(this.value);
+
+            }, 50)
+        })
+        let res = await ODA.showDropdown(el, { value: val, srcValue: val }, { anchor: 'right-top', align: 'left', parent: e.target, title: 'Select color' });
+        res = res?.result;
         if (res) {
             this.value = res;
         }

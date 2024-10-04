@@ -159,7 +159,7 @@ export class Linear extends NeuroModule{
         }
 
     }
-    updateOutSize(new_shape){ //Изменение выходного размера слоя!!!
+    updateOutShape(new_shape){ //Изменение выходного размера слоя!!!
         if(!Array.isArray(new_shape))
             new_shape = [new_shape];
 
