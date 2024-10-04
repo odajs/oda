@@ -30,7 +30,7 @@ export class tensor{
                     dType = next.dType
                     shape.push(...next.shape);
                     let size = next.size;
-                    next = new dType(shape.reduce((r, v)=> r * v,  1));
+                    next = new dType(shape.mul());
                     data = data.reduce((r, v, i)=>{
                         r.set(v.data, i * size);
                         return r
@@ -59,9 +59,9 @@ export class tensor{
         this.id = genId();
     }
     _resize_data(data, ...shape){
-        if(Array.isArray(shape[0]))
-            shape = shape[0];
-        const size = shape.reduce((r, v)=>r * (v || 1), 1);
+        while (shape.any(i=>BinaryArray.isArray(i)))
+            shape = shape.flat();
+        const size = shape.mul();
         if (size !== data.length)
             throw new Error(`_shape from (${this.shape}) to (${shape}) not allow.`);
         this.#data = data;
@@ -193,7 +193,7 @@ export class tensor{
         return this.#shape;
     }
     get size(){
-        return this.shape.reduce((r, v)=>r * v, 1);
+        return this.shape.mul();
     }
     get dim(){
         return this.shape.length;
@@ -316,7 +316,7 @@ export class tensor{
         }
         if (!Array.isArray(split_sizes))
             throw new Error(`Argument 'split_sizes' (position 1) must be 'Integer' or 'array of Integer', but not '${typeof split_sizes}'`)
-        if(split_sizes.reduce((r, v)=>r + v, 0) !== max)
+        if(split_sizes.sum() !== max)
                 throw new Error(`split_sizes expects to sum exactly to ${max} (input tensor's size at dimension ${dim}), but got split_sizes=[${split_sizes}]`);
         let idx = -1;
         const src = this.data;
@@ -325,7 +325,7 @@ export class tensor{
             dim = this.dim + dim;
         const result = split_sizes.map((v, i)=>{
             shape[dim] = v;
-            const size = shape.reduce((r, s)=>r * s, 1);
+            const size = shape.mul();
             let start = idx;
             const d = new this.dType(size).map(x=>src[++idx]);
             let out = tensor.from(d)._shape(...shape)._src(this)._label(`split (${shape}): ${i+1} of ${split_sizes.length} -> ${v}`);
@@ -363,7 +363,7 @@ export class tensor{
             step /= s;
             d--;
         }
-        const data = new dType(shape.reduce((r,v)=>r*v, 1) * size);
+        const data = new dType(shape.mul() * size);
         let idx = 0;
         for (let i = 0; i < size; i += step){
             let delta = i + step;
@@ -391,7 +391,7 @@ export class tensor{
         if (!Array.isArray(shape))
             shape = [shape];
         let handler = typeof value === 'function'?value:i=>value;
-        let size = shape.reduce((r, v)=>r * v, 1);
+        let size = shape.mul();
         let data = new dType(size);
         data = data.map(handler);
         return tensor.from(data, dType)._shape(shape);
@@ -440,7 +440,7 @@ export class tensor{
         if (!Array.isArray(shape))
             shape = [shape];
         let steps = shape.pop();
-        let repeat = shape.reduce((r,v)=>r * v, 1);
+        let repeat = shape.mul();
         shape.push(steps);
         if (to === undefined){
             to = from + steps - 1;
@@ -499,7 +499,7 @@ export class tensor{
                 repeat_shape = repeat_shape[0];
             }
         }
-        const multiply = repeat_shape.reduce((r, v)=>r*v, 1);
+        const multiply = repeat_shape.mul();
         const new_size = this.size * multiply;
         let data = new this.dType(new_size);
         const old_size = this.data.length;
@@ -604,7 +604,7 @@ tensor.prototype.slice = function (...slicers){
         this.shape.forEach((_, d)=>{
             func.push('\t'.repeat(this.dim - d - 1)+`}`);
         })
-        size = shape.reduce((r,v)=>r*v, 1);
+        size = shape.mul();
         func.unshift(`let out = new tensor.dType(${size})`);
         func.push(`return tensor.constructor.from(out)._shape(${shape})`);
         func = func.join('\n');
@@ -659,7 +659,7 @@ tensor.prototype.slice = function (...slicers){
                 this.shape.forEach((_, d)=>{
                     func.push('\t'.repeat(this.dim - d - 1)+`}`);
                 })
-                size = shape.reduce((r,v)=>r*v, 1);
+                size = shape.mul();
                 func.unshift(`out = out.grad;`);
                 func = func.join('\n');
                 fn_cache.slice ??= Object.create(null);
@@ -689,7 +689,7 @@ tensor.prototype._element_wise_operator = function (label, other, forward_func, 
             throw new Error(`RuntimeError: The size of first tensor (${idx1}) must match the size of second tensor (${idx2}) at ${i} dimension`);
         shape.push(Math.max(idx1, idx2));
     }
-    let size = shape.reduce((r, v)=>r*v, 1);
+    let size = shape.mul();
     let func = [`let out = new Float32Array(${size});`];
     func.push('let idx, g;');
     func.push('const x_data = this.data;');
@@ -701,7 +701,7 @@ tensor.prototype._element_wise_operator = function (label, other, forward_func, 
     let t;
     for (let i = 0; i<dim; i++){
         t = '\t'.repeat(i);
-        let s = shape.slice(0, i+1).reduce((r,v)=>r * v, 1)
+        let s = shape.slice(0, i+1).mul();
         func.push(t+`for(let i${i} = 0; i${i} < ${s}; i${i} += ${s/shape[i]}){`);
         let idx = Array(i+1).fill().map((_,  i)=>'i'+i).join(' + ')
         if (dim - i === 1)
@@ -733,7 +733,7 @@ tensor.prototype._element_wise_operator = function (label, other, forward_func, 
             func.push('const y_grad = other.grad;');
             for (let i = 0; i<dim; i++){
                 t = '\t'.repeat(i);
-                let s = shape.slice(0, i+1).reduce((r,v)=>r * v, 1)
+                let s = shape.slice(0, i+1).mul()
                 func.push(t+`for(let i${i} = 0; i${i} < ${s}; i${i} += ${s/shape[i]}){`);
                 let idx = Array(i+1).fill().map((_,  i)=>'i'+i).join(' + ')
                 if (dim - i === 1)
@@ -1329,7 +1329,7 @@ tensor.prototype.pad = function(paddings, mode = 'constant', constant_value = 0)
     for (let i = 0; i < paddings.length; i++) {
         new_shape[i] += paddings[i] * 2;
     }
-    let new_data = new this.dType(new_shape.reduce((a, b) => a * b, 1)).fill(constant_value);
+    let new_data = new this.dType(new_shape.mul()).fill(constant_value);
     let offsets = paddings.slice();
     let strides = [1];
     for (let i = this.dim - 1; i >= 0; i--) {

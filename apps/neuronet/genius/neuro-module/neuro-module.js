@@ -163,14 +163,14 @@ export class Linear extends NeuroModule{
         if(!Array.isArray(new_shape))
             new_shape = [new_shape];
 
-        if (new_shape <= this.shape_out)
+        if (new_shape.sum() <= this.shape_out.sum())
             return;
         this.shape_out = this.params.shape_out = new_shape;
-        let data = new this.W.dType(this.d_in * this.shape_out.mul());
+        let data = new this.W.dType(this.shape_out.mul() * this.shape_out.mul());
         data = data.map((_,i)=>{
             return this.W.data[i] ?? (Math.random()-.5) * .1;
         })
-        this.W._resize_data(data, this.d_in, this.shape_out);
+        this.W._resize_data(data, this.shape_in, this.shape_out);
         if (this.bias){
             data = new this.B.dType(this.shape_out);
             data = data.map((_,i)=>{
@@ -271,11 +271,11 @@ export class conv1D extends NeuroModule {
         let padded_size = L_in + padding * 2;
         let over_axis = x.shape.slice(0, x.dim-2);
 
-        let batches = over_axis.reduce((r,v)=>r*v,1);
+        let batches = over_axis.mul();
         let dim_out = (padded_size - dilation * (k_size - 1) - 1) / stride + 1;
         const shape_out = [this.out_channels, dim_out];
         shape_out.unshift(...over_axis)
-        const out_size = shape_out.reduce((r, v) => r * v, 1);
+        const out_size = shape_out.mul();
         let data = new Float32Array(out_size);
 
         let outs = this.out_channels;

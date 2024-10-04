@@ -84,7 +84,7 @@ ODA({is: 'oda-loss-chart', template: /*html*/ `
         let points = ps.map((v,i)=>[i*dx+this.padding,h-(v-min)/(max-min)*h+this.padding])
         let rez = 'M ' + points[0].join(' ') + ' '
         if (this.bezier) rez+=  'Q ' + points[0].join(' ') + ', ' + points[1].join(' ') + ' '
-        else  rez += 'L ' + points[1].join(' ') + ' '
+        else  rez += 'L ' + points[1]?.join(' ')  + ' '
         points.slice(2).forEach(e => rez += (this.bezier?'T ':'L ') + e.join(' ') + ' ' )
         return rez
     },
