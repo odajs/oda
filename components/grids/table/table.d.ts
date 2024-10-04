@@ -42,6 +42,7 @@ interface Table extends odaComponent {
 
     body: TableBody;
 
+    moveCellPointer(h: number, v: number);
     focusCell(rowIndex: number, colIndex: number): void;
     focusRow(e: MouseEvent): void;
     getRowByIndex(rowIndex: number): TableRow;

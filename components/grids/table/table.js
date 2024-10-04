@@ -943,7 +943,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
 
     },
     /**@this {Table} */
-    moveCellPointer(h = 0, v = 0, event) {
+    moveCellPointer(h = 0, v = 0) {
         if (!this.allowFocusCell) return;
 
         if (!this.focusedCell) {
@@ -956,15 +956,14 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             col: this.focusedCell.colIndex + h
         };
         //fix row
-        const maxRowIdx = this.screenFrom + (this.rows.length - 1);
-        if (newPos.row < this.raisedRows.length || newPos.row > maxRowIdx) {
-            this.scrollTop += this.rowHeight * v + 1;
-            if (newPos.row < this.raisedRows.length) {
-                newPos.row = this.raisedRows.length;
-            }
-            if (newPos.row > maxRowIdx) {
-                newPos.row = this.focusedCell.rowIndex;
-            }
+        const maxRowIdx = (this.rows.length - 1) - this.raisedRows.length;
+        if (newPos.row > maxRowIdx) {
+            this.scrollTop += this.rowHeight * v + (newPos.row - maxRowIdx);
+            newPos.row = this.focusedCell.rowIndex;
+        }
+        if (newPos.row < 0) {
+            this.scrollTop += this.rowHeight * v + (0 - newPos.row);
+            newPos.row = this.focusedCell.rowIndex;
         }
         //fix col
         if (newPos.col < 0) {
@@ -973,6 +972,14 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         const maxColIdx = this.activeCols.length - 1;
         if (newPos.col > maxColIdx) {
             newPos.col = this.focusedCell.colIndex;
+        }
+        const targetRow = this.getRowByIndex(newPos.row);
+        const sign = v < 0 ? -1 : 1;
+        if (!targetRow) {
+            return;
+        }
+        if (targetRow.__group__ || targetRow.disabled) {
+            return this.moveCellPointer(h, v + 1 * sign);
         }
         this.focusCell(newPos.row, newPos.col);
         // this.focusedCell = { row: this.visibleRows[newPos.row], col: this.activeCols[newPos.col] };
@@ -1316,7 +1323,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         if (this.activeCell === cellElement) {
             return this.deactivateCell(cellElement);
         }
-        if (typeof cellElement?.activate === 'function' && !(cellElement.readOnly || cellElement.readonly)) {
+        if (typeof cellElement?.activate === 'function' && (cellElement.column?.treeMode || !(cellElement.readOnly || cellElement.readonly))) {
             this.listen('deactivate', () => {
                 this.async(() => {
                     if (this.activeCell === cellElement) {
@@ -1330,22 +1337,15 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                     }
                 }, 300);
             }, { target: cellElement, once: true });
-            //todo: structure-tree, index-table
-            if (typeof cellElement.activate === 'function') {
-                cellElement.activate();
-            }
-            else {
-                const col = this.activeCols.find(c => c.treeMode);
-                const treeCell = this.body.findCellByCoordinates(cellElement.cellCoordinates.rowIndex, cellElement.cellCoordinates.colIndex);
-                if (treeCell) {
-                    const row = this.getRowByIndex(this.focusedCell.rowIndex);
-                    if (row && row === this.focusedRow) {
-                        treeCell?.activate();
-                    }
-                }
-            }
+            return cellElement.activate();
         }
-        else {
+        const col = this.activeCols.find(c => c.treeMode);
+        const treeCell = this.body.findCellByCoordinates(cellElement.cellCoordinates.rowIndex, cellElement.cellCoordinates.colIndex);
+        if (treeCell) {
+            const row = this.getRowByIndex(this.focusedCell.rowIndex);
+            if (row && row === this.focusedRow) {
+                return treeCell?.activate();
+            }
             this.activeCell = null;
         }
     },
@@ -1932,7 +1932,16 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
             res.push('no-flex');
         }
         const colIndex = this.activeCols.findIndex(c => c === col);
-        const rowIndex = this.rows.findIndex(r => r === row);
+        const rowIndex = (() => {
+            let idx = this.rows.findIndex(r => r === row);
+            if (idx === -1) {
+                idx = this.raisedRows.findIndex(r => r === row);
+            }
+            else {
+                idx += this.raisedRows.length;
+            }
+            return idx;
+        })();
         if (this._cellIsFocused(rowIndex, colIndex, elem)) {
             res.push('focused-cell');
         }
@@ -1972,7 +1981,12 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
     },
     /**@this {Table} */
     getRowByIndex(index) {
-        return this.rows[index];
+        if (index < this.raisedRows.length) {
+            return this.raisedRows[index];
+        }
+        else {
+            return this.rows[index - this.raisedRows.length];
+        }
     }
 });
 ODA({is: 'oda-table-footer-cell', extends: 'oda-table-cell',
