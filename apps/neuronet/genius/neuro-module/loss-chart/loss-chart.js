@@ -2,23 +2,27 @@ ODA({is: 'oda-loss-chart', template: /*html*/ `
     <style>
         :host {
             @apply --vertical;
-            @apply --flex;
-            @apply --dark;
         }
         h3 {padding-left:40px;}
         .small {font-size:7px; font-family: monospace;}
+        .x {font-size:5px; fill:#000;}
     </style>
     <h3  ~if='label.length>0'>{{label}}</h3>
     <svg xmlns='http://www.w3.org/2000/svg' :view-box="'0 0 ' + width + ' ' + height" preserveAspectRatio="none">
         <rect x="0" y="0" :width :height fill='var(--dark-background)'/>
-        <path ~for='pointsL' ~if='kvo>1' :d='pathD($for.item)' fill="none" :stroke='lineColor($for.index)' stroke-width="2"/>
-        <path id='qqq' ~for='granLine' ~if='kvo>1' :d='$for.item' fill="none" stroke='#fff' stroke-width="0.2"/>
+        <g ~for='lineLevels(nHorizontal,minMax[0],minMax[1])' class='gridX'>
+            <path :d='pathGrid($for.item,0)' fill="none" stroke='#000' stroke-width="0.1"/>
+            <text :x="0" :y="$for.item*wh[1]+padding" class='small x' >{{$for.item}}</text>
+        </g>
+        <path ~for='pointsL' ~if='kvo>1' :d='pathD($for.item)' fill="none" :stroke='lineColor($for.index)' stroke-width="3"/>
+        <path ~for='granLine' ~if='kvo>1' :d='$for.item' fill="none" stroke='#fff' stroke-width="0.4"/>
         <text :x="padding-17" :y="padding-1" class='small' >max: {{minMax[1]}}</text>
         <text :x="padding-17" :y="height-padding+7" class='small' >min: {{minMax[0]}}</text>
     </svg>
     <ul class='legend' >
         <li ~for='pointsL' ~style='"color:"+lineColor($for.index)+";"'> {{legendText($for.index)}} </li>
-    </li>
+    </ul>
+    <i>{{lineLevels(nHorizontal,minMax[0],minMax[1])}}</i>
     `,
 
     data: [],
@@ -34,10 +38,26 @@ ODA({is: 'oda-loss-chart', template: /*html*/ `
         },
         bezier:false,
         legend:[],
+        nHorizontal:5,
     },
     get granLine() {
         let [p, h, w] = [this.padding, this.height, this.width]
         return [[0,p,w,p], [0,h-p,w,h-p], [p,0,p,h], [w-p,0,w-p,h] ].map(([x1,y1,x2,y2])=>`M ${x1} ${y1} L ${x2} ${y2}`)
+    },
+    pathGrid(k,b) {
+       return `M ${0} ${k*this.wh[1]+this.padding} L ${this.width} ${k*this.wh[1]+this.padding}`
+    },
+
+    lineLevels(n,a,b){
+        // console.log([f,g])
+        let c = Math.abs(a-b)/n // абсолютный шаг
+        // console.log(`c=${c}`)
+        let l = 10**Math.floor(Math.log10(c)) // степень округления
+        // console.log(`l=${l}`)
+        let [f,g] = [Math.trunc(a/l)*l, Math.round(c/l)*l] // круглое начало и круглый шаг
+        // console.log([f,g])
+        let rez = new Array(2*n).fill(0).map((_,i)=> f+i*g).filter(d=> (d>=a)&&(d<=b)) // результат
+        return rez
     },
 
     get kvo() {return this.pointsL.length},
