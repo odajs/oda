@@ -40,7 +40,33 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         if (el) {
             this.table.fire('cell-dblclick', el.row);
         }
-
+    },
+    arrowLeft(e) {
+        this.$('oda-table-body').$keys.arrowLeft(e);
+    },
+    arrowRight(e) {
+        this.$('oda-table-body').$keys.arrowRight(e);
+    },
+    arrowUp(e) {
+        this.$('oda-table-body').$keys.arrowUp(e);
+    },
+    arrowDown(e) {
+        this.$('oda-table-body').$keys.arrowDown(e);
+    },
+    home(e) {
+        this.$('oda-table-body').$keys.home(e);
+    },
+    end(e) {
+        this.$('oda-table-body').$keys.end(e);
+    },
+    pageUp(e) {
+        this.$('oda-table-body').$keys.pageUp(e);
+    },
+    pageDown(e) {
+        this.$('oda-table-body').$keys.pageDown(e);
+    },
+    enter(e) {
+        this.$('oda-table-body').$keys.enter(e);
     },
     // async openSettings(parent) {
     //     this.showSettings = !this.showSettings;
@@ -256,7 +282,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         focusCell(rowIndex, colIndex) {
             const col = this.activeCols[colIndex];
             if (col.$flex) return;
-            rowIndex -= this.raisedRows.length;
+
             if (this.focusedCell?.rowIndex === rowIndex && this.focusedCell?.colIndex === colIndex) return;
 
             if (this.focusedCell && (this.focusedCell.rowIndex !== rowIndex || colIndex === this.activeCols.length - 1) && this.activeCell && this.fillingNewLineMode) {
