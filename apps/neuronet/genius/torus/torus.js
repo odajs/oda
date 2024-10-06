@@ -932,6 +932,12 @@ tensor.prototype.crossEntropy = function (target) {
 
     const step = this.shape.last;
     const size = this.size/step;
+    let errs = new Float32Array(size);
+    let idx = -1;
+    for(let i = 0; i<this.size; i+=step){
+        const slice = this.data.slice(i, i + step);
+        errs[++idx] = -slice.data.reduce((r, x, i)=>r + y[i] * Math.log(x), 0);
+    }
 
     let error = -this.data.reduce((r, x, i)=>r + y[i] * Math.log(x), 0);
     error /= this.size  // todo дополнительные измерения
