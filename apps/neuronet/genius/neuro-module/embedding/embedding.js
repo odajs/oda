@@ -8,11 +8,11 @@ export class Embedding  extends NeuroModule{
         return this._BINS ??= Array(this.win_size).fill().map((v, i)=>(2. ** -(i+1) + .5));
     }
     __init__(){
-        this.vocabulary = {"<end>":{
+        this.vocabulary = {"[end]":{
                 id: 0,
-                w: "<end>",
+                w: "[end]",
                 emb: tensor.param(tensor.zeros(this.dim)),
-                cnt: tensor.param(tensor.random(this.dim, -.1,.1))
+                cnt: tensor.param(tensor.random(this.dim, -1,1))
             }}
         this.logits = new Linear(this.dim, this.dim, true);
     }
@@ -83,7 +83,7 @@ export class Embedding  extends NeuroModule{
     }
     train(text, train_logits = false){
         let tokens = this._tokenize(text);
-        tokens.push(this.vocabulary['<end>']);
+        tokens.push(this.vocabulary['[end]']);
         let j;
         for (let i = 0; i<tokens.length; i++){
             let token = tokens[i];
@@ -208,8 +208,8 @@ export class Embedding  extends NeuroModule{
             const res = Object.create(null);
             res.w = word;
             res.id = Object.keys(this.vocabulary).length;
-            res.emb = tensor.param(tensor.random(this.dim,-.1,.1))._label('emb: '+word);
-            res.cnt = tensor.param(tensor.random(this.dim,-.1,.1))._label('cnt: '+word);
+            res.emb = tensor.param(tensor.random(this.dim,-1,1))._label('emb: '+word);
+            res.cnt = tensor.param(tensor.random(this.dim,-1,1))._label('cnt: '+word);
             if(this['#size'] >= this.logits.shape_out[0]){
                 this.logits.updateOutShape(this.logits.shape_out[0] + this.dim);
             }

@@ -913,15 +913,14 @@ tensor.prototype.MSE = function (target){
     let loss = 0;
     let errors = this.data.map((x, i)=>{
         x = (x - (y[i] || 0));
-        x = x ** 2
-        loss += x;// ** 2;
+        loss += x ** 2;
         return x;
     });
     loss /= this.size;
     const out = tensor.from([loss])._src(this)._label(`MSE (${this.shape}): loss=`+loss);
     out._back = ()=>{
         for (let i = 0; i<errors.length; i++){
-            this.grad[i] += -(2 * errors[i]);
+            this.grad[i] += -errors[i];
         }
     }
     return out;
