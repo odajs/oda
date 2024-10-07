@@ -106,7 +106,8 @@ export class Embedding  extends NeuroModule{
         windows = tensor.stack(windows);
         let res = tensor.einsum(`ld,lod->lo`, [tokens, windows]);
         res = res.sigm();
-        let target = this.BINS.slice(0, res.shape[0]);
+        let target = tensor.from(this.BINS.slice(0, res.shape[0]));
+        target = target.repeat(res.shape[1]);
         res = res.MSE(target);
         token.error = res.data[0];
         res.back();

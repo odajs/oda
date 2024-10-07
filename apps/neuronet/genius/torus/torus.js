@@ -909,7 +909,7 @@ tensor.prototype.hardmax = function (){
     return out;
 }
 tensor.prototype.MSE = function (target){
-    let y = target.data ?? target;
+    let y = target.data ?? target; //todo переделать под тензоры
     let loss = 0;
     let errors = this.data.map((x, i)=>{
         x = (x - (y[i] || 0));
@@ -924,6 +924,10 @@ tensor.prototype.MSE = function (target){
         }
     }
     return out;
+}
+
+tensor.prototype.repeat = function (count = 1) {
+    return tensor.from(Array(count).fill().map(i=>this));
 }
 
 tensor.prototype.crossEntropy = function (target) {
