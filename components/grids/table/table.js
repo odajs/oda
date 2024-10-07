@@ -956,7 +956,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             col: this.focusedCell.colIndex + h
         };
         //fix row
-        const maxRowIdx = (this.rows.length - 1) - this.raisedRows.length;
+        const maxRowIdx = (this.rows.length - 1) + this.raisedRows.length;
         if (newPos.row > maxRowIdx) {
             this.scrollTop += this.rowHeight * v + (newPos.row - maxRowIdx);
             newPos.row = this.focusedCell.rowIndex;
