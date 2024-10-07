@@ -928,22 +928,22 @@ tensor.prototype.MSE = function (target){
 
 tensor.prototype.crossEntropy = function (target) {
     target = tensor.from(target);
-    let y = target.data;
-
+    let ys = target.data;
     const step = this.shape.last;
     const size = this.size/step;
-    let errs = new Float32Array(size);
-    let idx = -1;
-    let errors = this.data.map((x, i)=>-y[i] * Math.log(x), 0);
-    let error = errors.reduce((r,v)=>r+v)/size;
-    const out = tensor.from([error])._src(this)._label('crossEntropy');
+    let losses = this.data.map((x, i)=>-ys[i] * Math.log(x), 0);
+    let loss = losses.reduce((r,v)=> r+v )/size;
+    const out = tensor.from([loss])._src(this)._label('crossEntropy');
     this._back = ()=>{
         this.src.forEach(src=>{
             src.grad = this.grad;
         })
     }
     out._back = ()=>{
-        this.grad = this.data.map((x, i)=>y[i]-x);
+        this.grad = ys.map((y, i)=> {
+            let x = this.data[i];
+            return y - x;
+        });
     }
     return out;
 }
