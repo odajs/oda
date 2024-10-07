@@ -145,8 +145,8 @@ export class Linear extends NeuroModule{
         super(arguments);
     }
     __init__() {
-        let to = .1
-        let from = -.1
+        let to = .5
+        let from = -.5
         if (this.dType === Int8Array){
             to = 13
             from = -13
