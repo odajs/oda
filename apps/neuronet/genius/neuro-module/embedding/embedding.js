@@ -81,7 +81,7 @@ export class Embedding  extends NeuroModule{
     get error(){
         return (this.losses?.last?.reduce((r,v)=>r+v) || 2)/2
     }
-    train(text){
+    train(text, train_logits = false){
         let tokens = this._tokenize(text);
         tokens.push(this.vocabulary['<end>']);
         let j;
@@ -91,12 +91,17 @@ export class Embedding  extends NeuroModule{
             let window = tokens.slice(j, j + this.win_size);
             this.trainStep(token, window);
         }
-        tokens = this.tokens.map(i=>i.emb);
-        let softmax = this.forward(tokens);
-        const target = tensor.eye(softmax.shape);
-        const losses = softmax.crossEntropy(target);
-        losses.back();
-        this.losses.push([this.tokens_error, losses.data[0]]);
+        if (train_logits){
+            tokens = this.tokens.map(i=>i.emb);
+            let softmax = this.forward(tokens);
+            const target = tensor.eye(softmax.shape);
+            const losses = softmax.crossEntropy(target);
+            losses.back();
+            this.losses.push([this.tokens_error, losses.data[0]]);
+        }
+        else{
+            this.losses.push([this.tokens_error]);
+        }
         return tokens;
     }
     trainStep(token, phrase){
