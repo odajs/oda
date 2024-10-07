@@ -84,13 +84,36 @@ export class Embedding  extends NeuroModule{
     train(text, train_logits = false){
         let tokens = this._tokenize(text);
         tokens.push(this.vocabulary['[end]']);
-        let j;
-        for (let i = 0; i<tokens.length; i++){
-            let token = tokens[i];
-            j = i + 1;
-            let window = tokens.slice(j, j + this.win_size);
-            this.trainStep(token, window);
-        }
+        let w = this.win_Size;
+        let size = w * (this.negative_size + 1);
+        const windows = tokens.map((t,i)=>{
+            const window = tokens.slice(i + 1, i + w);
+            let stop = size * 2;
+            while (stop-- && window.length < size && this.size > size){
+                const idx = Math.ceil(Math.random() * this.size)
+                const t = this.tokens[idx];
+                if (t && !window.includes(t)){
+                    window.push(t);
+                }
+            }
+            return tensor.stack(window.map(i=>i.cnt));
+        })
+        tokens = tensor.stack(tokens.map(i=>i.emb));
+        let res = tensor.einsum(`x,yx->y`, [tokens, windows]);
+        res = res.sigm();
+        res = res.MSE(target);
+        token.error = res.data[0];
+        res.back();
+        this['#tokens_error'] = undefined;
+
+
+        // let j;
+        // for (let i = 0; i<tokens.length; i++){
+        //     let token = tokens[i];
+        //     j = i + 1;
+        //     let window = tokens.slice(j, j + this.win_size);
+        //     this.trainStep(token, window);
+        // }
         if (train_logits){
             tokens = this.tokens.map(i=>i.emb);
             let softmax = this.forward(tokens);
