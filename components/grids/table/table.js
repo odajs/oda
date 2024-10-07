@@ -2376,7 +2376,7 @@ cells: {
                 overflow: hidden;
                 align-items: initial !important;
                 box-sizing: border-box;
-                min-width: {{column.width || 16}}px;
+                min-width: {{+column.width || 16}}px;
                 order: {{column.$order}};
                 @apply --no-flex;
             }
@@ -2863,7 +2863,7 @@ function modifyColumn(table, col) {
                 }
             },
             get() {
-                if (col.width)
+                if (+col.width)
                     return col.width;
                 if (col.__expanded__ && col.items?.length) {
                     if (col.$version !== storage.version)
