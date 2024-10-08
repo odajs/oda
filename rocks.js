@@ -838,6 +838,12 @@ in the <${host.localName}>`;
                 return this.reduce((r,v)=>r*v,1);
             }
         });
+        Object.defineProperty(Array.prototype, 'avg', {
+            enumerable: false, configurable: true,
+            value: function () {
+                return this.sum()/this.length;
+            }
+        });
     }
     String:{
         const kebabGlossary = Object.create(null);

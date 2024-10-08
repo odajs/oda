@@ -916,7 +916,7 @@ tensor.prototype.MSE = function (target){
         let start = i * step
         let slice = this.data.slice(start, start + step);
         let y = start>target.size?target.data.slice(0, step):target.data.slice(start, start + step);
-        let errors = slice.map((x, i)=>{
+        let errors = Array.prototype.map.call(slice, (x, i)=>{
             x = (x - (y[i] || 0));
             return x;
         });
@@ -927,8 +927,8 @@ tensor.prototype.MSE = function (target){
             return r + v**2;
         })
     })
+    const out = tensor.from(losses)._src(this)._label(`MSE (${this.shape})`);
     errors = errors.flat();
-    const out = tensor.from(losses)._src(this)._label(`MSE (${this.shape}): loss=`+loss);
     out._back = ()=>{
         for (let i = 0; i<errors.length; i++){
             this.grad[i] += -errors[i];

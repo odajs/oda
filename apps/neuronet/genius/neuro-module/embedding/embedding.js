@@ -83,7 +83,7 @@ export class Embedding  extends NeuroModule{
     }
     train(text, train_logits = false){
         let tokens = this._tokenize(text);
-        tokens.push(this.vocabulary['[end]']);
+        tokens.push(this.vocabulary['[end]'])
         let w = this.win_size;
         let size = w * (this.negative_size + 1);
         let windows = tokens.map((t, i)=>{
@@ -103,14 +103,16 @@ export class Embedding  extends NeuroModule{
         })
         tokens.pop();
         windows.pop();
-        tokens = tensor.stack(tokens.map(i=>i.emb));
+        let tokens_emb = tensor.stack(tokens.map(i=>i.emb));
         windows = tensor.stack(windows);
-        let res = tensor.einsum(`ld,lod->lo`, [tokens, windows]);
+        let res = tensor.einsum(`ld,lod->lo`, [tokens_emb, windows]);
         res = res.sigm();
         let target = tensor.from(this.BINS.slice(0, res.shape[0]));
-        target = target.repeat(res.shape[1]);
+        // target = target.repeat(res.shape[1]);
         res = res.MSE(target);
-        token.error = res.data[0];
+        tokens.forEach((v,i)=>{
+            v.error = ((v.error || 1) + res.data[i])/2
+        })
         res.back();
         this['#tokens_error'] = undefined;
 
