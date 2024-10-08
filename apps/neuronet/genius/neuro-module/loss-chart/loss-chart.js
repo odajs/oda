@@ -3,39 +3,57 @@ ODA({is: 'oda-loss-chart', template: /*html*/ `
         :host {
             @apply --vertical;
         }
-        h3 {padding-left:40px;}
-        .small {font-size:7px; font-family: monospace;}
-        .x {font-size:5px; fill:#000;}
+        h3 {
+            padding-left:40px;
+        }
+        .small {
+            font-size:14px; font-family: monospace;
+        }
+        .x {
+            font-size:10px; fill:#000;
+        }
+        .lines{
+            stroke-width: {{strokeWidth}};
+        }
+        .svgbox {
+            overflow:hidden;
+            height:350px;
+        }
     </style>
     <h3  ~if='label.length>0'>{{label}}</h3>
-    <svg xmlns='http://www.w3.org/2000/svg' :view-box="'0 0 ' + width + ' ' + height" preserveAspectRatio="none">
-        <rect x="0" y="0" :width :height fill='var(--dark-background)'/>
-        <g ~for='lineLevels(nHorizontal,minMax[0],minMax[1])' class='gridX'>
-            <path :d='pathGrid($for.item,0)' fill="none" stroke='#000' stroke-width="0.1"/>
-            <text :x="0" :y="$for.item*wh[1]+padding" class='small x' >{{$for.item}}</text>
-        </g>
-        <path ~for='pointsL' ~if='kvo>1' :d='pathD($for.item)' fill="none" :stroke='lineColor($for.index)' stroke-width="3"/>
-        <path ~for='granLine' ~if='kvo>1' :d='$for.item' fill="none" stroke='#fff' stroke-width="0.4"/>
-        <text :x="padding-17" :y="padding-1" class='small' >max: {{minMax[1]}}</text>
-        <text :x="padding-17" :y="height-padding+7" class='small' >min: {{minMax[0]}}</text>
-    </svg>
+    <div class='svgbox' flex @resize="_resize">
+        <svg   xmlns='http://www.w3.org/2000/svg' :view-box="'0 0 ' + width + ' ' + height" preserveAspectRatio="none">
+            <rect x="0" y="0" :width :height fill='var(--dark-background)'/>
+ <!--
+            <g ~for='lineLevels(nHorizontal,minMax[0],minMax[1])' class='gridX'>
+                <path :d='pathGrid($for.item,0)' fill="none" stroke='#000' stroke-width="0.4"/>
+               <text :x="0" :y="$for.item*wh[1]+padding" class='small x' >{{$for.item}}</text>
+            </g> -->
+            <path class="lines" ~for='pointsL' ~if='$for.item.length>1' :d='pathD($for.item)' fill="none" :stroke='lineColor($for.index)' />
+            <path ~for='granLine' ~if='kvo>1' :d='$for.item' fill="none" stroke='#fff' stroke-width="0.8"/>
+            <text :x="padding+3" :y="padding-2" class='small' >max: {{minMax[1]}}</text>
+            <text :x="padding+3" :y="height-padding+13" class='small' >min: {{minMax[0]}}</text>
+        </svg>
+    </div>
     <ul class='legend' >
         <li ~for='pointsL' ~style='"color:"+lineColor($for.index)+";"'> {{legendText($for.index)}} </li>
     </ul>
-    <i>{{lineLevels(nHorizontal,minMax[0],minMax[1])}}</i>
     `,
+    _resize(e){
+        // console.log(e)
+        let svgBox = this.$('.svgbox');
+        let [width,height] =  [svgBox.offsetWidth,svgBox.offsetHeight]
+        this.width = width
+        this.height = height
 
+    },
+    sss:[1],
     data: [],
     width:600,
     height:400,
     $public: {
         label:'',
-        strokeWidth:{
-            $def:2,
-            set(v) {
-                this.$$('svg path').forEach(el => el.setAttribute('stroke-width',v) )
-            }
-        },
+        strokeWidth:2,
         bezier:false,
         legend:[],
         nHorizontal:5,
@@ -49,21 +67,17 @@ ODA({is: 'oda-loss-chart', template: /*html*/ `
     },
 
     lineLevels(n,a,b){
-        // console.log([f,g])
         let c = Math.abs(a-b)/n // абсолютный шаг
-        // console.log(`c=${c}`)
         let l = 10**Math.floor(Math.log10(c)) // степень округления
-        // console.log(`l=${l}`)
         let [f,g] = [Math.trunc(a/l)*l, Math.round(c/l)*l] // круглое начало и круглый шаг
-        // console.log([f,g])
         let rez = new Array(2*n).fill(0).map((_,i)=> f+i*g).filter(d=> (d>=a)&&(d<=b)) // результат
         return rez
     },
 
-    get kvo() {return this.pointsL.length},
+    get kvo() {return this.pointsL[0].length},
 
     get minMax() {
-        let ollP = this.data.flat()
+        let ollP = this.data.flat().filter(a=>(a==(1+a-1))&&(a!=a+1) )
         return  [Math.min(...ollP),Math.max(...ollP)]
     },
     get padding() {return Math.min(this.width,this.height)/15},
@@ -81,7 +95,14 @@ ODA({is: 'oda-loss-chart', template: /*html*/ `
         let [w,h] = this.wh
         let dx = w/(ps.length-1)
         let [min,max] = this.minMax
-        let points = ps.map((v,i)=>[i*dx+this.padding,h-(v-min)/(max-min)*h+this.padding])
+        let pss = []
+        ps.forEach(a=>{
+            if (a == Infinity) pss.push(max+0.15*(max-min))
+            else if ((a==NaN)|| (a==null)) pss.push(min-0.15*(max-min))
+            else if ((a==(1+a-1))&&(a!=a+1)) pss.push(a)
+            else pss.push( (max + min)/2 )
+        })
+        let points = pss.map((v,i)=>[i*dx+this.padding,h-(v-min)/(max-min)*h+this.padding])
         let rez = 'M ' + points[0].join(' ') + ' '
         if (this.bezier) rez+=  'Q ' + points[0].join(' ') + ', ' + points[1].join(' ') + ' '
         else  rez += 'L ' + points[1]?.join(' ')  + ' '
@@ -91,14 +112,15 @@ ODA({is: 'oda-loss-chart', template: /*html*/ `
 
     get pointsL() {
         if (Array.isArray(this.data[0])) {
-            let rez = []
             this.data.forEach(n=>{
+                console.log(n)
                 n.forEach((v,k)=> {
                     rez[k] ??= []
                     rez[k].push(v)
                 })
             })
             return rez
+
         }
         else return [this.data]
 
