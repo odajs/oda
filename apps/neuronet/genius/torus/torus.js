@@ -925,7 +925,7 @@ tensor.prototype.MSE = function (target){
     let losses = errors.map(i=>{
         return i.reduce((r, v)=>{
             return r + v**2;
-        })
+        })/i.length;
     })
     const out = tensor.from(losses)._src(this)._label(`MSE (${this.shape})`);
     errors = errors.flat();

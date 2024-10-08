@@ -111,7 +111,7 @@ export class Embedding  extends NeuroModule{
         // target = target.repeat(res.shape[1]);
         res = res.MSE(target);
         tokens.forEach((v,i)=>{
-            v.error = ((v.error || 1) + res.data[i])/2
+            v.error = res.data[i]
         })
         res.back();
         this['#tokens_error'] = undefined;
