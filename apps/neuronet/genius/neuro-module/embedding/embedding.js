@@ -86,8 +86,9 @@ export class Embedding  extends NeuroModule{
         tokens.push(this.vocabulary['[end]']);
         let w = this.win_size;
         let size = w * (this.negative_size + 1);
-        let windows = tokens.map((t,i)=>{
-            const window = tokens.slice(i + 1, i + w);
+        let windows = tokens.map((t, i)=>{
+            i++;
+            const window = tokens.slice(i, i + w);
             if(!window.length)
                 return;
             let stop = size * 2;
