@@ -916,8 +916,8 @@ tensor.prototype.MSE = function (target){
         let start = i * step
         let slice = this.data.slice(start, start + step);
         let y = start>target.size?target.data.slice(0, step):target.data.slice(start, start + step);
-        let errors = Array.prototype.map.call(slice, (x, i)=>{
-            x = (x - (y[i] || 0));
+        let errors = Array.prototype.map.call(slice, (x, j)=>{
+            x = (x - (y[j] || 0));
             return x;
         });
         return errors
@@ -943,11 +943,24 @@ tensor.prototype.repeat = function (count = 1) {
 
 tensor.prototype.crossEntropy = function (target) {
     target = tensor.from(target);
+
     let ys = target.data;
     const step = this.shape.last;
     const size = this.size/step;
-    let losses = this.data.map((x, i)=>-ys[i] * Math.log(x), 0);
-    // let loss = losses.reduce((r,v)=> r+v )/size;
+
+    let errors = Array(this.size/step).fill().map((d, i)=>{
+        let start = i * step
+        let slice = this.data.slice(start, start + step);
+        let y = start>target.size?target.data.slice(0, step):target.data.slice(start, start + step);
+        let errors = Array.prototype.map.call(slice, (x, j)=>{
+            x = -y[j] * Math.log(x);
+            return x;
+        });
+        return errors
+    })
+    let losses = errors.map((e)=>{
+        return e.reduce((r,v)=> r+v );
+    });
     const out = tensor.from(losses)._src(this)._label('crossEntropy');
     this._back = ()=>{
         this.src.forEach(src=>{

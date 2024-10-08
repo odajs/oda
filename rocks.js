@@ -841,7 +841,7 @@ in the <${host.localName}>`;
         Object.defineProperty(Array.prototype, 'avg', {
             enumerable: false, configurable: true,
             value: function () {
-                return this.sum()/this.length;
+                return this.reduce((r,v)=>r+v)/this.length;
             }
         });
     }
