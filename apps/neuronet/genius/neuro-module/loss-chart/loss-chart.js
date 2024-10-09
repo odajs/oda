@@ -30,7 +30,7 @@ ODA({
                 <path :d='pathGrid($for.item,0)' fill="none" stroke='#000' stroke-width="0.4"/>
                <text :x="0" :y="$for.item*wh[1]+padding" class='small x' >{{$for.item}}</text>
             </g> -->
-            <path class="lines" ~for='pointsL' ~if='$for.item.length>1' :d='pathD($for.item)' fill="none" :stroke='lineColor($for.index)' />
+            <path class="lines" ~for='line_count' :d='lines[$for.index]' fill="none" :stroke='lineColor($for.index)' />
             <path ~for='granLine' :d='$for.item' fill="none" stroke='#fff' stroke-width="0.8"/>
             <text :x="padding+3" :y="padding-2" class='small' >max: {{minMax[1]}}</text>
             <text :x="padding+3" :y="height-padding+13" class='small' >min: {{minMax[0]}}</text>
@@ -47,6 +47,15 @@ ODA({
         this.width = width
         this.height = height
 
+    },
+    get line_count(){
+        return this.data?.reduce((r,v)=>{
+            const size = v?.length || 1
+            return r<size?size:r
+        },0)
+    },
+    get lines(){
+        return []
     },
     sss: [1],
     data: [],
