@@ -37,7 +37,7 @@ ODA({
         </svg>
     </div>
     <ul class='legend' >
-        <li ~for='pointsL' ~style='"color:"+lineColor($for.index)+";"'> {{legendText($for.index)}} </li>
+        <li ~for='line_count' ~style='"color:"+lineColor($for.index)+";"'> {{legendText($for.index)}} </li>
     </ul>
     `,
     _resize(e) {
@@ -62,7 +62,7 @@ ODA({
                 if (Number.isFinite(v)) lines[n_l][x]=v
             })
         })
-        return lines.map(o=> {
+        return lines.filter(o => Object.keys(o).length>1).map(o=> {
             let points = Object.entries(o).map(p => this.trP(p))
 
             let rez = 'M ' + points[0].join(' ') + ' '
@@ -109,48 +109,18 @@ ODA({
     get wh() { return [this.width, this.height].map(x => x - this.padding * 2) },
 
     lineColor(i) {
-        let c = Math.floor(360 / this.pointsL.length * i) + 100
+        let c = Math.floor(360 / this.line_count * i) + 100
         return `hsl(${c}, 100%, 80%)`
     },
     legendText(i) {
         return this.legend[i] || `line № ${i}`
     },
     trP([x, y]) {
-        let [w, h] = this.wh
-        // let maxX = Math.max(this.pointsL.map(l => l.length)) - 1
+        let [[w, h],[min, max], p] = [this.wh, this.minMax, this.padding]
         let dx = w / (this.data.length-1)
-        let [min, max] = this.minMax
-        // let persistency = (a, mi, ma, k) => {
-        //     if (a == Infinity) return ma + (k * (ma - mi))
-        //     else if ((a == NaN) || (a == null)) return mi - k * (ma - mi)
-        //     else if ((a == (1 + a - 1)) && (a != a + 1)) return a
-        //     else return (ma + mi) / 2
-        // }
-        // let y2 = persistency(y, min, max, 0.06)
-        // let x2 = persistency(x, 0, maxX, 0.05)
-
-        return [x * dx + this.padding, h - (y - min) / (max - min) * h + this.padding]
+        return [x * dx + p, h - (y - min) / (max - min) * h + p]
     },
-    // pathD(ps) {
-    //     let points = ps.map((v, i) => this.trP(i, v))
 
-    //     let rez = 'M ' + points[0].join(' ') + ' '
-    //     if (this.bezier) rez += 'Q ' + points[0].join(' ') + ', ' + points[1].join(' ') + ' '
-    //     else rez += 'L ' + points[1]?.join(' ') + ' '
-    //     points.slice(2).forEach(e => rez += (this.bezier ? 'T ' : 'L ') + e.join(' ') + ' ')
-    //     return rez
-    // },
-
-    get pointsL() {
-        if (Array.isArray(this.data[0])) {
-            let pointsL  = this.data[0].map((_,i) => this.data.map(row => row[i]) );
-            return pointsL
-        }
-        else {
-            return [this.data]
-        }
-
-    }
 
     // get pointsL() {
     //     let [lL,lP] = [this.data.length,this.maxPoint]
