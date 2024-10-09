@@ -43,23 +43,27 @@ interface Table extends odaComponent {
     body: TableBody;
 
     moveCellPointer(h: number, v: number);
-    focusCell(rowIndex: number, colIndex: number): void;
+    focusCell(row: TableRow, column: TableColumn): void;
     focusRow(e: MouseEvent): void;
     getRowByIndex(rowIndex: number): TableRow;
     _applyFilter(items: TableRow[]): void;
     activateCell(elem: HTMLElement): void;
+    compareRows(row1: TableRow, row2: TableRow): boolean;
+    scrollToRowIndex(index: number): void;
+    _cellIsFocused(row: TableRow, column: TableColumn, elem: HTMLElement & { cellCoordinates: {row: TableRow, column: TableColumn} }): boolean;
 }
 //table $pdp interface
 
 type TableFocusedCell = {
-    rowIndex: number;
-    colIndex: number;
+    row: TableRow;
+    column: TableColumn;
 }
 
 interface TableBody extends odaComponent{
     activeCell: HTMLElement;
 
     getFocusedCellElement(): HTMLElement;
+    findCellByCoordinates({row: TableRow, column: TableColumn}): HTMLElement
 }
 
 interface TableRow {
@@ -69,7 +73,7 @@ interface TableRow {
 
 interface TableColumn {
     name: string;
-    id?: string;
+    id?: number;
     $order?: number;
     className?: string;
     label?: string;

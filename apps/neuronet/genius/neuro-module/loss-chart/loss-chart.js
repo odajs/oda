@@ -30,7 +30,7 @@ ODA({is: 'oda-loss-chart', template: /*html*/ `
                <text :x="0" :y="$for.item*wh[1]+padding" class='small x' >{{$for.item}}</text>
             </g> -->
             <path class="lines" ~for='pointsL' ~if='$for.item.length>1' :d='pathD($for.item)' fill="none" :stroke='lineColor($for.index)' />
-            <path ~for='granLine' ~if='kvo>1' :d='$for.item' fill="none" stroke='#fff' stroke-width="0.8"/>
+            <path ~for='granLine' :d='$for.item' fill="none" stroke='#fff' stroke-width="0.8"/>
             <text :x="padding+3" :y="padding-2" class='small' >max: {{minMax[1]}}</text>
             <text :x="padding+3" :y="height-padding+13" class='small' >min: {{minMax[0]}}</text>
         </svg>
@@ -74,8 +74,6 @@ ODA({is: 'oda-loss-chart', template: /*html*/ `
         return rez
     },
 
-    get kvo() {return this.pointsL[0].length},
-
     get minMax() {
         let ollP = this.data.flat().filter(a=>(a==(1+a-1))&&(a!=a+1) )
         return  [Math.min(...ollP),Math.max(...ollP)]
@@ -84,25 +82,42 @@ ODA({is: 'oda-loss-chart', template: /*html*/ `
     get wh() { return [this.width,this.height].map(x=>x-this.padding*2) },
 
     lineColor(i) {
-        let c = Math.floor(360/this.kvo*i)+100
+        let c = Math.floor(360/this.pointsL.length*i)+100
         return `hsl(${c}, 100%, 80%)`
     },
     legendText(i) {
         return this.legend[i] || `line № ${i}`
     },
-
-    pathD(ps){
+    trP(x,y) {
         let [w,h] = this.wh
-        let dx = w/(ps.length-1)
+        let maxX = Math.max(this.pointsL.map(l=> l.length))-1
+        let dx = w/maxX
         let [min,max] = this.minMax
-        let pss = []
-        ps.forEach(a=>{
-            if (a == Infinity) pss.push(max+0.15*(max-min))
-            else if ((a==NaN)|| (a==null)) pss.push(min-0.15*(max-min))
-            else if ((a==(1+a-1))&&(a!=a+1)) pss.push(a)
-            else pss.push( (max + min)/2 )
-        })
-        let points = pss.map((v,i)=>[i*dx+this.padding,h-(v-min)/(max-min)*h+this.padding])
+        let persistency = (a,mi,ma,k) => {
+            if (a == Infinity) return ma+(k*(ma-mi))
+            else if ((a==NaN)|| (a==null)) return mi-k*(ma-mi)
+            else if ((a==(1+a-1))&&(a!=a+1)) return a
+            else return (ma + mi)/2
+        }
+        let y2 = persistency(y,min,max,0.06)
+        let x2 = persistency(x,0,maxX,0.05)
+
+        return [x2*dx+this.padding,h-(y2-min)/(max-min)*h+this.padding]
+    },
+    pathD(ps){
+        // let [w,h] = this.wh
+        // let dx = w/(ps.length-1)
+        // let [min,max] = this.minMax
+        // let pss = []
+        // ps.forEach(a=>{
+            // if (a == Infinity) pss.push(max+0.15*(max-min))
+            // else if ((a==NaN)|| (a==null)) pss.push(min-0.15*(max-min))
+            // else if ((a==(1+a-1))&&(a!=a+1)) pss.push(a)
+            // else pss.push( (max + min)/2 )
+        // })
+
+        let points = ps.map((v,i)=> this.trP (i,v) )
+
         let rez = 'M ' + points[0].join(' ') + ' '
         if (this.bezier) rez+=  'Q ' + points[0].join(' ') + ', ' + points[1].join(' ') + ' '
         else  rez += 'L ' + points[1]?.join(' ')  + ' '

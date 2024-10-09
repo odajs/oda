@@ -249,29 +249,27 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
          * @param {TableFocusedCell} v
         */
         set focusedCell(v) {
-            if (v && 'colIndex' in v) {
-                let left = 0;
-                for (let i = 0; i < v.colIndex; i++) {
+            if (!v) return;
+
+            const columnIndex = this.activeCols.indexOf(v.column);
+            const left = (() => {
+                let val = 0;
+                for (let i = 0; i < columnIndex; i++) {
                     const col = this.activeCols[i];
-                    left += col?.width || col?.$width;
-                }
-                let leftFix = this.activeCols.filter(c => c.fix === 'left').reduce((sum, c) => sum += c.width || c.$width, 0);
-                left -= leftFix;
-                if (left < this.$scrollLeft) {
-                    this.$scrollLeft = left;
-                }
-                else {
-                    const col = this.activeCols[v.colIndex];
-                    const right = left + (col?.width || col?.$width);
-                    const width = this.$scrollLeft + this.$width - this._fixWidth;
-                    if (right > width)
-                        this.$scrollLeft += right - width;
-                }
-            }
-            if (v && 'rowIndex' in v) {
-                    if ((v.rowIndex + .8) * this.rowHeight > this.$height) {
-                        this.$scrollTop += this.rowHeight;
+                    if (!col.fix) {
+                        val += col.$width || 0;
                     }
+                }
+                return val;
+            })();
+            const scrollBarWidth = 0;
+            if (left < this.$scrollLeft) {
+                this.$scrollLeft = left + scrollBarWidth;
+            }
+
+            const rowIndex = this.rows.findIndex(r => this.compareRows(r, v.row));
+            if ((rowIndex + .8) * this.rowHeight > this.$height) {
+                this.$scrollTop += this.rowHeight;
             }
             if (this.activeCell) {
                 const elem = this.body.getFocusedCellElement();
@@ -279,17 +277,16 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             }
         },
         /**@this {Table} */
-        focusCell(rowIndex, colIndex) {
-            const col = this.activeCols[colIndex];
-            if (col.$flex) return;
+        focusCell(row, column) {
+            if (column.$flex) return;
 
-            if (this.focusedCell?.rowIndex === rowIndex && this.focusedCell?.colIndex === colIndex) return;
+            if (this.compareRows(this.focusedCell?.row, row) && this.focusedCell?.column === column) return;
 
-            if (this.focusedCell && (this.focusedCell.rowIndex !== rowIndex || colIndex === this.activeCols.length - 1) && this.activeCell && this.fillingNewLineMode) {
+            if (this.focusedCell && (!this.compareRows(this.focusedCell.row, row) || column === this.activeCols.at(-1)) && this.activeCell && this.fillingNewLineMode) {
                 this.fillingNewLineMode = false;
             }
 
-            this.focusedCell = { rowIndex, colIndex };
+            this.focusedCell = { row, column };
         },
         get activeCols() {
             return this.rowColumns.filter(i => {
@@ -946,53 +943,53 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     moveCellPointer(h = 0, v = 0) {
         if (!this.allowFocusCell) return;
 
+        const maxRowIndex = Math.min(this.visibleRows.length, Math.trunc(this.$height/this.rowHeight));
+
         if (!this.focusedCell) {
-            const rowIndex = (this.focusedRow && this.items.findIndex(i => i === this.focusedRow)) || 0;
-            const colIndex = 0;
-            this.focusedCell = { rowIndex: 0, colIndex: 0 };
+            this.focusedCell = { row: this.focusedRow || this.visibleRows[0], column: this.activeCols[0] };
         }
-        const newPos = {
-            row: this.focusedCell.rowIndex + v,
-            col: this.focusedCell.colIndex + h
-        };
-        //fix row
-        const maxRowIdx = (this.rows.length - 1) + this.raisedRows.length;
-        if (newPos.row > maxRowIdx) {
-            this.scrollTop += this.rowHeight * v + (newPos.row - maxRowIdx);
-            newPos.row = this.focusedCell.rowIndex;
-        }
-        if (newPos.row < 0) {
-            this.scrollTop += this.rowHeight * v + (0 - newPos.row);
-            newPos.row = this.focusedCell.rowIndex;
-        }
-        //fix col
-        if (newPos.col < 0) {
-            newPos.col = 0;
-        }
-        const maxColIdx = this.activeCols.length - 1;
-        if (newPos.col > maxColIdx) {
-            newPos.col = this.focusedCell.colIndex;
-        }
-        const targetRow = this.getRowByIndex(newPos.row);
-        const sign = v < 0 ? -1 : 1;
-        if (!targetRow) {
+        const rowIndex = this.visibleRows.findIndex(r => this.compareRows(this.focusedCell.row, r));
+        if (rowIndex === -1) {
+            const globalRowIndex = this.items.findIndex(r => this.compareRows(this.focusedCell.row, r));
+            const scrollToItem = globalRowIndex * this.rowHeight;
+            const halfScreenTop = Math.trunc(maxRowIndex / 2) * this.rowHeight;
+            this.$scrollTop = Math.max(0, Math.min(scrollToItem - halfScreenTop, this.scrollHeight - this.$height));
             return;
         }
-        if (targetRow.__group__ || targetRow.disabled) {
-            return this.moveCellPointer(h, v + 1 * sign);
-        }
-        this.focusCell(newPos.row, newPos.col);
-        // this.focusedCell = { row: this.visibleRows[newPos.row], col: this.activeCols[newPos.col] };
+        const columnIndex = this.activeCols.indexOf(this.focusedCell.column);
 
-        // if (
-        //     newPos.row !== curPos.row
-        //     || this.activeCols.indexOf(this.focusedCell.col) === this.activeCols.length - 1 && this.activeCell && this.fillingNewLineMode
-        // ) {
-        //     this.fillingNewLineMode = false;
-        // }
-        // if (this.selectedRows.length === 1) {
-        //     this.selectRow(this.focusedCell.row);
-        // }
+        const newPos = {
+            row: rowIndex + v,
+            col: columnIndex + h
+        };
+
+        //row
+        if (v < 0) {
+            if (newPos.row < 0) {
+                if (this.$scrollTop > 0) {
+                    this.$scrollTop += this.rowHeight * v;
+                    this.$scrollTop = Math.max(0, this.$scrollTop);
+                }
+                newPos.row = rowIndex;
+            }
+        }
+        else if (v > 0) {
+            if ((newPos.row >= maxRowIndex)) {
+                if (this.$scrollTop < this.scrollHeight - this.$height) {
+                    this.$scrollTop += this.rowHeight * v;
+                }
+                newPos.row = Math.min(this.visibleRows.length - 1, rowIndex);
+            }
+        }
+
+        //col
+        if(!this.activeCols[newPos.col]){
+            newPos.col = columnIndex;
+        }
+
+        this.debounce('moveCellPointer', () => {
+            this.focusCell(this.visibleRows[newPos.row], this.activeCols[newPos.col]);
+        });
     },
     getRowIndex(row) {
         return this.rows.findIndex(r => Object.equal(r, row));
@@ -1027,6 +1024,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         this.selectedRows = [];
         // this.fire('selected-rows-changed', this.selectedRows);
     },
+    /** @this {Table} */
     scrollToRowIndex(index) {
         if (this.style.getPropertyValue('visibility') === 'hidden') {
             return this.async(() => this.scrollToRowIndex(index), 100);
@@ -1340,10 +1338,10 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             return cellElement.activate();
         }
         const col = this.activeCols.find(c => c.treeMode);
-        const treeCell = this.body.findCellByCoordinates(cellElement.cellCoordinates.rowIndex, cellElement.cellCoordinates.colIndex);
+        const treeCell = this.body.findCellByCoordinates(cellElement.cellCoordinates);
         if (treeCell) {
-            const row = this.getRowByIndex(this.focusedCell.rowIndex);
-            if (row && row === this.focusedRow) {
+            const row = this.focusedCell?.row;
+            if (row && this.compareRows(row, this.focusedRow)) {
                 return treeCell?.activate();
             }
             this.activeCell = null;
@@ -1716,9 +1714,9 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
                         :dark="raisedRows.includes($for.item)"
                         :column="$$for.item"
                         :item="$for.item"
-                        @pointerdown="table.focusCell($for.index, $$for.index)"
+                        @pointerdown="table.focusCell($for.item, $$for.item)"
                         @dblclick.stop="onDblclick($event);activateCell($this)"
-                        :cell-coordinates="{rowIndex: $for.index, colIndex: $$for.index}"
+                        :cell-coordinates="{row: $for.item, column: $$for.item}"
                     ></div>
                 </div>
             </div>
@@ -1763,7 +1761,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
 
             this.moveCellPointer(0, -1, e);
             if (e.shiftKey) {
-                this.onSelectRow(e, { value: this.getRowByIndex(this.focusedCell.rowIndex) });
+                this.onSelectRow(e, { value: this.focusedCell.row });
             }
         },
         arrowDown(e) {
@@ -1773,38 +1771,40 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
 
             this.moveCellPointer(0, 1, e);
             if (e.shiftKey) {
-                this.onSelectRow(e, { value: this.getRowByIndex(this.focusedCell.rowIndex) });
+                this.onSelectRow(e, { value: this.focusedCell.row });
             }
         },
+        /** @this {Table} */
         home(e) {
             if (this.activeCell) return;
             e.stopPropagation();
             e.preventDefault();
 
-            const h = this.rowColumns[0].id - this.focusedCell.col.id;
+            const h = this.activeCols[0].id - this.focusedCell.column.id;
 
             let v = 0;
             if (e.ctrlKey) {
                 this.scrollToRowIndex(0);
-                v = -this.focusedCell.rowIndex;
+                v = -this.visibleRows.findIndex(r => this.compareRows(r, this.focusedCell.row));
             }
 
-            this.moveCellPointer(h, v, e);
+            this.moveCellPointer(h, v);
         },
+        /** @this {Table} */
         end(e) {
             if (this.activeCell) return;
             e.stopPropagation();
             e.preventDefault();
 
-            const h = this.activeCols.findLast(c => !c.$flex).id - this.focusedCell.colIndex;
+            const h = this.rowColumns.at(-1).id - this.focusedCell.column.id;
 
             let v = 0;
             if (e.ctrlKey) {
-                this.scrollToRowIndex(this.rows.length - 1);
-                v = this.rows.length - this.focusedCell.rowIndex - 1;
+                this.scrollToRowIndex(this.visibleRows.length - 1);
+                v = this.visibleRows.length - this.visibleRows.findIndex(r => this.compareRows(r, this.focusedCell.row)) - 1;
             }
 
-            this.moveCellPointer(h, v, e);
+            this.moveCellPointer(h, v);
         },
         pageUp(e) {
             if (this.activeCell) return;
@@ -1822,7 +1822,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
             const dir = e.shiftKey ? -1 : 1;
             const _ = this.focusedCell;
             this.moveCellPointer(dir, 0);
-            if (!(_.rowIndex === this.focusedCell.rowIndex && _.colIndex === this.focusedCell.colIndex)) {
+            if (!(_.row === this.focusedCell.row && _.column === this.focusedCell.column)) {
                 e.preventDefault();
             }
         },
@@ -1851,7 +1851,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
 
             if (!this.focusedCell) return;
 
-            this.onSelectRow(e, { value: this.getRowByIndex(this.focusedCell.rowIndex) });
+            this.onSelectRow(e, { value: this.focusedCell.row });
         },
         space(e) {
             if (this.activeCell) return;
@@ -1860,7 +1860,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
 
             if (!this.focusedCell) return;
 
-            const row = this.getRowByIndex(this.focusedCell.rowIndex);
+            const row = this.focusedCell.row;
 
             if (row.$hasChildren) {
                 row.__expanded__ = !row.__expanded__;
@@ -1872,11 +1872,11 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
             e.preventDefault();
             e.stopPropagation();
 
-            const row = this.getRowByIndex(this.focusedCell.rowIndex);
-            const col = this.activeCols[this.focusedCell.colIndex];
+            const row = this.focusedCell.row;
+            const col = this.focusedCell.column;
 
             if (col.treeMode) {
-                if (this.focusedRow === row) {
+                if (this.compareRows(this.focusedRow, row)) {
                     const elem = this.body.getFocusedCellElement();
                     if (row.$hasChildren && !row.__expanded__) {
                         row.__expanded__ = true;
@@ -1920,29 +1920,18 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
         this.setScreen();
     },
     /**@this {Table} */
-    _getCellClasses(row, col, elem) {
+    _getCellClasses(row, column, elem) {
         const res = ['cell'];
-        if (col) {
-            res.push(`col-${col.id}`);
+        if (column) {
+            res.push(`col-${column.id}`);
         }
-        if (row?.__group__ || col?.$flex) {
+        if (row?.__group__ || column?.$flex) {
             res.push('flex');
         }
         else {
             res.push('no-flex');
         }
-        const colIndex = this.activeCols.findIndex(c => c === col);
-        const rowIndex = (() => {
-            let idx = this.rows.findIndex(r => r === row);
-            if (idx === -1) {
-                idx = this.raisedRows.findIndex(r => r === row);
-            }
-            else {
-                idx += this.raisedRows.length;
-            }
-            return idx;
-        })();
-        if (this._cellIsFocused(rowIndex, colIndex, elem)) {
+        if (this._cellIsFocused(row, column, elem)) {
             res.push('focused-cell');
         }
         return res;
@@ -1959,8 +1948,8 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
 
     },
     /** @this {Table} */
-    _cellIsFocused(rowIndex, colIndex, elem) {
-        return this.allowFocusCell && this.focusedCell && this.focusedCell.rowIndex === rowIndex && this.focusedCell.colIndex === colIndex;
+    _cellIsFocused(row, column, elem) {
+        return this.allowFocusCell && this.focusedCell && this.compareRows(this.focusedCell.row, row) && this.focusedCell.column === column;
     },
     setScreen() {
         if (this.fix) return;
@@ -1971,10 +1960,11 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
         this.$scrollWidth = this.scrollWidth;
         this.$scrollLeft = this.scrollLeft;
     },
-    findCellByCoordinates({ rowIndex, colIndex }) {
+    findCellByCoordinates({ row, column }) {
         const cellContents = this.$$('.cell-content');
-        return cellContents.find(e => e.cellCoordinates?.rowIndex === rowIndex && e.cellCoordinates?.colIndex === colIndex);
+        return cellContents.find(e => this.compareRows(e.cellCoordinates?.row, row) && e.cellCoordinates?.column === column);
     },
+    /** @this {Table} */
     getFocusedCellElement() {
         if (!this.focusedCell) return null;
         return this.findCellByCoordinates(this.focusedCell);

@@ -788,12 +788,18 @@ tensor.prototype._element_wise_function = function (label, forward_func, back_fu
             let x_grad = this.grad;
             let x_data = this.data;
             let o_data = out.data;
-            let x, y
-            out.grad.forEach((g, i)=>{
+            let x, y, g
+            this.grad = this.grad.map((res, i)=>{
                 x = this.data[i];
                 y = out.data[i];
-                this.grad[i] += back_func(x, y) * g / GRADIENT_DIVIDER;
+                g = out.grad[i] / GRADIENT_DIVIDER;
+                return res + back_func(x, y) * g
             })
+            // out.grad.forEach((g, i)=>{
+            //     x = this.data[i];
+            //     y = out.data[i];
+            //     this.grad[i] += back_func(x, y) * g / GRADIENT_DIVIDER;
+            // })
         }
     }
     return out;
