@@ -55,9 +55,26 @@ ODA({
         },0)
     },
     get lines(){
-        return []
+        let lines = new Array(this.line_count).fill(0).map(_=>new Object)
+        this.data?.forEach((s,x)=> {
+            s = s.length?s:[s]
+            s.forEach((v,n_l)=> {
+                if (Number.isFinite(v)) lines[n_l][x]=v
+            })
+        })
+        return lines.map(o=> {
+            let points = Object.entries(o).map(p => this.trP(p))
+
+            let rez = 'M ' + points[0].join(' ') + ' '
+            if (this.bezier) rez += 'Q ' + points[0].join(' ') + ', ' + points[1].join(' ') + ' '
+            else rez += 'L ' + points[1]?.join(' ') + ' '
+            points.slice(2).forEach(e => rez += (this.bezier ? 'T ' : 'L ') + e.join(' ') + ' ')
+            return rez
+        } )
+
+
+        // return []
     },
-    sss: [1],
     data: [],
     width: 600,
     height: 400,
@@ -98,42 +115,31 @@ ODA({
     legendText(i) {
         return this.legend[i] || `line № ${i}`
     },
-    trP(x, y) {
+    trP([x, y]) {
         let [w, h] = this.wh
-        let maxX = Math.max(this.pointsL.map(l => l.length)) - 1
-        let dx = w / maxX
+        // let maxX = Math.max(this.pointsL.map(l => l.length)) - 1
+        let dx = w / (this.data.length-1)
         let [min, max] = this.minMax
-        let persistency = (a, mi, ma, k) => {
-            if (a == Infinity) return ma + (k * (ma - mi))
-            else if ((a == NaN) || (a == null)) return mi - k * (ma - mi)
-            else if ((a == (1 + a - 1)) && (a != a + 1)) return a
-            else return (ma + mi) / 2
-        }
-        let y2 = persistency(y, min, max, 0.06)
-        let x2 = persistency(x, 0, maxX, 0.05)
+        // let persistency = (a, mi, ma, k) => {
+        //     if (a == Infinity) return ma + (k * (ma - mi))
+        //     else if ((a == NaN) || (a == null)) return mi - k * (ma - mi)
+        //     else if ((a == (1 + a - 1)) && (a != a + 1)) return a
+        //     else return (ma + mi) / 2
+        // }
+        // let y2 = persistency(y, min, max, 0.06)
+        // let x2 = persistency(x, 0, maxX, 0.05)
 
-        return [x2 * dx + this.padding, h - (y2 - min) / (max - min) * h + this.padding]
+        return [x * dx + this.padding, h - (y - min) / (max - min) * h + this.padding]
     },
-    pathD(ps) {
-        // let [w,h] = this.wh
-        // let dx = w/(ps.length-1)
-        // let [min,max] = this.minMax
-        // let pss = []
-        // ps.forEach(a=>{
-        // if (a == Infinity) pss.push(max+0.15*(max-min))
-        // else if ((a==NaN)|| (a==null)) pss.push(min-0.15*(max-min))
-        // else if ((a==(1+a-1))&&(a!=a+1)) pss.push(a)
-        // else pss.push( (max + min)/2 )
-        // })
+    // pathD(ps) {
+    //     let points = ps.map((v, i) => this.trP(i, v))
 
-        let points = ps.map((v, i) => this.trP(i, v))
-
-        let rez = 'M ' + points[0].join(' ') + ' '
-        if (this.bezier) rez += 'Q ' + points[0].join(' ') + ', ' + points[1].join(' ') + ' '
-        else rez += 'L ' + points[1]?.join(' ') + ' '
-        points.slice(2).forEach(e => rez += (this.bezier ? 'T ' : 'L ') + e.join(' ') + ' ')
-        return rez
-    },
+    //     let rez = 'M ' + points[0].join(' ') + ' '
+    //     if (this.bezier) rez += 'Q ' + points[0].join(' ') + ', ' + points[1].join(' ') + ' '
+    //     else rez += 'L ' + points[1]?.join(' ') + ' '
+    //     points.slice(2).forEach(e => rez += (this.bezier ? 'T ' : 'L ') + e.join(' ') + ' ')
+    //     return rez
+    // },
 
     get pointsL() {
         if (Array.isArray(this.data[0])) {
