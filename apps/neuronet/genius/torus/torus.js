@@ -912,6 +912,16 @@ tensor.prototype.hardmax = function (){
 tensor.prototype.MSE = function (target){
     target = tensor.from(target);
     let y = target.data;
+    if (target.size>this.size)
+        throw new Error(`Size of target (${target.size}) must be less then size of source (${this.size})`);
+    for (let i = 0; i<target.shape.length; i++){
+        let target_dim = target.shape[target.shape.length - 1 - i];
+        let this_dim = this.shape[this.shape.length - 1 - i];
+        if (this_dim === undefined)
+            throw new Error(`Size of target (${target.size}) must be less then size of source (${this.size})`);
+        if (target_dim !== undefined && target_dim > this_dim)
+            throw new Error(`Dimension (${target.shape.length - 1 - i} = ${target_dim}) of target must be equal with dimension (${this.shape.length - 1 - i} = ${this_dim}) of source`);
+    }
     let step = this.shape.last;
     let errors = Array(this.size/step).fill().map((d, i)=>{
         let start = i * step
