@@ -128,25 +128,10 @@ ODA({
 
     get pointsL() {
         if (Array.isArray(this.data[0])) {
-            console.log(1)
-
-            let xxx  = this.data[0].map((_,i) => this.data.map(row => row[i]) );
-
-            return xxx
-            // let rez = []
-            // this.data.forEach(n => {
-            //     console.log(n)
-            //     n.forEach((v, k) => {
-            //         rez[k] ??= []
-            //         rez[k].push(v)
-            //     })
-            // })
-            // console.log
-            // return rez
-
+            let pointsL  = this.data[0].map((_,i) => this.data.map(row => row[i]) );
+            return pointsL
         }
         else {
-            console.log(2)
             return [this.data]
         }
 
