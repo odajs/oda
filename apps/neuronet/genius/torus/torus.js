@@ -1,5 +1,3 @@
-import match from "../../../../components/viewers/vis/lib/vis-network/dist/vis-network.esm";
-
 globalThis.LEARNING_RATE = 0.1;
 globalThis.GRADIENT_DIVIDER = 1;
 export class tensor{
