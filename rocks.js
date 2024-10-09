@@ -829,19 +829,19 @@ in the <${host.localName}>`;
         Object.defineProperty(Array.prototype, 'sum', {
             enumerable: false, configurable: true,
             value: function () {
-                return this.reduce((r,v)=>r+v);
+                return this.reduce((r,v)=>r + (v || 0), 0);
             }
         });
         Object.defineProperty(Array.prototype, 'mul', {
             enumerable: false, configurable: true,
             value: function () {
-                return this.reduce((r,v)=>r*v,1);
+                return this.reduce((r,v)=>r * (v || 0), 1);
             }
         });
         Object.defineProperty(Array.prototype, 'avg', {
             enumerable: false, configurable: true,
             value: function () {
-                return this.reduce((r,v)=>r+v)/this.length;
+                return this.reduce((r,v)=>r + (v || 0), 0)/(this.length || 1);
             }
         });
     }

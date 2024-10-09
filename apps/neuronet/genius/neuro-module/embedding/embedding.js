@@ -79,7 +79,7 @@ export class Embedding  extends NeuroModule{
         })()
     }
     get error(){
-        return (this.losses?.last?.reduce((r,v)=>r+v) || 2)/2
+        return this.tokens.filter((_,i)=>i).map(i=>i.error).avg();
     }
     train(text, train_logits = false){
         let tokens = this._tokenize(text);
@@ -281,9 +281,10 @@ ODA({is: 'oda-embedding',
                 </div>
             </div>
         </div>
-        <div class="horizontal header">
+        <div class="horizontal header bold">
             <span>tokens: {{this.tokenizer?.size || 0}}</span>
-            <span>error:  {{tokenizer?.error.toLocaleString('ru-RU', {style: 'percent',  minimumFractionDigits: 2, maximumFractionDigits: 2})}}</span>
+            <span flex></span>
+            <span  style="text-align: right;">{{tokenizer?.error.toLocaleString('ru-RU', {style: 'percent',  minimumFractionDigits: 2, maximumFractionDigits: 2})}}</span>
         </div>
 
 
