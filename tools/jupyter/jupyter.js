@@ -211,11 +211,12 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                         html[idx] += '<div class="out-src">' + outsrc.outerHTML + '</div>';
                     }
                 })
+                html[idx] += '<hr>';
             }
         })
         await Promise.all(res)
-        let doc = '<html><head><title>Jupyter document</title></head><body>';
-        doc += `<style> .out-src { border-left: yellow 12px  solid; padding-left: 12px; }</style>`
+        let doc = `<html><head><title>${this.contextItem?.label || this.file_path || 'Jupyter document'}</title></head><body>`;
+        doc += `<style> .out-src { min-height: 6px; color: violet; border-left: violet 12px  solid; padding-left: 12px; font-size: x-small; }</style>`
         Object.values(css).map(i => doc += `<style> ${i}</style>`);
         Object.values(html).map(i => doc += i);
         doc += "</body></html>";
@@ -223,6 +224,15 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         iframe.style.display = 'none';
         document.body.appendChild(iframe);
         iframe.addEventListener('load', () => {
+            // const rules = Array.from(document.styleSheets).reduce((sum, sheet) => {
+            //     try {
+            //         return [...sum, ...Array.from(sheet.cssRules).map(rule => rule.cssText)];
+            //     } catch (e) {
+            //         return sum;
+            //     }
+            // }, [])
+            // const newSheet = iframe.contentDocument.querySelector('head').appendChild(document.createElement('style')).sheet;
+            // rules.forEach(rule => newSheet.insertRule(rule, newSheet.length));
             iframe.contentWindow.print();
             this.async(() => document.body.removeChild(iframe), 100);
         })
