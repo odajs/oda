@@ -52,7 +52,7 @@ export class Embedding  extends NeuroModule{
     }
     near(token){
         if(typeof(token) === 'string')
-            token = this._plus(...this._tokenize(t));
+            token = this._plus(...this._tokenize(token));
         token = tensor.from(token.emb || token);
         const res = this.tokens.map(t=>{
             const v = tensor.cosSimilar(t, token);

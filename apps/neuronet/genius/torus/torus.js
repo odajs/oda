@@ -381,8 +381,10 @@ export class tensor{
             idx = 0;
             for (let i = 0; i < size; i += step){
                 for (let t of tensors){
-                    const slice = out.grad.slice(idx, idx + Math.min(step, t.size));
-                    t.grad.set(slice, i);
+                    const slice = out.grad.slice(idx, idx + step);
+                    t.grad = t.grad.map((v,j)=>{
+                        return v+slice[j];
+                    })
                     idx+=step;
                 }
             }
