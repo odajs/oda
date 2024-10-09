@@ -159,6 +159,16 @@ ODA({is: 'oda-code-editor',
         });
         this.fire('loaded', this.editor);
     },
+    async exportValue() {
+        await import(componentPath + 'ext-static_highlight.js');
+        const highlight = ace.require(`ace/ext/static_highlight`);
+        let res = highlight.renderSync(this.editor.getValue(), this.editor.session.getMode(), this.editor.renderer.theme);
+        const div = document.createElement("div");
+        div.innerHTML = res.html;
+        res = { css: res.css, html: div.innerHTML, type: 'ace' };
+        // console.log(res);
+        return res;
+    },
     setValue(value) {
         this.editor?.setValue(value);
         this.editor?.session.selection.clearSelection();

@@ -88,6 +88,11 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             e.preventDefault();
             if (!this.editMode && this.cells.length - 1 > this.selectedCell.index)
                 this.selectedCell = this.cells[this.selectedCell.index + 1]
+        },
+        "ctrl+p"(e){
+            e.stopPropagation();
+            e.preventDefault();
+            this.printValue();
         }
     },
     $public: {
@@ -187,6 +192,41 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     async attached() {
         await getLoader();
         this.$wake = true;
+    },
+    async printValue() {
+        let css = {},
+            html = {};
+        const res = await this.$$('oda-jupyter-cell').map(async (i, idx) => {
+            let exp = i.control()?.exportValue && await i.control().exportValue();
+            if (exp) {
+                css[exp.type] = exp.css;
+                html[idx] = exp.html + '<hr>';
+            }
+            const out = i.$$('oda-jupyter-cell-out');
+            if (out?.length) {
+                out.map(o => {
+                    const outsrc = o.$('#out-src');
+                    if (outsrc?.outerHTML) {
+                        html[idx] ||= '';
+                        html[idx] += '<div class="out-src">' + outsrc.outerHTML + '</div>';
+                    }
+                })
+            }
+        })
+        await Promise.all(res)
+        let doc = '<html><head><title>Jupyter document</title></head><body>';
+        doc += `<style> .out-src { border-left: yellow 12px  solid; padding-left: 12px; }</style>`
+        Object.values(css).map(i => doc += `<style> ${i}</style>`);
+        Object.values(html).map(i => doc += i);
+        doc += "</body></html>";
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+        iframe.addEventListener('load', () => {
+            iframe.contentWindow.print();
+            this.async(() => document.body.removeChild(iframe), 100);
+        })
+        iframe.srcdoc = doc;
     }
 })
 
@@ -198,7 +238,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
                 overflow-x: auto;
             }
         </style>
-        <div :src="outSrc" ~is="outIs" vertical  ~html="outHtml" ~style="{whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning :error></div>
+        <div id="out-src" :src="outSrc" ~is="outIs" vertical  ~html="outHtml" ~style="{whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning :error></div>
         <div ~if="curRowsLength<maxRowsLength && !showAll" class="horizontal left header flex" style="font-size: small; align-items: center;">
             <span style="padding: 9px;">Rows: {{curRowsLength.toLocaleString()}} of {{maxRowsLength.toLocaleString()}}</span>
             <oda-button ~if="!showAll" :icon-size class="dark border" style="margin: 4px; border-radius: 2px;" @tap="setStep($event, 1)">Show next {{max.toLocaleString()}}</oda-button>
@@ -743,6 +783,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 this.cell?.writeMetadata('maxRow', n)
             }
         }
+    },
+    async exportValue() {
+        const exp = await this.$('oda-code-editor')?.exportValue();
+        return exp;
     }
 })
 

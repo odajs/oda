@@ -61,5 +61,9 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
     },
     onChange(e) {
         this.fire('change', this.value);
+    },
+    async exportValue() {
+        const viewer = this.$('oda-markdown-viewer');
+        return await viewer.exportValue();
     }
 })

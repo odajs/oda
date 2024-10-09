@@ -83,6 +83,11 @@ ODA({ is: 'oda-html-editor', imports: '@oda/code-editor',
             }
         })
     },
+    async exportValue() {
+        const viewer = this.$('#viewer');
+        const html = viewer?.outerHTML;
+        return { css: '', html, type: 'html' };
+    },
     srcdoc(src) {
         return `
 <style>

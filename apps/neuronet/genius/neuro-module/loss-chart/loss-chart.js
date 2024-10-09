@@ -1,4 +1,5 @@
-ODA({is: 'oda-loss-chart', template: /*html*/ `
+ODA({
+    is: 'oda-loss-chart', template: /*html*/ `
     <style>
         :host {
             @apply --vertical;
@@ -39,105 +40,115 @@ ODA({is: 'oda-loss-chart', template: /*html*/ `
         <li ~for='pointsL' ~style='"color:"+lineColor($for.index)+";"'> {{legendText($for.index)}} </li>
     </ul>
     `,
-    _resize(e){
+    _resize(e) {
         // console.log(e)
         let svgBox = this.$('.svgbox');
-        let [width,height] =  [svgBox.offsetWidth,svgBox.offsetHeight]
+        let [width, height] = [svgBox.offsetWidth, svgBox.offsetHeight]
         this.width = width
         this.height = height
 
     },
-    sss:[1],
+    sss: [1],
     data: [],
-    width:600,
-    height:400,
+    width: 600,
+    height: 400,
     $public: {
-        label:'',
-        strokeWidth:2,
-        bezier:false,
-        legend:[],
-        nHorizontal:5,
+        label: '',
+        strokeWidth: 2,
+        bezier: false,
+        legend: [],
+        nHorizontal: 5,
     },
     get granLine() {
         let [p, h, w] = [this.padding, this.height, this.width]
-        return [[0,p,w,p], [0,h-p,w,h-p], [p,0,p,h], [w-p,0,w-p,h] ].map(([x1,y1,x2,y2])=>`M ${x1} ${y1} L ${x2} ${y2}`)
+        return [[0, p, w, p], [0, h - p, w, h - p], [p, 0, p, h], [w - p, 0, w - p, h]].map(([x1, y1, x2, y2]) => `M ${x1} ${y1} L ${x2} ${y2}`)
     },
-    pathGrid(k,b) {
-       return `M ${0} ${k*this.wh[1]+this.padding} L ${this.width} ${k*this.wh[1]+this.padding}`
+    pathGrid(k, b) {
+        return `M ${0} ${k * this.wh[1] + this.padding} L ${this.width} ${k * this.wh[1] + this.padding}`
     },
 
-    lineLevels(n,a,b){
-        let c = Math.abs(a-b)/n // абсолютный шаг
-        let l = 10**Math.floor(Math.log10(c)) // степень округления
-        let [f,g] = [Math.trunc(a/l)*l, Math.round(c/l)*l] // круглое начало и круглый шаг
-        let rez = new Array(2*n).fill(0).map((_,i)=> f+i*g).filter(d=> (d>=a)&&(d<=b)) // результат
+    lineLevels(n, a, b) {
+        let c = Math.abs(a - b) / n // абсолютный шаг
+        let l = 10 ** Math.floor(Math.log10(c)) // степень округления
+        let [f, g] = [Math.trunc(a / l) * l, Math.round(c / l) * l] // круглое начало и круглый шаг
+        let rez = new Array(2 * n).fill(0).map((_, i) => f + i * g).filter(d => (d >= a) && (d <= b)) // результат
         return rez
     },
 
     get minMax() {
-        let ollP = this.data.flat().filter(a=>(a==(1+a-1))&&(a!=a+1) )
-        return  [Math.min(...ollP),Math.max(...ollP)]
+        let ollP = this.data.flat().filter(a => (a == (1 + a - 1)) && (a != a + 1))
+        return [Math.min(...ollP), Math.max(...ollP)]
     },
-    get padding() {return Math.min(this.width,this.height)/15},
-    get wh() { return [this.width,this.height].map(x=>x-this.padding*2) },
+    get padding() { return Math.min(this.width, this.height) / 15 },
+    get wh() { return [this.width, this.height].map(x => x - this.padding * 2) },
 
     lineColor(i) {
-        let c = Math.floor(360/this.pointsL.length*i)+100
+        let c = Math.floor(360 / this.pointsL.length * i) + 100
         return `hsl(${c}, 100%, 80%)`
     },
     legendText(i) {
         return this.legend[i] || `line № ${i}`
     },
-    trP(x,y) {
-        let [w,h] = this.wh
-        let maxX = Math.max(this.pointsL.map(l=> l.length))-1
-        let dx = w/maxX
-        let [min,max] = this.minMax
-        let persistency = (a,mi,ma,k) => {
-            if (a == Infinity) return ma+(k*(ma-mi))
-            else if ((a==NaN)|| (a==null)) return mi-k*(ma-mi)
-            else if ((a==(1+a-1))&&(a!=a+1)) return a
-            else return (ma + mi)/2
+    trP(x, y) {
+        let [w, h] = this.wh
+        let maxX = Math.max(this.pointsL.map(l => l.length)) - 1
+        let dx = w / maxX
+        let [min, max] = this.minMax
+        let persistency = (a, mi, ma, k) => {
+            if (a == Infinity) return ma + (k * (ma - mi))
+            else if ((a == NaN) || (a == null)) return mi - k * (ma - mi)
+            else if ((a == (1 + a - 1)) && (a != a + 1)) return a
+            else return (ma + mi) / 2
         }
-        let y2 = persistency(y,min,max,0.06)
-        let x2 = persistency(x,0,maxX,0.05)
+        let y2 = persistency(y, min, max, 0.06)
+        let x2 = persistency(x, 0, maxX, 0.05)
 
-        return [x2*dx+this.padding,h-(y2-min)/(max-min)*h+this.padding]
+        return [x2 * dx + this.padding, h - (y2 - min) / (max - min) * h + this.padding]
     },
-    pathD(ps){
+    pathD(ps) {
         // let [w,h] = this.wh
         // let dx = w/(ps.length-1)
         // let [min,max] = this.minMax
         // let pss = []
         // ps.forEach(a=>{
-            // if (a == Infinity) pss.push(max+0.15*(max-min))
-            // else if ((a==NaN)|| (a==null)) pss.push(min-0.15*(max-min))
-            // else if ((a==(1+a-1))&&(a!=a+1)) pss.push(a)
-            // else pss.push( (max + min)/2 )
+        // if (a == Infinity) pss.push(max+0.15*(max-min))
+        // else if ((a==NaN)|| (a==null)) pss.push(min-0.15*(max-min))
+        // else if ((a==(1+a-1))&&(a!=a+1)) pss.push(a)
+        // else pss.push( (max + min)/2 )
         // })
 
-        let points = ps.map((v,i)=> this.trP (i,v) )
+        let points = ps.map((v, i) => this.trP(i, v))
 
         let rez = 'M ' + points[0].join(' ') + ' '
-        if (this.bezier) rez+=  'Q ' + points[0].join(' ') + ', ' + points[1].join(' ') + ' '
-        else  rez += 'L ' + points[1]?.join(' ')  + ' '
-        points.slice(2).forEach(e => rez += (this.bezier?'T ':'L ') + e.join(' ') + ' ' )
+        if (this.bezier) rez += 'Q ' + points[0].join(' ') + ', ' + points[1].join(' ') + ' '
+        else rez += 'L ' + points[1]?.join(' ') + ' '
+        points.slice(2).forEach(e => rez += (this.bezier ? 'T ' : 'L ') + e.join(' ') + ' ')
         return rez
     },
 
     get pointsL() {
         if (Array.isArray(this.data[0])) {
-            this.data.forEach(n=>{
-                console.log(n)
-                n.forEach((v,k)=> {
-                    rez[k] ??= []
-                    rez[k].push(v)
-                })
-            })
-            return rez
+            console.log(1)
+
+            let xxx  = this.data[0].map((_,i) => this.data.map(row => row[i]) );
+
+            return xxx
+            // let rez = []
+            // this.data.forEach(n => {
+            //     console.log(n)
+            //     n.forEach((v, k) => {
+            //         rez[k] ??= []
+            //         rez[k].push(v)
+            //     })
+            // })
+            // console.log
+            // return rez
 
         }
-        else return [this.data]
+        else {
+            console.log(2)
+            return [this.data]
+        }
 
     }
 

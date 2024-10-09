@@ -40,5 +40,12 @@ ODA({ is: 'oda-markdown-viewer', template: /*html*/`
     },
     attached() {
         this.domIsReady = true;
+    },
+    async exportValue() {
+        let css = await fetch(this.presetcss);
+        css = await css.text();
+        const wasm = this.$('.md-wasm');
+        const html = wasm?.outerHTML;
+        return { css, html, type: 'md' };
     }
-});
+})

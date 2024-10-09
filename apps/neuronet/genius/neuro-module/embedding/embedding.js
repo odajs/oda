@@ -31,7 +31,7 @@ export class Embedding  extends NeuroModule{
     }
     print(x){
         x = this.restore(x);
-        x = Array.from(x.data).map(i=>this.tokens[i].w).join('');
+        x = Array.from(x.data).map(i=>this.tokens[i]?.w || '?').join('');
         return x;
     }
     plus(...tokens){
