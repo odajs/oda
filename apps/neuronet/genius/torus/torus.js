@@ -372,6 +372,7 @@ export class tensor{
                 let t = tensors[j];
                 data.set(t.data.slice(i, delta), idx);
                 idx+=step;
+
             }
         }
         const out = tensor.from(data)._shape(...shape,  ...first.shape)._label(`stack(${tensors.length} tensors with shape(${first.shape}) by ${dim} axis)`)._src(tensors);
@@ -383,6 +384,7 @@ export class tensor{
                     const slice = out.grad.slice(idx, delta);
                     t.grad.set(slice, i);
                     idx+=step;
+                    delta += step;
                 }
             }
         }
