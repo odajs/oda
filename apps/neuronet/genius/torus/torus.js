@@ -1,3 +1,5 @@
+import match from "../../../../components/viewers/vis/lib/vis-network/dist/vis-network.esm";
+
 globalThis.LEARNING_RATE = 0.1;
 globalThis.GRADIENT_DIVIDER = 1;
 export class tensor{
@@ -258,7 +260,8 @@ export class tensor{
             this.#bins = undefined
         }
         else{
-            console.log(this.grad)
+            if (!this.grad[0])
+                console.log('empty gradient', this)
             for(let i = 0; i<this.data.length; i++){
                 this.data[i] += this.grad[i] * tensor.LEARNING_RATE;
             }
@@ -379,12 +382,10 @@ export class tensor{
         out._back = ()=>{
             idx = 0;
             for (let i = 0; i < size; i += step){
-                let delta = i + step
                 for (let t of tensors){
-                    const slice = out.grad.slice(idx, delta);
+                    const slice = out.grad.slice(idx, idx + Math.min(step, t.size));
                     t.grad.set(slice, i);
                     idx+=step;
-                    delta += step;
                 }
             }
         }
