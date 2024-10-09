@@ -86,7 +86,7 @@ export class Embedding  extends NeuroModule{
         tokens.push(this.vocabulary['[end]'])
         let w = this.win_size;
         let size = w * (this.negative_size + 1);
-        let windows = tokens.map((t, i)=>{
+        let windows = tokens.map((token, i)=>{
             i++;
             const window = tokens.slice(i, i + w);
             if(!window.length)
@@ -104,8 +104,8 @@ export class Embedding  extends NeuroModule{
         tokens.pop();
         windows.pop();
         let tokens_emb = tensor.stack(tokens.map(i=>i.emb));
-        windows = tensor.stack(windows);
-        let res = tensor.einsum(`ld,lod->lo`, [tokens_emb, windows]);
+        let windows_cnt = tensor.stack(windows);
+        let res = tensor.einsum(`ld,lod->lo`, [tokens_emb, windows_cnt]);
         res = res.sigm();
         let target = tensor.from(this.BINS.slice(0, res.shape[0]));
         // target = target.repeat(res.shape[1]);

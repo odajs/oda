@@ -258,6 +258,7 @@ export class tensor{
             this.#bins = undefined
         }
         else{
+            console.log(this.grad)
             for(let i = 0; i<this.data.length; i++){
                 this.data[i] += this.grad[i] * tensor.LEARNING_RATE;
             }
