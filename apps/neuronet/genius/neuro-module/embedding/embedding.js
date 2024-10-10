@@ -102,8 +102,8 @@ export class Embedding  extends NeuroModule{
             }
             return tensor.stack(window.map(i=>i.cnt));
         })
-       tokens.pop();
-       windows.pop();
+        tokens.pop();
+        windows.pop();
         let tokens_emb = tensor.stack(tokens.map(i=>i.emb));
         let windows_cnt = tensor.stack(windows);
         let res = tensor.einsum(`ld,lod->lo`, [tokens_emb, windows_cnt]);
