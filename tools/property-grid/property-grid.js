@@ -418,14 +418,33 @@ cells: {
                 return i.defaultValue !== undefined && i.defaultValue !== i.value;
             }).length > 0;
         },
-        resetValue() {
+        async resetValue() {
             let io = this.inspectedObject
             if (!Array.isArray(io)) {
                 io = [io]
             }
 
+            const changedItems = this.items.filter(i => i.value !== i.defaultValue)
+                                           .map(i => ({ name: i.name }));
+            await ODA.import('@oda/tree');
+            const { control } = await ODA.showDialog('oda-tree',
+                {
+                    allowCheck: 'single',
+                    allowSelection: 'level',
+                    allowFocusCell: true,
+                    selectByCheck: true,
+                    dataSet: changedItems,
+                    selectedRows: [...changedItems],
+                    style: 'padding: 32px 16px 0px 16px;'
+                },
+                {
+                    title: 'Check props to reset to default',
+                }
+            );
+
             this.items.forEach(item => {
-                if (item.defaultValue === undefined) return;
+                if ((item.defaultValue === undefined) || !control.selectedRows.some(r => (r.name === item.name)))
+                    return;
                 item.value = (typeof item.defaultValue === 'function') ? item.defaultValue() : item.defaultValue;
             })
         }
