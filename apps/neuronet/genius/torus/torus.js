@@ -258,8 +258,8 @@ export class tensor{
             this.#bins = undefined
         }
         else{
-            if (!this.grad[0])
-                console.log('empty gradient', this)
+            // if (!this.grad[0])
+            //     console.log('empty gradient', this)
             for(let i = 0; i<this.data.length; i++){
                 this.data[i] += this.grad[i] * tensor.LEARNING_RATE;
             }

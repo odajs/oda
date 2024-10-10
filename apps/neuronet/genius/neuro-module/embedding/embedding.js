@@ -12,7 +12,7 @@ export class Embedding  extends NeuroModule{
         this.vocabulary = {"[end]":{
                 id: 0,
                 w: "[end]",
-                emb: tensor.param(tensor.zeros(this.dim)),
+                emb: tensor.param(tensor.ones(this.dim)),
                 cnt: tensor.param(tensor.random(this.dim, -.1,.1))
             }}
     }
