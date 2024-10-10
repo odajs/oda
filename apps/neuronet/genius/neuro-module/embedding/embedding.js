@@ -1,6 +1,7 @@
 import {tensor} from "../../torus/torus.js";
 import {Linear, NeuroModule} from "../neuro-module.js";
 export class Embedding  extends NeuroModule{
+    _size = undefined;
     constructor(dim = 1024, char_step = 0, win_size = 8, negative_size = 3) {
         super(arguments);
     }
@@ -63,7 +64,7 @@ export class Embedding  extends NeuroModule{
         return res;
     }
     get size(){
-        return this['#size'] ??= this.tokens.length;
+        return (this._size ??= this.tokens.length);
     }
     get tokens_error(){
         return this['#tokens_error'] ??= (()=>{
@@ -83,7 +84,7 @@ export class Embedding  extends NeuroModule{
     }
     train(text, train_logits = false){
         let tokens = this._tokenize(text);
-        //tokens.push(this.vocabulary['[end]'])
+        tokens.push({})
         let w = this.win_size;
         let size = w * (this.negative_size + 1);
         let windows = tokens.map((token, i)=>{
@@ -92,18 +93,17 @@ export class Embedding  extends NeuroModule{
             if(!slice.length)
                 return;
             let window = [...slice];
-            let stop = size * 2;
-            while (stop-- && window.length < size && this.size > size){
-                const idx = Math.ceil(Math.random() * this.size)
+            while (window.length < size){
+                const idx = Math.floor(Math.random() * this.size)
                 const t = this.tokens[idx];
-                // if (t && !slice.includes(t)){
-                window.push(t);
-                // }
+                if (t && !slice.includes(t)){
+                    window.push(t);
+                }
             }
             return tensor.stack(window.map(i=>i.cnt));
         })
-     //   tokens.pop();
-       // windows.pop();
+       tokens.pop();
+       windows.pop();
         let tokens_emb = tensor.stack(tokens.map(i=>i.emb));
         let windows_cnt = tensor.stack(windows);
         let res = tensor.einsum(`ld,lod->lo`, [tokens_emb, windows_cnt]);
@@ -161,7 +161,7 @@ export class Embedding  extends NeuroModule{
         this['#tokens_error'] = undefined;
     }
     get tokens(){
-        return this._tokens ??= Object.values(this.vocabulary);
+        return (this._tokens ??= Object.values(this.vocabulary));
     }
     _tokenize(text){
         if(this.char_step)
@@ -243,11 +243,11 @@ export class Embedding  extends NeuroModule{
             res.id = Object.keys(this.vocabulary).length;
             res.emb = tensor.param(tensor.random(this.dim, 0, 256, Uint16Array))._label('emb: '+word);
             res.cnt = tensor.param(tensor.random(this.dim, -1, 1))._label('cnt: '+word);
-            if(this['#size'] >= this.logits.shape_out[0]){
+            if(this._size >= this.logits.shape_out[0]){
                 this.logits.updateOutShape(this.logits.shape_out[0] + this.dim);
             }
             this._tokens = undefined
-            this['#size']++;
+            this._size = (this._size || 1)+1;
             return res;
         })()
     }
