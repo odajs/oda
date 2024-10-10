@@ -12,7 +12,7 @@ export class Embedding  extends NeuroModule{
                 id: 0,
                 w: "[end]",
                 emb: tensor.param(tensor.zeros(this.dim)),
-                cnt: tensor.param(tensor.random(this.dim, -.5,.5))
+                cnt: tensor.param(tensor.random(this.dim, 0,.5))
             }}
         this.logits = new Linear(this.dim, this.dim, true);
     }
@@ -240,8 +240,8 @@ export class Embedding  extends NeuroModule{
             const res = Object.create(null);
             res.w = word;
             res.id = Object.keys(this.vocabulary).length;
-            res.emb = tensor.param(tensor.random(this.dim,-.5,.5))._label('emb: '+word);
-            res.cnt = tensor.param(tensor.random(this.dim,-.5,.5))._label('cnt: '+word);
+            res.emb = tensor.param(tensor.random(this.dim, 0,.5))._label('emb: '+word);
+            res.cnt = tensor.param(tensor.random(this.dim, 0,.5))._label('cnt: '+word);
             if(this['#size'] >= this.logits.shape_out[0]){
                 this.logits.updateOutShape(this.logits.shape_out[0] + this.dim);
             }

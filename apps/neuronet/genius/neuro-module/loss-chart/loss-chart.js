@@ -37,17 +37,27 @@ ODA({
         </svg>
     </div>
     <ul class='legend' >
-        <li ~for='line_count' ~style='"color:"+lineColor($for.index)+";"'> {{legendText($for.index)}} </li>
+        <li ~for='lines.length' ~style='"color:"+lineColor($for.index)+";"'> {{legendText($for.index)}} </li>
     </ul>
     `,
-    _resize(e) {
-        // console.log(e)
-        let svgBox = this.$('.svgbox');
-        let [width, height] = [svgBox.offsetWidth, svgBox.offsetHeight]
-        this.width = width
-        this.height = height
 
+    data: [],
+    width: 600,
+    height: 400,
+    $public: {
+        label: '',
+        strokeWidth: 2,
+        bezier: false,
+        legend: [],
+        nHorizontal: 5,
     },
+
+    _resize(e) {
+        let svgBox = this.$('.svgbox');
+        this.width = svgBox.offsetWidth
+        this.height = svgBox.offsetHeight
+    },
+
     get line_count(){
         return this.data?.reduce((r,v)=>{
             const size = v?.length || 1
@@ -71,38 +81,26 @@ ODA({
             points.slice(2).forEach(e => rez += (this.bezier ? 'T ' : 'L ') + e.join(' ') + ' ')
             return rez
         } )
-
-
-        // return []
     },
-    data: [],
-    width: 600,
-    height: 400,
-    $public: {
-        label: '',
-        strokeWidth: 2,
-        bezier: false,
-        legend: [],
-        nHorizontal: 5,
-    },
+
     get granLine() {
         let [p, h, w] = [this.padding, this.height, this.width]
         return [[0, p, w, p], [0, h - p, w, h - p], [p, 0, p, h], [w - p, 0, w - p, h]].map(([x1, y1, x2, y2]) => `M ${x1} ${y1} L ${x2} ${y2}`)
     },
-    pathGrid(k, b) {
-        return `M ${0} ${k * this.wh[1] + this.padding} L ${this.width} ${k * this.wh[1] + this.padding}`
-    },
+    // pathGrid(k, b) {
+    //     return `M ${0} ${k * this.wh[1] + this.padding} L ${this.width} ${k * this.wh[1] + this.padding}`
+    // },
 
-    lineLevels(n, a, b) {
-        let c = Math.abs(a - b) / n // абсолютный шаг
-        let l = 10 ** Math.floor(Math.log10(c)) // степень округления
-        let [f, g] = [Math.trunc(a / l) * l, Math.round(c / l) * l] // круглое начало и круглый шаг
-        let rez = new Array(2 * n).fill(0).map((_, i) => f + i * g).filter(d => (d >= a) && (d <= b)) // результат
-        return rez
-    },
+    // lineLevels(n, a, b) {
+    //     let c = Math.abs(a - b) / n // абсолютный шаг
+    //     let l = 10 ** Math.floor(Math.log10(c)) // степень округления
+    //     let [f, g] = [Math.trunc(a / l) * l, Math.round(c / l) * l] // круглое начало и круглый шаг
+    //     let rez = new Array(2 * n).fill(0).map((_, i) => f + i * g).filter(d => (d >= a) && (d <= b)) // результат
+    //     return rez
+    // },
 
     get minMax() {
-        let ollP = this.data.flat().filter(a => (a == (1 + a - 1)) && (a != a + 1))
+        let ollP = this.data.flat().filter(Number.isFinite)
         return [Math.min(...ollP), Math.max(...ollP)]
     },
     get padding() { return Math.min(this.width, this.height) / 15 },
