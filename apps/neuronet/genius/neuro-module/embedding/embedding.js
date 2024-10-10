@@ -118,29 +118,6 @@ export class Embedding  extends NeuroModule{
         this.losses.push([this.tokens_error]);
         return tokens;
     }
-    trainStep(token, phrase){
-        if (!phrase.length)
-            return 1;
-        let target = this.BINS.slice(0, phrase.length);
-        let size = this.win_size * (this.negative_size + 1);
-        let stop = size * 2;
-        while (stop-- && phrase.length < size && this.size > size){
-            const idx = Math.ceil(Math.random() * this.size)
-            const t = this.tokens[idx];
-            if (t && !phrase.includes(t)){
-                target.push(0);
-                phrase.push(t);
-            }
-        }
-        const emb = token.emb;
-        phrase = tensor.stack(phrase.map(i=>i.cnt));
-        let res = tensor.einsum(`x,yx->y`, [emb, phrase]);
-        res = res.sigm();
-        res = res.MSE(target);
-        token.error = res.data[0];
-        res.back();
-        this['#tokens_error'] = undefined;
-    }
     get tokens(){
         return (this._tokens ??= Object.values(this.vocabulary));
     }

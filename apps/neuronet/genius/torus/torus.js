@@ -286,6 +286,9 @@ export class tensor{
         topo.forEach((node) => {
             if (!node.src) return;
             node._back?.();
+            if (topo[0] !== node && !node.grad[0]){
+                console.log('back no_grads', node.grad)
+            }
         })
         topo.forEach((node) => {
             if (node.src) return;
