@@ -166,6 +166,7 @@ export class Embedding  extends NeuroModule{
         word = word.trim();
         if (word)
             tokens.push(this._addToken(word));
+        tokens = tokens.flat();
         return tokens;
     }
     _text2emb(text){
@@ -177,18 +178,33 @@ export class Embedding  extends NeuroModule{
     _addToken(word, type){
         if (!word.trim().length)
             return;
-        return this.vocabulary[word] ??= (()=>{
-            const res = Object.create(null);
-            res.w = word;
-            if (type)
-                res.type = type;
-            res.id = Object.keys(this.vocabulary).length;
-            res.emb = tensor.param(tensor.random(this.dim, -.5, .5))._label('emb: '+word);
-            res.cnt = tensor.param(tensor.random(this.dim, -.1, .1))._label('cnt: '+word);
-            this._tokens = undefined
-            this._size = (this._size || 1)+1;
-            return res;
-        })()
+        const get_word = (w)=>{
+            return this.vocabulary[w] ??= (()=>{
+                const res = Object.create(null);
+                res.w = w;
+                res.t = type || 'w';
+                res.id = Object.keys(this.vocabulary).length;
+                res.emb = tensor.param(tensor.random(this.dim, -.5, .5))._label('emb: ' + w);
+                res.cnt = tensor.param(tensor.random(this.dim, -.1, .1))._label('cnt: ' + w);
+                this._tokens = undefined
+                this._size = (this._size || 1)+1;
+                return res;
+            })()
+        }
+        if (!type && this.char_step){
+            const parts = [];
+            for (let i = 0; i < word.length; i += char_step){
+                parts.push(word.substr(i, char_step))
+            }
+            if (parts.length > 1 && parts.last.length < this.char_step){
+                word = parts.pop()
+                parts[parts.length - 1] += word;
+            }
+            return parts.map((w)=>{
+                return get_word(w);
+            })
+        }
+        return get_word(word);
     }
 }
 const rules = {
