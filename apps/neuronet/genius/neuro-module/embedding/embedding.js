@@ -83,26 +83,27 @@ export class Embedding  extends NeuroModule{
     }
     train(text, train_logits = false){
         let tokens = this._tokenize(text);
-        tokens.push(this.vocabulary['[end]'])
+        //tokens.push(this.vocabulary['[end]'])
         let w = this.win_size;
         let size = w * (this.negative_size + 1);
         let windows = tokens.map((token, i)=>{
             i++;
-            const window = tokens.slice(i, i + w);
-            if(!window.length)
+            const slice = tokens.slice(i, i + w);
+            if(!slice.length)
                 return;
+            let window = [...slice];
             let stop = size * 2;
             while (stop-- && window.length < size && this.size > size){
                 const idx = Math.ceil(Math.random() * this.size)
                 const t = this.tokens[idx];
-                if (t && !window.includes(t)){
-                    window.push(t);
-                }
+                // if (t && !slice.includes(t)){
+                window.push(t);
+                // }
             }
             return tensor.stack(window.map(i=>i.cnt));
         })
-        tokens.pop();
-        windows.pop();
+     //   tokens.pop();
+       // windows.pop();
         let tokens_emb = tensor.stack(tokens.map(i=>i.emb));
         let windows_cnt = tensor.stack(windows);
         let res = tensor.einsum(`ld,lod->lo`, [tokens_emb, windows_cnt]);
@@ -240,8 +241,8 @@ export class Embedding  extends NeuroModule{
             const res = Object.create(null);
             res.w = word;
             res.id = Object.keys(this.vocabulary).length;
-            res.emb = tensor.param(tensor.random(this.dim, 0, 1))._label('emb: '+word);
-            res.cnt = tensor.param(tensor.random(this.dim, -1,1))._label('cnt: '+word);
+            res.emb = tensor.param(tensor.random(this.dim, 0, 256, Uint16Array))._label('emb: '+word);
+            res.cnt = tensor.param(tensor.random(this.dim, -1, 1))._label('cnt: '+word);
             if(this['#size'] >= this.logits.shape_out[0]){
                 this.logits.updateOutShape(this.logits.shape_out[0] + this.dim);
             }
