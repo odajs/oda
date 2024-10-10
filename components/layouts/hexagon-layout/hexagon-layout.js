@@ -83,10 +83,6 @@ ODA({is: 'oda-hexagon-layout', imports: '@oda/button',
             $def: 1,
             $save: true,
         },
-        data: {
-            $def: [],
-            $save: true,
-        },
         tracking: {
             $type: Boolean,
             $attr: true,
@@ -99,6 +95,10 @@ ODA({is: 'oda-hexagon-layout', imports: '@oda/button',
             return Math.ceil(this.height / this.size) + 1
         },
         showTrash: false,
+    },
+    data: {
+        $def: [],
+        $save: true,
     },
     $listeners: {
         resize(e) {

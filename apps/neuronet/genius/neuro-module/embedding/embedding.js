@@ -53,9 +53,11 @@ export class Embedding  extends NeuroModule{
             token = this._plus(...this._tokenize(token));
         token = tensor.from(token.emb || token);
         const res = this.tokens.map(t=>{
-            const v = tensor.cosSimilar(t, token);
-            return {w:t.w, v};
-        }).sort((a,b)=>{
+            if (t !== token){
+                const v = tensor.cosSimilar(t, token);
+                return {w:t.w, v};
+            }
+        }).filter(i=>i).sort((a,b)=>{
             return (a.v>b.v)?-1:1
         })
         return res;
@@ -153,7 +155,9 @@ export class Embedding  extends NeuroModule{
                     tokens.push(this._addToken(word));
                     word = ''
                 }
-                tokens.push(this._addToken(ch, type));
+                const t = this._addToken(ch, type);
+                if (t)
+                    tokens.push(t);
             }
             else{
                 word += ch;
