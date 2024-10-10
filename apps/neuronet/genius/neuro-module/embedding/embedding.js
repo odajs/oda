@@ -15,15 +15,12 @@ export class Embedding  extends NeuroModule{
                 emb: tensor.param(tensor.zeros(this.dim)),
                 cnt: tensor.param(tensor.random(this.dim, -.1,.1))
             }}
-        this.logits = new Linear(this.dim, this.dim, true);
     }
     forward(x){
         if(typeof x === 'string')
             x = this._text2emb(x);
         x = tensor.from(x);
-        let result = this.logits(x);
-        result = result.softmax();
-        return result;
+        return x;
     }
     restore(x){
         x = this.forward(x);
@@ -82,7 +79,7 @@ export class Embedding  extends NeuroModule{
     get error(){
         return this.tokens.filter((_,i)=>i).map(i=>i.error).avg();
     }
-    train(text, train_logits = false){
+    train(text){
         let tokens = this._tokenize(text);
         tokens.push({})
         let w = this.win_size;
@@ -110,32 +107,13 @@ export class Embedding  extends NeuroModule{
         let res = tensor.einsum(`ld,lod->lo`, [tokens_emb, windows_cnt]);
         res = res.sigm();
         let target = tensor.from(this.BINS.slice(0, res.shape[0]));
-        // target = target.repeat(res.shape[1]);
         res = res.MSE(target);
         tokens.forEach((v,i)=>{
             v.error = res.data[i]
         })
         res.back();
         this['#tokens_error'] = undefined;
-
-
-        // let j;
-        // for (let i = 0; i<tokens.length; i++){
-        //     let token = tokens[i];
-        //     j = i + 1;
-        //     let window = tokens.slice(j, j + this.win_size);
-        //     this.trainStep(token, window);
-        // }
-        if (train_logits){
-            let softmax = this.forward(tokens_emb);
-            const target = tensor.eye(softmax.shape);
-            const losses = softmax.crossEntropy(target);
-            losses.back();
-            this.losses.push([this.tokens_error, Array.prototype.avg.call(losses.data)]);
-        }
-        else{
-            this.losses.push([this.tokens_error]);
-        }
+        this.losses.push([this.tokens_error]);
         return tokens;
     }
     trainStep(token, phrase){
@@ -165,9 +143,26 @@ export class Embedding  extends NeuroModule{
         return (this._tokens ??= Object.values(this.vocabulary));
     }
     _tokenize(text){
-        if(this.char_step)
-            return this._tokenizeByChars(text);
-        return this._tokenizeByWord(text);
+        text = text.toLowerCase();
+        let word = '';
+        let tokens = [];
+        for (let ch of text){
+            const type = inRule(ch);
+            if (type){
+                if (word){
+                    tokens.push(this._addToken(word));
+                    word = ''
+                }
+                tokens.push(this._addToken(ch, type));
+            }
+            else{
+                word += ch;
+            }
+        }
+        word = word.trim();
+        if (word)
+            tokens.push(this._addToken(word));
+        return tokens;
     }
     _text2emb(text){
         let t = this._tokenize(text);
@@ -175,84 +170,39 @@ export class Embedding  extends NeuroModule{
         t = tensor.from(t);
         return t;
     }
-    _tokenizeByWord(text){
-        text = text.toLowerCase();
-        let word = '';
-        let tokens = [];
-        for (let ch of text){
-            switch (ch){
-                case '\r':
-                case '\n':
-                case '\t':
-                case ' ':{
-                    if (word)
-                        tokens.push(this._addToken(word + ' '));
-                    word = ''
-                } break;
-                case '/':
-                case '-':
-                case '(':
-                case ')':
-                case '[':
-                case ']':
-                case '{':
-                case '}':
-                case ':':
-                case ';':
-                case ',':{
-                    if (word)
-                        tokens.push(this._addToken(word + ' '));
-                    tokens.push(this._addToken(ch + ' '));
-                    word = ''
-                } break;
-                case '!':
-                case '?':
-                case '.':{
-                    if (word)
-                        tokens.push(this._addToken(word + ' '));
-                    tokens.push(this._addToken(ch + ' '));
-                    word = ''
-                } break;
-                default:{
-                    word += ch;
-                }
-            }
-        }
-        word = word.trim();
-        if (word)
-            tokens.push(this._addToken(word + ' '));
-        return tokens;
-    }
-    _tokenizeByChars(text){
-        text = text.toLowerCase();
-        let tokens = [];
-        for (let i = 0; i<text.length; i += this.char_step){
-            const word = text.substr(i, this.char_step)
-            let token = this._addToken(word);
-            if(!token) continue;
-            tokens.push(token)
-
-        }
-        return tokens;
-    }
-    _addToken(word){
+    _addToken(word, type){
         if (!word.trim().length)
             return;
         return this.vocabulary[word] ??= (()=>{
             const res = Object.create(null);
             res.w = word;
+            if (type)
+                res.type = type;
             res.id = Object.keys(this.vocabulary).length;
             res.emb = tensor.param(tensor.random(this.dim, -.5, .5))._label('emb: '+word);
             res.cnt = tensor.param(tensor.random(this.dim, -.1, .1))._label('cnt: '+word);
-            if(this._size >= this.logits.shape_out[0]){
-                this.logits.updateOutShape(this.logits.shape_out[0] + this.dim);
-            }
             this._tokens = undefined
             this._size = (this._size || 1)+1;
             return res;
         })()
     }
 }
+const rules = {
+    space: ['\r', '\n', '\t', ' '],
+    end: ['.', '!', '?'],
+    divider: [',', ';', ":"],
+    symbol: ['/','-','(',')','[',']','{','}'],
+    more: []
+}
+function inRule(char){
+    for (let r in rules){
+        const rule = rules[r];
+        if (rule.includes(char))
+            return r;
+    }
+    return false;
+}
+
 ODA({is: 'oda-embedding',
     template: `
         <style>
