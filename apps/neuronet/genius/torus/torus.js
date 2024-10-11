@@ -287,9 +287,12 @@ export class tensor{
             if (!node.src) return;
 
 
-            if (index>1 && topo[index-1].grad.filter(i=>i === 0).length>32){
-                console.log(index, 'back no_grads: ' + topo.indexOf(node), node.label, node.grad)
-            }
+            //
+            // if (index>1){
+            //     const zeros =  topo[index-1].grad.filter(i=>i === 0);
+            //     if (zeros.length)
+            //         console.log(index, 'back no_grads: ' + zeros, node.label, node.grad)
+            // }
 
 
             node._back?.();

@@ -6,7 +6,7 @@ export class Embedding  extends NeuroModule{
         super(arguments);
     }
     get BINS(){
-        return this._BINS ??= Array(this.win_size).fill().map((v, i)=>(2. ** -(i+1) + .5));
+        return this._BINS ??= Array(this.win_size).fill().map((v, i)=>(2. ** - (i + 1) + .49));
     }
     __init__(){
         this.vocabulary = {"[end]":{
