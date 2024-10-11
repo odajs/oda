@@ -287,7 +287,7 @@ export class tensor{
             if (!node.src) return;
 
 
-            if (topo[0] !== node && !node.grad[0]){
+            if (index>1 && topo[index-1].grad.filter(i=>i === 0).length>32){
                 console.log(index, 'back no_grads: ' + topo.indexOf(node), node.label, node.grad)
             }
 
