@@ -47,7 +47,7 @@ ODA({
     $public: {
         label: '',
         strokeWidth: 2,
-        bezier: false,
+        bezier: 0,
         legend: [],
         nHorizontal: 5,
     },
@@ -74,12 +74,14 @@ ODA({
         })
         return lines.filter(o => Object.keys(o).length>1).map(o=> {
             let points = Object.entries(o).map(p => this.trP(p))
-
-            let rez = 'M ' + points[0].join(' ') + ' '
-            if (this.bezier) rez += 'Q ' + points[0].join(' ') + ', ' + points[1].join(' ') + ' '
-            else rez += 'L ' + points[1]?.join(' ') + ' '
-            points.slice(2).forEach(e => rez += (this.bezier ? 'T ' : 'L ') + e.join(' ') + ' ')
-            return rez
+            return points.map((p,i,ps)=>{
+                if (i==0) return `M ${p[0]} ${p[1]}`
+                else if (this.bezier>0) {
+                    let p_ = ps[i-1], d = (p[0] - p_[0])*(-2/(this.bezier/10+1) +2);
+                    return `C ${p_[0]+d} ${p_[1]}, ${p[0]-d} ${p[1]}, ${p[0]} ${p[1]}`
+                }
+                else return `L ${p[0]} ${p[1]}`
+            }).join(' ')
         } )
     },
 

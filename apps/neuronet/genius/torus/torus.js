@@ -391,6 +391,9 @@ export class tensor{
                     idx+=step;
                 }
             }
+            if (tensors.map(i=>i.grad).filter(i=>i.indexOf(0)>-1)>0){
+                console.log('УПС!!')
+            }
         }
         return out
     }
@@ -798,11 +801,9 @@ tensor.prototype._element_wise_function = function (label, forward_func, back_fu
                 g = out.grad[i] / GRADIENT_DIVIDER;
                 return res + back_func(x, y) * g
             })
-            // out.grad.forEach((g, i)=>{
-            //     x = this.data[i];
-            //     y = out.data[i];
-            //     this.grad[i] += back_func(x, y) * g / GRADIENT_DIVIDER;
-            // })
+            if (this.grad.indexOf(0)>-1){
+                console.log('УПС!!')
+            }
         }
     }
     return out;
@@ -940,8 +941,7 @@ tensor.prototype.MSE = function (target){
         let slice = this.data.slice(start, start + step);
         let y = start>target.size?target.data.slice(0, step):target.data.slice(start, start + step);
         let errors = Array.prototype.map.call(slice, (x, j)=>{
-            x = (x - (y[j] || 0));
-            return x;
+            return (y[j] || 0) - x;
         });
         return errors
     })
@@ -952,7 +952,10 @@ tensor.prototype.MSE = function (target){
     errors = errors.flat();
     out._back = ()=>{
         for (let i = 0; i<errors.length; i++){
-            this.grad[i] += -errors[i];
+            this.grad[i] += errors[i];
+        }
+        if (this.grad.indexOf(0)>-1){
+            console.log('УПС!!')
         }
     }
     return out;
@@ -1366,6 +1369,9 @@ tensor.einsum = (in_expr, sources = [])=>{
             let out = tensor.einsum(expr, sources);
             for (let j = 0; j<out.size; j++){
                 t.grad[j] += out.data[j] / GRADIENT_DIVIDER;
+            }
+            if (t.grad.indexOf(0)>-1){
+                console.log('УПС - einsum')
             }
         })
     }
