@@ -48,6 +48,17 @@ export class Embedding  extends NeuroModule{
         }, new Float32Array(this.dim))
         return tensor.from(tokens);
     }
+    sample(t1, t2){
+        // if(typeof(t1) === 'string')
+        //     t1 = this._tokenize(t1);
+        t1 = this._plus(t1);
+
+        // if(typeof(t2) === 'string')
+        //     t2 = this._tokenize(t2);
+        t2 = this._plus(t2);
+
+        return tensor.cosSimilar(t1, t2);
+    }
     near(token){
         if(typeof(token) === 'string')
             token = this._plus(...this._tokenize(token));
