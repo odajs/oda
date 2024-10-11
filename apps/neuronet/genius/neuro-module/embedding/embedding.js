@@ -12,8 +12,8 @@ export class Embedding  extends NeuroModule{
         this.vocabulary = {"[end]":{
                 id: 0,
                 w: "[end]",
-                emb: tensor.param(tensor.ones(this.dim)),
-                cnt: tensor.param(tensor.random(this.dim, -.1,.1))
+                emb: tensor.param(tensor.zeros(this.dim))._label('emb: [end]'),
+                cnt: tensor.param(tensor.random(this.dim, -.5,.5))._label('cnt: [end]')
             }}
     }
     forward(x){
@@ -106,6 +106,16 @@ export class Embedding  extends NeuroModule{
         windows.pop();
         let tokens_emb = tensor.stack(tokens.map(i=>i.emb));
         let windows_cnt = tensor.stack(windows);
+
+        if (tokens_emb.data.indexOf(0)>-1){
+            console.log('УПС - tokens_emb')
+        }
+
+        if (windows_cnt.data.indexOf(0)>-1){
+            console.log('УПС - windows_cnt')
+        }
+
+
         let res = tensor.einsum(`ld,lod->lo`, [tokens_emb, windows_cnt]);
         res = res.sigm();
         let target = tensor.from(this.BINS.slice(0, res.shape[0]));
@@ -162,7 +172,7 @@ export class Embedding  extends NeuroModule{
                 res.t = type || 'w';
                 res.id = Object.keys(this.vocabulary).length;
                 res.emb = tensor.param(tensor.random(this.dim, -.5, .5))._label('emb: ' + w);
-                res.cnt = tensor.param(tensor.random(this.dim, -.1, .1))._label('cnt: ' + w);
+                res.cnt = tensor.param(tensor.random(this.dim, -.5, .5))._label('cnt: ' + w);
                 this._tokens = undefined
                 this._size = (this._size || 1)+1;
                 return res;

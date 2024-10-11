@@ -1366,9 +1366,9 @@ tensor.einsum = (in_expr, sources = [])=>{
                     return grad;
                 return tt;
             })
-            let out = tensor.einsum(expr, sources);
+            let out_back = tensor.einsum(expr, sources);
             for (let j = 0; j<out.size; j++){
-                t.grad[j] += out.data[j] / GRADIENT_DIVIDER;
+                t.grad[j] += out_back.data[j] / GRADIENT_DIVIDER;
             }
             if (t.grad.indexOf(0)>-1){
                 console.log('УПС - einsum')
