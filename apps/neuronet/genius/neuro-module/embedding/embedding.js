@@ -13,7 +13,7 @@ export class Embedding  extends NeuroModule{
                 id: 0,
                 w: "[end]",
                 emb: tensor.param(tensor.zeros(this.dim))._label('emb: [end]'),
-                cnt: tensor.param(tensor.random(this.dim, -.5,.5))._label('cnt: [end]')
+                cnt: tensor.param(tensor.random(this.dim, -.1,.1))._label('cnt: [end]')
             }}
     }
     forward(x){
@@ -171,8 +171,8 @@ export class Embedding  extends NeuroModule{
                 res.w = w;
                 res.t = type || 'w';
                 res.id = Object.keys(this.vocabulary).length;
-                res.emb = tensor.param(tensor.random(this.dim, -.5, .5))._label('emb: ' + w);
-                res.cnt = tensor.param(tensor.random(this.dim, -.5, .5))._label('cnt: ' + w);
+                res.emb = tensor.param(tensor.random(this.dim, -.1, .1))._label('emb: ' + w);
+                res.cnt = tensor.param(tensor.random(this.dim, -.1, .1))._label('cnt: ' + w);
                 this._tokens = undefined
                 this._size = (this._size || 1)+1;
                 return res;
