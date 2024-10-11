@@ -283,12 +283,17 @@ export class tensor{
         if(grad){
             topo[0].grad = grad;
         }
-        topo.forEach((node) => {
+        topo.forEach((node, index) => {
             if (!node.src) return;
-            node._back?.();
+
+
             if (topo[0] !== node && !node.grad[0]){
-                console.log('back no_grads: '+topo.indexOf(node), node.label, node.grad)
+                console.log(index, 'back no_grads: ' + topo.indexOf(node), node.label, node.grad)
             }
+
+
+            node._back?.();
+
         })
         topo.forEach((node) => {
             if (node.src) return;
@@ -390,9 +395,6 @@ export class tensor{
                     })
                     idx+=step;
                 }
-            }
-            if (tensors.map(i=>i.grad).filter(i=>i.indexOf(0)>-1)>0){
-                console.log('УПС!!')
             }
         }
         return out
@@ -801,9 +803,6 @@ tensor.prototype._element_wise_function = function (label, forward_func, back_fu
                 g = out.grad[i] / GRADIENT_DIVIDER;
                 return res + back_func(x, y) * g
             })
-            if (this.grad.indexOf(0)>-1){
-                console.log('УПС!!')
-            }
         }
     }
     return out;
@@ -951,12 +950,9 @@ tensor.prototype.MSE = function (target){
     const out = tensor.from(losses)._src(this)._label(`MSE (${this.shape})`);
     errors = errors.flat();
     out._back = ()=>{
-        for (let i = 0; i<errors.length; i++){
-            this.grad[i] += errors[i];
-        }
-        if (this.grad.indexOf(0)>-1){
-            console.log('УПС!!')
-        }
+        this.grad = this.grad.map((x, i)=>{
+            return x + errors[i]
+        })
     }
     return out;
 }
@@ -1367,12 +1363,9 @@ tensor.einsum = (in_expr, sources = [])=>{
                 return tt;
             })
             let out_back = tensor.einsum(expr, sources);
-            for (let j = 0; j<out.size; j++){
-                t.grad[j] += out_back.data[j] / GRADIENT_DIVIDER;
-            }
-            if (t.grad.indexOf(0)>-1){
-                console.log('УПС - einsum')
-            }
+            t.grad = t.grad.map((x, j)=>{
+                return x + out_back.data[j];
+            })
         })
     }
     fn(tensors, out.data);
