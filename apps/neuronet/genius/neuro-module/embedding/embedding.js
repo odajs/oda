@@ -5,8 +5,12 @@ export class Embedding  extends NeuroModule{
     constructor(dim = 1024, char_step = 0, win_size = 8, negative_size = 3) {
         super(arguments);
     }
+    get targetSize(){
+        return this._targetSize ??= this.win_size * (this.negative_size + 1);
+    }
     get BINS(){
-        return this._BINS ??= Array(this.win_size).fill().map((v, i)=>(2. ** - (i + 1) + .49));
+        return this._BINS ??= tensor.from(Array(this.targetSize).fill().map((v, i)=>(1 / (i + 1))));
+        // return this._BINS ??= tensor.from(Array(this.targetSize).fill().map((v, i)=>(2. ** - (i + 1) + .5)));
     }
     __init__(){
         this.vocabulary = {"[end]":{
@@ -96,7 +100,7 @@ export class Embedding  extends NeuroModule{
         let tokens = this._tokenize(text);
         tokens.push({})
         let w = this.win_size;
-        let size = w * (this.negative_size + 1);
+        let size = this.targetSize;
         let windows = tokens.map((token, i)=>{
             i++;
             const slice = tokens.slice(i, i + w);
@@ -129,8 +133,8 @@ export class Embedding  extends NeuroModule{
 
         let res = tensor.einsum(`ld,lod->lo`, [tokens_emb, windows_cnt]);
         res = res.sigm();
-        let target = tensor.from(this.BINS.slice(0, res.shape[0]));
-        res = res.MSE(target);
+        // let target = tensor.from(this.BINS.slice(0, res.shape[0]));
+        res = res.MSE(this.BINS);
         tokens.forEach((v,i)=>{
             v.error = res.data[i]
         })
