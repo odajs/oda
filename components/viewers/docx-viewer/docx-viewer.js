@@ -34,6 +34,18 @@ ODA({ is: 'oda-docx-viewer', imports: './lib/docx-preview.min.js, @oda/button',
             }
         }
     },
+    printValue() {
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+        let clonedDiv = this.$('#docx-container').cloneNode(true);
+        iframe.addEventListener('load', () => {
+            iframe.contentDocument.body.appendChild(clonedDiv);
+            iframe.contentWindow.print();
+            this.async(() => document.body.removeChild(iframe), 1000);
+        })
+        iframe.srcdoc = ' ';
+    },
     setFullscreen() {
         this.fullscreenMode = !this.fullscreenMode;
         const element = this;
