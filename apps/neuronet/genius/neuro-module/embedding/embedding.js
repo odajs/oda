@@ -108,6 +108,9 @@ export class Embedding  extends NeuroModule{
                 return;
             slice.pop();
             let window = [...slice];
+            while(window.length<w){
+                window.push(window.last)
+            }
             while (window.length < size){
                 const idx = Math.floor(Math.random() * this.size)
                 const t = this.tokens[idx];
