@@ -107,7 +107,8 @@ export class Embedding  extends NeuroModule{
         let splits = this.split_and_tokenize(text, splitter);
         let win_size = this.win_size;
         let size = this.targetSize;
-        for(let tokens of splits){
+        for(let s = 0 ; s< splits.length; s++){
+            let tokens = splits[s]
             let train_step = new Promise(async resolve =>{
                 let windows = tokens.map((token, i)=>{
                     i++;
