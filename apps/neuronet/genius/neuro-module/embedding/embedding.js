@@ -9,8 +9,7 @@ export class Embedding  extends NeuroModule{
         return this._targetSize ??= this.win_size * (this.negative_size + 1);
     }
     get BINS(){
-        return this._BINS ??= tensor.from(Array(this.targetSize).fill().map((v, i)=>(1 / (i + 1))));
-        // return this._BINS ??= tensor.from(Array(this.targetSize).fill().map((v, i)=>(2. ** - (i + 1) + .5)));
+        return this._BINS ??= tensor.from(Array(this.targetSize).fill().map((v, i)=>(2. ** - (i + 1) + .5)));
     }
     __init__(){
         this.vocabulary = {"[end]":{
@@ -98,7 +97,7 @@ export class Embedding  extends NeuroModule{
     }
     train(text){
         let tokens = this._tokenize(text);
-        tokens.push({})
+        tokens.push(this.vocabulary['[end]'])
         let w = this.win_size;
         let size = this.targetSize;
         let windows = tokens.map((token, i)=>{
@@ -109,7 +108,7 @@ export class Embedding  extends NeuroModule{
             slice.pop();
             let window = [...slice];
             while(window.length<w){
-                window.push(window.last)
+                window.unshift(window[0])
             }
             while (window.length < size){
                 const idx = Math.floor(Math.random() * this.size)
