@@ -249,36 +249,38 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
          * @param {TableFocusedCell} v
         */
         set focusedCell(v) {
-            if (!v) return;
+            if (!v || v.column.$flex) return;
 
-            const columnIndex = this.activeCols.indexOf(v.column);
-            const left = (() => {
-                let val = 0;
-                for (let i = 0; i < columnIndex; i++) {
-                    const col = this.activeCols[i];
-                    if (!col.fix) {
-                        val += col.$width || 0;
-                    }
+            const elem = this.body.findCellByCoordinates(v);
+
+            if (!v.column.fix) {
+                const { left: leftFixColsWidth, right: rightFixColsWidth } = this.activeCols
+                    .reduce((res, c) => (res[c.fix] += c.$width, res), { left: 0, right: 0 });
+
+                const bodyRect = this.body.getBoundingClientRect();
+                const cellRect = elem.getBoundingClientRect();
+
+                if (cellRect.x + cellRect.width - bodyRect.x > bodyRect.width - rightFixColsWidth ) {
+                    this.body.scrollLeft += (cellRect.x + cellRect.width + rightFixColsWidth) - bodyRect.width;
                 }
-                return val;
-            })();
-            const scrollBarWidth = 0;
-            if (left < this.$scrollLeft) {
-                this.$scrollLeft = left + scrollBarWidth;
-            }
+                else if (cellRect.x - bodyRect.x < leftFixColsWidth){
+                    this.body.scrollLeft -= leftFixColsWidth - (cellRect.x - bodyRect.x);
+                }
 
+            }
+            
             const rowIndex = this.rows.findIndex(r => this.compareRows(r, v.row));
             if ((rowIndex + .8) * this.rowHeight > this.$height) {
                 this.$scrollTop += this.rowHeight;
             }
+
             if (this.activeCell) {
-                const elem = this.body.getFocusedCellElement();
                 this.activateCell(elem);
             }
         },
         /**@this {Table} */
         focusCell(row, column) {
-            if (column.$flex) return;
+            if (!row || !column || column.$flex) return;
 
             if (this.compareRows(this.focusedCell?.row, row) && this.focusedCell?.column === column) return;
 
@@ -1337,15 +1339,17 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             }, { target: cellElement, once: true });
             return cellElement.activate();
         }
-        const col = this.activeCols.find(c => c.treeMode);
-        const treeCell = this.body.findCellByCoordinates(cellElement.cellCoordinates);
-        if (treeCell) {
-            const row = this.focusedCell?.row;
-            if (row && this.compareRows(row, this.focusedRow)) {
-                return treeCell?.activate();
+        const row = this.focusedCell?.row;
+        if (row && this.compareRows(row, this.focusedRow)) {
+            const treeColumn = this.activeCols.find(c => c.treeMode);
+            if (treeColumn) {
+                const treeCell = this.body.findCellByCoordinates({ row: this.focusedCell.row, column: treeColumn });
+                if (treeCell) {
+                    return this.activateCell(treeCell);
+                }
             }
-            this.activeCell = null;
         }
+        this.activeCell = null;
     },
     /**@this {Table}*/
     deactivateCell(cellElement) {
@@ -1890,13 +1894,14 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
                 }
             }
             else {
-                this.onSelectRow(e, { value: row });
                 if (this.activeCell && this.fillingNewLineMode) {
                     this.moveCellPointer(1, 0);
-                } else {
+                }
+                else {
                     const elem = this.body.getFocusedCellElement();
                     this.activateCell(elem);
                 }
+                this.onSelectRow(e, { value: row });
             }
         },
     },
@@ -1949,7 +1954,8 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
     },
     /** @this {Table} */
     _cellIsFocused(row, column, elem) {
-        return this.allowFocusCell && this.focusedCell && this.compareRows(this.focusedCell.row, row) && this.focusedCell.column === column;
+        if (!this.allowFocusCell || (column.treeMode && this.compareRows(this.focusedRow, row))) return false;
+        return this.focusedCell && this.compareRows(this.focusedCell.row, row) && this.focusedCell.column === column;
     },
     setScreen() {
         if (this.fix) return;

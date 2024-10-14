@@ -253,6 +253,10 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
         }
     },
     $pdp: {
+        containerHover: {
+            $type: Boolean,
+            $def: false
+        },
         container: {
             get() {
                 return this;
@@ -277,6 +281,12 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
         });
     },
     $listeners: {
+        mouseenter(e) {
+            this.container.containerHover = true;
+        },
+        mouseleave(e) {
+            this.container.containerHover = false;
+        },
         dragover(e) {
             if (!this.designMode) return;
             if (!this.focusedPin) return;
@@ -302,9 +312,12 @@ ODA({ is: 'oda-scheme-pins', imports: '@oda/icon', template: /*html*/`
             min-width: {{iconSize}}px;
             min-height: {{iconSize}}px;
         }
+        :host(:hover) {
+            z-index: 2;
+        }
         {{''}}
     </style>
-    <oda-scheme-pin ~for="pins" ~props="$for.item?.props" :draggable="designMode?'true':'false'" :pin="$for.item" @down.stop :focused="$for.item === focusedPin?.pin"></oda-scheme-pin>
+    <oda-scheme-pin ~for="pins" ~props="$for.item?.props" :draggable="designMode?'true':'false'" :title="$for.item.title || ''" :pin="$for.item" @down.stop :focused="$for.item === focusedPin?.pin"></oda-scheme-pin>
     `,
     $wake: true,
     $pdp: {
@@ -325,7 +338,7 @@ ODA({ is: 'oda-scheme-pins', imports: '@oda/icon', template: /*html*/`
         this.$$('oda-scheme-pin').forEach(i => {
             i.links = undefined;
         });
-    },
+    }
 });
 ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
     <style>
@@ -341,11 +354,24 @@ ODA({ is: 'oda-scheme-pin', extends: 'oda-icon', template: /*html*/`
         :host([focused]), :host(:hover) {
             @apply --active;
         }
-        :host([invisible]) {
+        :host div.icon {
             visibility: hidden;
+        }
+        :host([hovered]) div.icon {
+            visibility: visible;
         }
     </style>
     `,
+    hovered: {
+        $type: Boolean,
+        $attr: true,
+        get() {
+            return this.containerHover;
+        }
+    },
+    get icon() {
+        return this.pin?.icon || '';
+    },
     $wake: true,
     attached() {
         this.interface.links = undefined;
