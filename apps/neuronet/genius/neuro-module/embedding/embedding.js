@@ -9,7 +9,12 @@ export class Embedding  extends NeuroModule{
         return this._targetSize ??= this.win_size * (this.negative_size + 1);
     }
     get BINS(){
-        return this._BINS ??= tensor.from(Array(this.targetSize).fill().map((v, i)=>(2. ** - (i + 1) + .5)));
+        return this._BINS ??= (()=>{
+            const _bins =  Array(this.win_size).fill().map((v, i)=>(2. ** - (i + 1) + .5));
+            while (_bins.length<this.targetSize)
+                _bins.push(0)
+            return tensor.from(_bins)
+        })();
     }
     __init__(){
         this.vocabulary = {"[end]":{
@@ -97,17 +102,15 @@ export class Embedding  extends NeuroModule{
     }
     train(text){
         let tokens = this._tokenize(text);
-        tokens.push(this.vocabulary['[end]'])
-        let w = this.win_size;
+        let win_size = this.win_size;
         let size = this.targetSize;
         let windows = tokens.map((token, i)=>{
             i++;
-            const slice = tokens.slice(i, i + w);
-            slice.pop();
-            if(slice.length === 0)
-                return;
+            const slice = tokens.slice(i, i + win_size);
+            if(!slice.length)
+                slice.push(this.vocabulary['[end]']);
             let window = [...slice];
-            while(window.length<w){
+            while(window.length < win_size){
                 window.unshift(window[0])
             }
             while (window.length < size){
@@ -119,8 +122,8 @@ export class Embedding  extends NeuroModule{
             }
             return tensor.stack(window.map(i=>i.cnt));
         })
-        tokens.pop();
-        windows.pop();
+        // tokens.pop();
+        // windows.pop();
         let tokens_emb = tensor.stack(tokens.map(i=>i.emb));
         let windows_cnt = tensor.stack(windows);
 
