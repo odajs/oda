@@ -197,7 +197,7 @@ export class Embedding  extends NeuroModule{
                 res.emb = tensor.param(tensor.random(this.dim, -.1, .1))._label('emb: ' + w);
                 res.cnt = tensor.param(tensor.random(this.dim, -.1, .1))._label('cnt: ' + w);
                 this._tokens = undefined
-                this._size = (this._size || 1)+1;
+                this._size = (this._size || 1) + 1;
                 return res;
             })()
         }
