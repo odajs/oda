@@ -941,7 +941,7 @@ tensor.prototype.MSE = function (target){
     let errors = Array(this.size/step).fill().map((d, i)=>{
         let start = i * step
         let slice = this.data.slice(start, start + step);
-        let y = start>target.size?target.data.slice(0, step):target.data.slice(start, start + step);
+        let y = start<target.size?target.data.slice(start, start + step):target.data.slice(0, step);
         let errors = Array.prototype.map.call(slice, (x, j)=>{
             return y[j] - x;
         });
