@@ -103,60 +103,54 @@ export class Embedding  extends NeuroModule{
     get error(){
         return this.tokens.filter((_,i)=>i).map(i=>i.error).avg();
     }
-    train(text, splitter){
+    async train(text, splitter = '\n'){
         let splits = this.split_and_tokenize(text, splitter);
-        let tokens = this.tokenize(text);
         let win_size = this.win_size;
         let size = this.targetSize;
-        let windows = tokens.map((token, i)=>{
-            i++;
-            const slice = tokens.slice(i, i + win_size);
-            if(!slice.length)
-                slice.push(this.vocabulary['[end]']);
-            let window = [...slice];
-            while(window.length < win_size){
-                window.unshift(window[0])
-            }
-            while (window.length < size){
-                const idx = Math.floor(Math.random() * this.size)
-                const t = this.tokens[idx];
-                if (t && t !== token && !slice.includes(t)){
-                    window.push(t);
-                }
-            }
-            return tensor.stack(window.map(i=>i.cnt));
-        })
-        // tokens.pop();
-        // windows.pop();
-        let tokens_emb = tensor.stack(tokens.map(i=>i.emb));
-        let windows_cnt = tensor.stack(windows);
+        for(let tokens of splits){
+            let train_step = new Promise(async resolve =>{
+                let windows = tokens.map((token, i)=>{
+                    i++;
+                    const slice = tokens.slice(i, i + win_size);
+                    if(!slice.length)
+                        slice.push(this.vocabulary['[end]']);
+                    let window = [...slice];
+                    while(window.length < win_size){
+                        window.unshift(window[0])
+                    }
+                    while (window.length < size){
+                        const idx = Math.floor(Math.random() * this.size)
+                        const t = this.tokens[idx];
+                        if (t && t !== token && !slice.includes(t)){
+                            window.push(t);
+                        }
+                    }
+                    return tensor.stack(window.map(i=>i.cnt));
+                })
+                let tokens_emb = tensor.stack(tokens.map(i=>i.emb));
+                let windows_cnt = tensor.stack(windows);
 
-        if (tokens_emb.data.indexOf(0)>-1){
-            console.log('УПС - tokens_emb')
+                let res = tensor.einsum(`ld,lod->lo`, [tokens_emb, windows_cnt]);
+                res = res.sigm();
+                res = res.MSE(this.BINS);
+                tokens.forEach((v,i)=>{
+                    v.error = res.data[i]
+                })
+                res.back();
+                this['#tokens_error'] = undefined;
+                this.losses.push([this.tokens_error]);
+                requestAnimationFrame(()=>{
+                    resolve()
+                })
+            })
+            await train_step;
         }
-
-        if (windows_cnt.data.indexOf(0)>-1){
-            console.log('УПС - windows_cnt')
-        }
-
-
-        let res = tensor.einsum(`ld,lod->lo`, [tokens_emb, windows_cnt]);
-        res = res.sigm();
-        // let target = tensor.from(this.BINS.slice(0, res.shape[0]));
-        res = res.MSE(this.BINS);
-        tokens.forEach((v,i)=>{
-            v.error = res.data[i]
-        })
-        res.back();
-        this['#tokens_error'] = undefined;
-        this.losses.push([this.tokens_error]);
-        return tokens;
     }
     get tokens(){
         return (this._tokens ??= Object.values(this.vocabulary));
     }
     split_and_tokenize(text, splitter='\n'){
-        return text.split(splitter).filter(true).map(this.tokenize);
+        return text.split(splitter).filter(Boolean).map(t=>this.tokenize(t));
     }
     tokenize(text){
         text = text.toLowerCase();
