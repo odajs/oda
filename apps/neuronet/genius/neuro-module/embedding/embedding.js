@@ -32,12 +32,15 @@ export class Embedding  extends NeuroModule{
     }
     restore(x){
         x = this.forward(x);
-        x = x.maxIndex();
+        x = x.array.map(token=>{
+            return this.near(token)[0];
+        })
+        // x = x.maxIndex();
         return x;
     }
     print(x){
         x = this.restore(x);
-        x = Array.from(x.data).map(i=>this.tokens[i]?.w || '?').join('');
+        x = x.map(i=>i.w).join('');
         return x;
     }
     plus(...tokens){
@@ -159,7 +162,7 @@ export class Embedding  extends NeuroModule{
             const type = inRule(ch);
             if (type){
                 if (word){
-                    tokens.push(this._addToken(word));
+                    tokens.push(this._addToken(' ' + word));
                     word = ''
                 }
                 const t = this._addToken(ch, type);
@@ -172,7 +175,7 @@ export class Embedding  extends NeuroModule{
         }
         word = word.trim();
         if (word)
-            tokens.push(this._addToken(word));
+            tokens.push(this._addToken(' ' + word));
         tokens = tokens.flat();
         return tokens;
     }
