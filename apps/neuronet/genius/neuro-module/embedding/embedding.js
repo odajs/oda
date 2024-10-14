@@ -103,9 +103,9 @@ export class Embedding  extends NeuroModule{
         let windows = tokens.map((token, i)=>{
             i++;
             const slice = tokens.slice(i, i + w);
-            if(!slice.length)
-                return;
             slice.pop();
+            if(slice.length === 0)
+                return;
             let window = [...slice];
             while(window.length<w){
                 window.unshift(window[0])
@@ -113,7 +113,7 @@ export class Embedding  extends NeuroModule{
             while (window.length < size){
                 const idx = Math.floor(Math.random() * this.size)
                 const t = this.tokens[idx];
-                if (t && !slice.includes(t)){
+                if (t && t !== token && !slice.includes(t)){
                     window.push(t);
                 }
             }
