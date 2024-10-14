@@ -50,7 +50,7 @@ export class Embedding  extends NeuroModule{
     _plus(...tokens){
         tokens = tokens.map(t=>{
             if(typeof(t) === 'string')
-                return this._plus(...this._tokenize(t));
+                return this._plus(...this.tokenize(t));
             return tensor.from(t.emb || t);
         });
         tokens = tokens.reduce((res, v)=>{
@@ -61,18 +61,18 @@ export class Embedding  extends NeuroModule{
     }
     sample(t1, t2){
         // if(typeof(t1) === 'string')
-        //     t1 = this._tokenize(t1);
+        //     t1 = this.tokenize(t1);
         t1 = this._plus(t1);
 
         // if(typeof(t2) === 'string')
-        //     t2 = this._tokenize(t2);
+        //     t2 = this.tokenize(t2);
         t2 = this._plus(t2);
 
         return tensor.cosSimilar(t1, t2);
     }
     near(token){
         if(typeof(token) === 'string')
-            token = this._plus(...this._tokenize(token));
+            token = this._plus(...this.tokenize(token));
         token = tensor.from(token.emb || token);
         const res = this.tokens.map(t=>{
             if (t !== token){
@@ -103,8 +103,9 @@ export class Embedding  extends NeuroModule{
     get error(){
         return this.tokens.filter((_,i)=>i).map(i=>i.error).avg();
     }
-    train(text){
-        let tokens = this._tokenize(text);
+    train(text, splitter){
+        let splits = this.split_and_tokenize(text, splitter);
+        let tokens = this.tokenize(text);
         let win_size = this.win_size;
         let size = this.targetSize;
         let windows = tokens.map((token, i)=>{
@@ -154,7 +155,10 @@ export class Embedding  extends NeuroModule{
     get tokens(){
         return (this._tokens ??= Object.values(this.vocabulary));
     }
-    _tokenize(text){
+    split_and_tokenize(text, splitter='\n'){
+        return text.split(splitter).filter(true).map(this.tokenize);
+    }
+    tokenize(text){
         text = text.toLowerCase();
         let word = '';
         let tokens = [];
@@ -180,7 +184,7 @@ export class Embedding  extends NeuroModule{
         return tokens;
     }
     _text2emb(text){
-        let t = this._tokenize(text);
+        let t = this.tokenize(text);
         t = t.map(i=>i.emb);
         t = tensor.from(t);
         return t;
