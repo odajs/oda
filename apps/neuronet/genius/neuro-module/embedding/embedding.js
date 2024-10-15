@@ -144,6 +144,8 @@ export class Embedding  extends NeuroModule{
                         let windows_cnt = tensor.stack(windows);
 
                         let res = tensor.einsum(`ld,lod->lo`, [tokens_emb, windows_cnt]);
+                        // delete tokens_emb.data;
+                        // delete windows_cnt.data;
                         res = res.sigm();
                         res = res.MSE(this.BINS);
                         tokens.forEach((v,i)=>{
@@ -152,7 +154,7 @@ export class Embedding  extends NeuroModule{
                         res.back();
                         this['#tokens_error'] = undefined;
                         this.losses.push([this.tokens_error]);
-                        tokens = [];
+                        tokens.clear();
                         this.fire('progress', Math.round(s / length * 100))
                         requestAnimationFrame(()=>{
                             resolve()

@@ -217,6 +217,7 @@ export class tensor{
         return 0;
     }
     clearGrad(){
+        // delete this.#grad;
         this.#grad = undefined;
     }
     updateParams(){
@@ -365,29 +366,44 @@ export class tensor{
             d--;
         }
         const data = new dType(shape.mul() * size);
-        let idx = 0;
+        let idx = -1;
         for (let i = 0; i < size; i += step){
             let delta = i + step;
-            for (let j = 0; j<tensors.length; j++){
+            for (let j = 0; j < tensors.length; j++){
                 let t = tensors[j];
-                let slice = t.data.slice(i, delta);
-                data.set(slice, idx);
-                idx+=step;
-
+                for (let d = i; d<delta; d++){
+                    data[++idx] = t.data[d];
+                }
             }
         }
         const out = tensor.from(data)._shape(...shape,  ...first.shape)._label(`stack(${tensors.length} tensors with shape(${first.shape}) by ${dim} axis)`)._src(tensors);
         out._back = ()=>{
-            idx = 0;
+            idx = -1;
             for (let i = 0; i < size; i += step){
-                for (let t of tensors){
-                    const slice = out.grad.slice(idx, idx + step);
-                    t.grad = t.grad.map((v,j)=>{
-                        return v + slice[j];
-                    })
-                    idx+=step;
+                let delta = i + step;
+                for (let j = 0; j < tensors.length; j++){
+                    let t = tensors[j];
+                    for (let d = i; d<delta; d++){
+                        t.grad[d] = out.grad[++idx];
+                    }
                 }
             }
+
+
+            // for (let i = 0; i < size; i += step){
+            //     for (let t of tensors){
+            //         const end = idx + step
+            //         for (let d = idx; d<end; d++){
+            //             t.grad[] out.grad[d]
+            //             data[++idx] = t.data[d];
+            //         }
+            //         const slice = out.grad.slice(idx, idx + step);
+            //         t.grad = t.grad.map((v,j)=>{
+            //             return v + slice[j];
+            //         })
+            //         idx += step;
+            //     }
+            // }
         }
         return out
     }
