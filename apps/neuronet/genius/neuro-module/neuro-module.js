@@ -3,6 +3,7 @@ export class NeuroModule extends Function{
     #params = Object.create(null);
     #label = undefined;
     losses  = [];
+    _listeners = [];
     constructor(argumetns) {
         super()
 
@@ -31,6 +32,15 @@ export class NeuroModule extends Function{
             apply(target, _, args) {
                 return target.forward(...args);
             }
+        })
+    }
+    listen(event, handler){
+        const listeners = this._listeners[event] ??= [];
+        listeners.add(handler);
+    }
+    fire(event, value){
+        (this._listeners[event] || []).forEach(handler=>{
+            handler.call(this,  value);
         })
     }
     get model(){

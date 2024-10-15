@@ -2,12 +2,14 @@ import {tensor} from "../../torus/torus.js";
 import {Linear, NeuroModule} from "../neuro-module.js";
 export class Embedding  extends NeuroModule{
     _size = undefined;
-    progress = 0;
     constructor(dim = 1024, char_step = 0, win_size = 8, negative_size = 3) {
         super(arguments);
     }
     get targetSize(){
         return this._targetSize ??= this.win_size * (this.negative_size + 1);
+    }
+    onProgress(p){
+
     }
     get BINS(){
         return this._BINS ??= (()=>{
@@ -105,56 +107,66 @@ export class Embedding  extends NeuroModule{
         return this.tokens.filter((_,i)=>i).map(i=>i.error).avg();
     }
     async train(text){
-        let win_size = this.win_size;
-        let size = this.targetSize;
-        const splits = text.split('\r\n').filter(Boolean).map(text =>{
-            return text.split('\n').filter(Boolean).map(text =>{
-                return text.split('\r').filter(Boolean).flat();
+        try{
+            let win_size = this.win_size;
+            let size = this.targetSize;
+            const splits = text.split('\r\n').filter(Boolean).map(text =>{
+                return text.split('\n').filter(Boolean).map(text =>{
+                    return text.split('\r').filter(Boolean).flat();
+                }).flat();
             }).flat();
-        }).flat();
-        this.progress = 0;
-        const length = splits.length;
-        for (let s = 0; s<length; s++){
-            let tokens = this.tokenize(splits[s])
-            let train_step = new Promise(async resolve =>{
-                let windows = tokens.map((token, i)=>{
-                    i++;
-                    const slice = tokens.slice(i, i + win_size);
-                    if(!slice.length)
-                        slice.push(this.vocabulary['[end]']);
-                    let window = [...slice];
-                    while(window.length < win_size){
-                        window.unshift(window[0])
-                    }
-                    while (window.length < size){
-                        const idx = Math.floor(Math.random() * this.size)
-                        const t = this.tokens[idx];
-                        if (t && t !== token && !slice.includes(t)){
-                            window.push(t);
-                        }
-                    }
-                    return tensor.stack(window.map(i=>i.cnt));
-                })
-                let tokens_emb = tensor.stack(tokens.map(i=>i.emb));
-                let windows_cnt = tensor.stack(windows);
+            this.fire('progress', 0)
+            const length = splits.length;
+            let tokens = [];
+            for (let s = 0; s<length; s++){
+                tokens.push(...this.tokenize(splits[s]));
+                if(s === length - 1 || tokens.length > 10000){
+                    let train_step = new Promise(async resolve =>{
+                        let windows = tokens.map((token, i)=>{
+                            i++;
+                            const slice = tokens.slice(i, i + win_size);
+                            if(!slice.length)
+                                slice.push(this.vocabulary['[end]']);
+                            let window = [...slice];
+                            while(window.length < win_size){
+                                window.unshift(window[0])
+                            }
+                            while (window.length < size){
+                                const idx = Math.floor(Math.random() * this.size)
+                                const t = this.tokens[idx];
+                                if (t && t !== token && !slice.includes(t)){
+                                    window.push(t);
+                                }
+                            }
+                            return tensor.stack(window.map(i=>i.cnt));
+                        })
+                        let tokens_emb = tensor.stack(tokens.map(i=>i.emb));
+                        let windows_cnt = tensor.stack(windows);
 
-                let res = tensor.einsum(`ld,lod->lo`, [tokens_emb, windows_cnt]);
-                res = res.sigm();
-                res = res.MSE(this.BINS);
-                tokens.forEach((v,i)=>{
-                    v.error = res.data[i]
-                })
-                res.back();
-                this['#tokens_error'] = undefined;
-                this.losses.push([this.tokens_error]);
-                requestAnimationFrame(()=>{
-                    resolve()
-                })
-            })
-            await train_step;
-            this.progress = Math.round(s/length);
+                        let res = tensor.einsum(`ld,lod->lo`, [tokens_emb, windows_cnt]);
+                        res = res.sigm();
+                        res = res.MSE(this.BINS);
+                        tokens.forEach((v,i)=>{
+                            v.error = res.data[i]
+                        })
+                        res.back();
+                        this['#tokens_error'] = undefined;
+                        this.losses.push([this.tokens_error]);
+                        tokens = [];
+                        this.fire('progress', Math.round(s / length * 100))
+                        requestAnimationFrame(()=>{
+                            resolve()
+                        })
+                    })
+                    await train_step;
+                }
+
+            }
         }
-        this.progress = 0;
+        finally {
+            this.fire('progress', 0);
+        }
+
     }
     get tokens(){
         return (this._tokens ??= Object.values(this.vocabulary));
