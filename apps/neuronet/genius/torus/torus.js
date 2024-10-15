@@ -257,8 +257,6 @@ export class tensor{
             this.#bins = undefined
         }
         else{
-            // if (!this.grad[0])
-            //     console.log('empty gradient', this)
             for(let i = 0; i<this.data.length; i++){
                 this.data[i] += this.grad[i] * tensor.LEARNING_RATE;
             }
@@ -284,22 +282,13 @@ export class tensor{
         }
         topo.forEach((node, index) => {
             if (!node.src) return;
-
-
-            //
-            // if (index>1){
-            //     const zeros =  topo[index-1].grad.filter(i=>i === 0);
-            //     if (zeros.length)
-            //         console.log(index, 'back no_grads: ' + zeros, node.label, node.grad)
-            // }
-
-
             node._back?.();
 
         })
         topo.forEach((node) => {
-            if (node.src) return;
-            node.updateParams();
+            if (!node.src)
+                node.updateParams();
+            node.clearGrad();
         })
     }
 
@@ -939,9 +928,9 @@ tensor.prototype.MSE = function (target){
     const out = tensor.from(losses)._src(this)._label(`MSE (${this.shape})`);
     errors = errors.flat();
     out._back = ()=>{
-        this.grad = this.grad.map((x, i)=>{
-            return x + errors[i]
-        })
+        for (let i = 0; i < this.grad.length; i++){
+            this.grad[i] += errors[i];
+        }
     }
     return out;
 }
@@ -1352,9 +1341,10 @@ tensor.einsum = (in_expr, sources = [])=>{
                 return tt;
             })
             let out_back = tensor.einsum(expr, sources);
-            t.grad = t.grad.map((x, j)=>{
-                return x + out_back.data[j];
-            })
+            t.grad = out_back.data;
+            // for (let g = 0; g < t.grad.length; g++){
+            //     t.grad[g] += out_back.data[g];
+            // }
         })
     }
     fn(tensors, out.data);
