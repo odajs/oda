@@ -232,7 +232,7 @@ export class Embedding  extends NeuroModule{
                 if (i === 0)
                     step--;
             }
-            if (parts.length > 1 && parts.last.length < step){
+            if (parts.length > 1 && step > 1 && parts.last.length === 1){
                 word = parts.pop()
                 parts[parts.length - 1] += word;
             }
