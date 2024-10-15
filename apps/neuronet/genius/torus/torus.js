@@ -389,22 +389,6 @@ export class tensor{
                     }
                 }
             }
-
-
-            // for (let i = 0; i < size; i += step){
-            //     for (let t of tensors){
-            //         const end = idx + step
-            //         for (let d = idx; d<end; d++){
-            //             t.grad[] out.grad[d]
-            //             data[++idx] = t.data[d];
-            //         }
-            //         const slice = out.grad.slice(idx, idx + step);
-            //         t.grad = t.grad.map((v,j)=>{
-            //             return v + slice[j];
-            //         })
-            //         idx += step;
-            //     }
-            // }
         }
         return out
     }

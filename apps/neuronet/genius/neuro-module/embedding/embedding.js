@@ -226,10 +226,13 @@ export class Embedding  extends NeuroModule{
         }
         if (!type && this.char_step){
             const parts = [];
-            for (let i = 0; i < word.length; i += char_step){
-                parts.push(word.substr(i, char_step))
+            let step = char_step + 1;
+            for (let i = 0; i < word.length; i += step){
+                parts.push(word.substr(i, step))
+                if (i === 0)
+                    step--;
             }
-            if (parts.length > 1 && parts.last.length < this.char_step){
+            if (parts.length > 1 && parts.last.length < step){
                 word = parts.pop()
                 parts[parts.length - 1] += word;
             }
