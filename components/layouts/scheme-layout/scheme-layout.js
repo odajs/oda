@@ -1,6 +1,6 @@
 ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/containers', extends: 'oda-ruler-grid', template: /*html*/`
     <oda-icon class="error shadow" ~show="showTrash" icon-size="60" icon="icons:delete" style="position: absolute; border-radius: 25%; right: 50px; bottom: 50px;"></oda-icon>
-    <div slot="content" tabindex="0" class="flex vertical" ~style="{zoom: scale}" style="position: relative">
+    <div slot="content" tabindex="0" class="flex vertical" ~style="{zoom: scale}" style="position: relative; outline: none;">
     <oda-scheme-container ~for="items" @resize="links = undefined" @tap.stop="select" :block="$for.item" ~props="$for.item?.props" @down="onDown" @up="onUp"></oda-scheme-container>
     </div>
     `,
@@ -288,9 +288,7 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
             this.container.containerHover = false;
         },
         dragover(e) {
-            if (!this.designMode) return;
-            if (!this.focusedPin) return;
-            if (this.focusedPin.container === this) return;
+            if (!this.designMode || !this.focusedPin || this.focusedPin.container === this) return;
             // e.stopPropagation();
             e.preventDefault();
         },

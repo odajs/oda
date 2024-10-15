@@ -2,6 +2,7 @@ import {tensor} from "../../torus/torus.js";
 import {Linear, NeuroModule} from "../neuro-module.js";
 export class Embedding  extends NeuroModule{
     _size = undefined;
+    progress = 0;
     constructor(dim = 1024, char_step = 0, win_size = 8, negative_size = 3) {
         super(arguments);
     }
@@ -104,11 +105,13 @@ export class Embedding  extends NeuroModule{
         return this.tokens.filter((_,i)=>i).map(i=>i.error).avg();
     }
     async train(text, splitter = '\n'){
-        let splits = this.split_and_tokenize(text, splitter);
         let win_size = this.win_size;
         let size = this.targetSize;
-        for(let s = 0 ; s< splits.length; s++){
-            let tokens = splits[s]
+        const splits = text.split(splitter).filter(Boolean);
+        this.progress = 0;
+        const length = splits.length;
+        for (let s = 0; s<length; s++){
+            let tokens = this.tokenize(splits[s])
             let train_step = new Promise(async resolve =>{
                 let windows = tokens.map((token, i)=>{
                     i++;
@@ -145,7 +148,9 @@ export class Embedding  extends NeuroModule{
                 })
             })
             await train_step;
+            this.progress = Math.round(s/length);
         }
+        this.progress = 0;
     }
     get tokens(){
         return (this._tokens ??= Object.values(this.vocabulary));
