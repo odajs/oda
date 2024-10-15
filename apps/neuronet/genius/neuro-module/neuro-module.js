@@ -341,7 +341,7 @@ export class conv1D extends NeuroModule {
                             // const src_grp = batch_data.slice(src_idx, src_idx += L_in);
                             let src_data =  [...this.pads, ...src_grp, ...this.pads];
                             for (let step = 0; step < dim_out; step++){
-                                const g = o_grad[++out_idx] / tensor.GRADIENT_DIVIDER;
+                                const g = o_grad[++out_idx];
                                 for (let i = 0; i<k_size; i++){
                                     let x_idx = step * stride + i * dilation;
                                     k_grad[k_idx] += src_data[x_idx] * g;

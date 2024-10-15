@@ -1,5 +1,4 @@
 globalThis.LEARNING_RATE = 0.1;
-globalThis.GRADIENT_DIVIDER = 1;
 export class tensor{
     #shape = [];
     #data = null;
@@ -345,7 +344,7 @@ export class tensor{
             if (this.allowGrad){
                 out._back = ()=>{
                     out.grad.forEach((g, i)=>{
-                        this.grad[i + start] = g;
+                        this.grad[i + start] += g;
                     })
                 }
             }
@@ -382,7 +381,8 @@ export class tensor{
             let delta = i + step;
             for (let j = 0; j<tensors.length; j++){
                 let t = tensors[j];
-                data.set(t.data.slice(i, delta), idx);
+                let slice = t.data.slice(i, delta);
+                data.set(slice, idx);
                 idx+=step;
 
             }
@@ -394,7 +394,7 @@ export class tensor{
                 for (let t of tensors){
                     const slice = out.grad.slice(idx, idx + step);
                     t.grad = t.grad.map((v,j)=>{
-                        return v+slice[j];
+                        return v + slice[j];
                     })
                     idx+=step;
                 }
@@ -564,13 +564,6 @@ export class tensor{
     static set LEARNING_RATE(n) {
         globalThis.LEARNING_RATE = n
     }
-    static get GRADIENT_DIVIDER() {
-        return globalThis.GRADIENT_DIVIDER
-    }
-    static set GRADIENT_DIVIDER(n) {
-        globalThis.GRADIENT_DIVIDER = n
-    }
-
 }
 tensor.prototype.slice = function (...slicers){
     if (slicers.length>this.dim)
@@ -760,7 +753,7 @@ tensor.prototype._element_wise_operator = function (label, other, forward_func, 
                     func.push(t+`\ty = ${dim - i === 1?'idx':idx};`);
                 }
             }
-            func.push(t+`\tg = o_grad[idx] / ${GRADIENT_DIVIDER};`);
+            func.push(t+`\tg = o_grad[idx];`);
             func.push(t+`\t_x = x_data[x];`);
             func.push(t+`\t_y = y_data[y];`);
             if (this.allowGrad)
@@ -796,16 +789,9 @@ tensor.prototype._element_wise_function = function (label, forward_func, back_fu
     out._label(label+' ('+out.shape+')');
     if (back_func && this.allowGrad){
         out._back = ()=>{
-            let x_grad = this.grad;
-            let x_data = this.data;
-            let o_data = out.data;
-            let x, y, g
-            this.grad = this.grad.map((res, i)=>{
-                x = this.data[i];
-                y = out.data[i];
-                g = out.grad[i] / GRADIENT_DIVIDER;
-                return res + back_func(x, y) * g
-            })
+            for(let i = 0; i<this.grad.length; i++){
+                this.grad[i] += back_func(this.data[i], out.data[i]) * out.grad[i];
+            }
         }
     }
     return out;
@@ -872,7 +858,7 @@ tensor.prototype.softmax = function (){
                     let v = (y === j) ? d * (1 - d) : -d * sj;
                     return r + v
                 })
-                this.grad[idx] += sum * out.grad[idx] / tensor.GRADIENT_DIVIDER;
+                this.grad[idx] += sum * out.grad[idx];
             }
         }
     }
@@ -918,7 +904,7 @@ tensor.prototype.hardmax = function (){
     //                 let v = (y === j) ? d * (1 - d) : -d * sj;
     //                 return r + v
     //             })
-    //             this.grad[idx] += sum * out.grad[idx] / tensor.GRADIENT_DIVIDER;
+    //             this.grad[idx] += sum * out.grad[idx];
     //         }
     //     }
     // }
