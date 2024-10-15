@@ -218,8 +218,6 @@ export class tensor{
     }
     clearGrad(){
         this.#grad?.fill(0)
-        // delete this.#grad;
-        // this.#grad = undefined;
     }
     updateParams(){
         if (!this.isParam) return;
@@ -265,7 +263,7 @@ export class tensor{
         }
     }
     back(grad){
-        const topo = [];
+        let topo = [];
         let visited = new Set();
         let build_topo = (t) => {
             if (!visited.has(t)) {
@@ -275,9 +273,9 @@ export class tensor{
             }
         }
         build_topo(this);
-        topo.forEach((node) => {
-            node.clearGrad();
-        })
+        // topo.forEach((node) => {
+        //     node.clearGrad();
+        // })
         topo.reverse();
         if(grad){
             topo[0].grad = grad;
@@ -292,6 +290,8 @@ export class tensor{
                 node.updateParams();
             node.clearGrad();
         })
+        topo.clear();
+        topo = null;
     }
 
     static concat(tensors, dim= 0){
