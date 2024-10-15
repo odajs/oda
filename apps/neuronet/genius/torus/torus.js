@@ -217,8 +217,9 @@ export class tensor{
         return 0;
     }
     clearGrad(){
+        this.#grad?.fill(0)
         // delete this.#grad;
-        this.#grad = undefined;
+        // this.#grad = undefined;
     }
     updateParams(){
         if (!this.isParam) return;
