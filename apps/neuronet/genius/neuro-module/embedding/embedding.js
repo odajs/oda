@@ -104,10 +104,14 @@ export class Embedding  extends NeuroModule{
     get error(){
         return this.tokens.filter((_,i)=>i).map(i=>i.error).avg();
     }
-    async train(text, splitter = '\n'){
+    async train(text){
         let win_size = this.win_size;
         let size = this.targetSize;
-        const splits = text.split(splitter).filter(Boolean);
+        const splits = text.split('\r\n').filter(Boolean).map(text =>{
+            return text.split('\n').filter(Boolean).map(text =>{
+                return text.split('\r').filter(Boolean).flat();
+            }).flat();
+        }).flat();
         this.progress = 0;
         const length = splits.length;
         for (let s = 0; s<length; s++){
