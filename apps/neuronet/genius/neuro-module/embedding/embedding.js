@@ -215,7 +215,8 @@ export class Embedding  extends NeuroModule{
             return this.vocabulary[w] ??= (()=>{
                 const res = Object.create(null);
                 res.w = w;
-                res.t = type || 'w';
+                if (type)
+                    res.t = type;
                 // res.id = Object.keys(this.vocabulary).length;
                 res.emb = tensor.param(tensor.random(this.dim, -.1, .1))._label('emb: ' + w);
                 res.cnt = tensor.param(tensor.random(this.dim, -.1, .1))._label('cnt: ' + w);
@@ -281,7 +282,7 @@ ODA({is: 'oda-embedding',
         <div flex style="overflow-y: auto;">
             <div stadow ~for="tokenizer?.vocabulary" vertical>
                 <div class="horizontal">
-                    <span no-flex>{{$for.item.id}}: {{$for.key}}</span>
+                    <span no-flex>{{$for.key}}</span>
                     <div class="flex" ~style="getBackGradient($for.item.emb.data)"></div>
                     <span style="text-align: right;" no-flex>{{(+$for.item.error).toLocaleString('ru-RU', {style: 'percent',  minimumFractionDigits: 2, maximumFractionDigits: 2})}}</span>
                 </div>
