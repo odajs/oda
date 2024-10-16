@@ -216,8 +216,13 @@ export class tensor{
             return this.size;
         return 0;
     }
+    destroy(){
+        this.clearGrad();
+        this.data.buffer.transfer(0);
+    }
     clearGrad(){
-        this.#grad?.fill(0)
+        this.#grad?.buffer.transfer(0);
+        this.#grad = undefined;
     }
     updateParams(){
         if (!this.isParam) return;
@@ -261,6 +266,7 @@ export class tensor{
                 this.data[i] += this.grad[i] * tensor.LEARNING_RATE;
             }
         }
+        this.clearGrad();
     }
     back(grad){
         let topo = [];
@@ -273,9 +279,6 @@ export class tensor{
             }
         }
         build_topo(this);
-        // topo.forEach((node) => {
-        //     node.clearGrad();
-        // })
         topo.reverse();
         if(grad){
             topo[0].grad = grad;
@@ -286,9 +289,11 @@ export class tensor{
 
         })
         topo.forEach((node) => {
-            if (!node.src)
+            if (!node.src){
                 node.updateParams();
-            node.clearGrad();
+            }
+            else
+                node.destroy();
         })
         topo.clear();
         topo = null;

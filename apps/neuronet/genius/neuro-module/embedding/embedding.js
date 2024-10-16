@@ -225,7 +225,7 @@ export class Embedding  extends NeuroModule{
             })()
         }
         if (!type && this.char_step){
-            const parts = [word.substr(i, char_step + 1)];
+            const parts = [word.substr(0, char_step + 1)];
             for (let i = char_step + 1; i < word.length; i += char_step){
                 parts.push(word.substr(i, char_step))
             }
@@ -242,7 +242,7 @@ export class Embedding  extends NeuroModule{
 }
 const rules = {
     space: ['\r', '\n', '\t', ' '],
-    end: ['.', '!', '?'],
+    end: ['.', '!', '?', '…'],
     divider: [',', ';', ":"],
     symbol: ['/','-','(',')','[',']','{','}'],
     more: []
