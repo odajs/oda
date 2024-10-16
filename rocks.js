@@ -778,9 +778,9 @@ in the <${host.localName}>`;
                 ROCKS.resetDeps(deps);
             return res;
         }
-        const slice = Array.prototype.slice;
-        Array.prototype.slice = function (...item){
-            const res = slice.call(this, ...item);
+        const splice = Array.prototype.splice;
+        Array.prototype.splice = function (...item){
+            const res = splice.call(this, ...item);
             let deps = this[ROCKS.KEY]?.props?.length;
             if(deps)
                 ROCKS.resetDeps(deps);

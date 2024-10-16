@@ -191,7 +191,6 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     },
     async attached() {
         await getLoader();
-        this.$wake = true;
     },
     async printValue() {
         let css = {},
@@ -298,9 +297,6 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
     },
     get error() {
         return this.cell?.status === 'error';
-    },
-    attached(){
-        this.$wake = true;
     }
 })
 
@@ -358,7 +354,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell></oda-jupyter-outputs-toolbar>
                     <div class="vertical flex" style="overflow: hidden;">
                         <div flex vertical ~if="!cell?.metadata?.hideOutput" style="overflow: hidden;">
-                            <div raised wake ~for="cell.controls" style="font-family: monospace;" >
+                            <div raised ~for="cell.controls" style="font-family: monospace;" >
                                 <oda-jupyter-cell-out  ~for="$for.item.data" :row="$$for" :max="control().maxRow"></oda-jupyter-cell-out>
                             </div>
                             <div raised ~for="outputFor" style="font-family: monospace;" >
@@ -514,9 +510,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         this.cell.metadata.hideOutput = false;
         this.jupyter.$render();
         this.notebook.change();
-    },
-    attached(){
-        this.$wake = true;
     }
 })
 
