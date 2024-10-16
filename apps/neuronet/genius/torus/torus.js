@@ -218,7 +218,10 @@ export class tensor{
     }
     destroy(){
         this.clearGrad();
+        if (!this.src?.length) return
         this.data.buffer.transfer(0);
+        this.src.forEach(s=>s.destroy())
+
     }
     clearGrad(){
         if (!this.#grad?.length) return;
@@ -287,7 +290,6 @@ export class tensor{
         topo.forEach((node, index) => {
             if (!node.src) return;
             node._back?.();
-            node.destroy();
 
         })
         topo.forEach((node) => {
@@ -295,6 +297,7 @@ export class tensor{
                 node.updateParams();
             }
         })
+        topo[0]?.destroy();
     }
 
     static concat(tensors, dim= 0){

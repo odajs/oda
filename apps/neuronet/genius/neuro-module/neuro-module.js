@@ -4,6 +4,7 @@ export class NeuroModule extends Function{
     #label = undefined;
     losses  = [];
     _listeners = [];
+    destroyTime = 0;
     constructor(argumetns) {
         super()
 
@@ -30,7 +31,11 @@ export class NeuroModule extends Function{
                 return target[p];
             },
             apply(target, _, args) {
-                return target.forward(...args);
+                const result = target.forward(...args);
+                setTimeout(()=>{
+                    result?.destroy?.();
+                }, this.destroyTime);
+                return result;
             }
         })
     }

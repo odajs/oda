@@ -216,7 +216,7 @@ export class Embedding  extends NeuroModule{
                 const res = Object.create(null);
                 res.w = w;
                 res.t = type || 'w';
-                res.id = Object.keys(this.vocabulary).length;
+                // res.id = Object.keys(this.vocabulary).length;
                 res.emb = tensor.param(tensor.random(this.dim, -.1, .1))._label('emb: ' + w);
                 res.cnt = tensor.param(tensor.random(this.dim, -.1, .1))._label('cnt: ' + w);
                 this._tokens = undefined
@@ -244,7 +244,8 @@ const rules = {
     space: ['\r', '\n', '\t', ' '],
     end: ['.', '!', '?', '…'],
     divider: [',', ';', ":"],
-    symbol: ['/','-','(',')','[',']','{','}', '«', '»'],
+    quote: ['(',')','[',']','{','}', '«', '»', '\'', '"','<','>'],
+    symbol: ['/','-', '—', '=', '*', '&', '^', '%', '$', '#', '№', '@', '~', '+', '_', '\\', '|'],
     more: []
 }
 function inRule(char){
