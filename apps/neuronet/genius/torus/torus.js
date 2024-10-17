@@ -493,16 +493,17 @@ export class tensor/* extends Array*/{
         shape[dim] = join_dim;
         const size = shape.mul();
         const data = new first.dType(size);
+        let states = [...tensors.map(i=>({from: 0}))]
         let idx = 0;
         do{
             tensors.map((t, i)=>{
-                const step = t.__step ??= t.shape.reduce((r, v, i)=> (r * (i<dim)?1:v), 1)
-                const from = t.__from ??= 0;
-                const to =  from + step;
-                t.__from = to;
-                const slice = t.data.slice(from, to);
+                const state = states[i];
+                state.step ??= t.shape.reduce((r, v, i)=> (r * (i<dim)?1:v), 1)
+                const to =  state.from + state.step;
+                const slice = t.data.slice(state.from, to);
+                state.from = to;
                 data.set(slice, idx);
-                idx += step;
+                idx += state.step;
             })
         }
         while (idx < size)
@@ -1099,9 +1100,13 @@ if (!Array.prototype.toTensorString) {
 }
 
 function num2text(x){
-   if (Number.isInteger(x) || Number.isNaN(x) || !Number.isFinite(x))
-        return x.toString().padStart(2, ' ');
-    return x.toExponential(2).padStart(9, ' ');
+
+    let num = x.toString();
+    let repeat = (num[0] === '-')?0:1;
+    num = ' '.repeat(repeat) + num;
+    if (!Number.isInteger(x) && !Number.isNaN(x) && Number.isFinite(x))
+        num = num.substring(0, 7);
+    return num
 }
 
 function genId(){
