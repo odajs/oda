@@ -534,7 +534,7 @@ export class tensor{
         return this.data;
     }
     get array() {
-        if(!this.shape.length)
+        if(this.shape.length<2)
             return [this.data];
         let data;
         if (this.dType === BinaryArray)
