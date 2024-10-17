@@ -486,6 +486,37 @@ export class tensor/* extends Array*/{
         data = new dType(Array(repeat).fill(data).flat());
         return tensor.from(data, dType)._shape(shape);
     }
+    static cat (tensors = [], dim=-1){
+        const first = tensors[0];
+        if (dim < 0)
+            dim += first.dim;
+        let join_dim = tensors.reduce((r, t)=>r + t.shape[dim], 0);
+        const shape = [...first.shape];
+        shape[dim] = join_dim;
+        const size = shape.mul();
+        const data = new first.dType(size);
+        let idx = 0;
+        while (idx < size){
+            tensors.map((t, i)=>{
+                const step = t.__step ??= t.shape.reduce((r, v, i)=> (r * (i<dim)?1:v), 1)
+                const from = t.__from ??= 0;
+                const to =  from + step;
+                const slice = t.data.slice(from, to);
+                data.set(slice, idx);
+                t.__from += step;
+                idx += step;
+            })
+        }
+        tensors.map(t=>{
+            t.__step = undefined
+            t.__from = undefined
+        })
+        const out = tensor.from(data)._shape(shape)._label('cat: '+tensors.length);
+        out._back = ()=>{
+            //todo
+        }
+        return out;
+    }
     static hippo(size){
         const data = Array(size).fill().map((_,n)=>{
             return Array(size).fill().map((_,k)=>{
@@ -580,6 +611,7 @@ export class tensor/* extends Array*/{
         globalThis.LEARNING_RATE = n
     }
 }
+
 tensor.prototype.slice = function (...slicers){
     if (slicers.length>this.dim)
         throw new Error(`IndexError: too many indices for tensor of dimension ${this.dim}`);
