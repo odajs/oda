@@ -1,5 +1,5 @@
 globalThis.LEARNING_RATE = 0.1;
-export class tensor extends Array{
+export class tensor/* extends Array*/{
     #shape = [];
     #data = null;
     #dType = Float32Array;
@@ -9,7 +9,7 @@ export class tensor extends Array{
     #bins = undefined;
     #path = undefined;
     constructor(data, dType = Float32Array) {
-        super();
+        // super();
         if(!data) return;
         if (data?.$ === this.constructor.name){
             this.#dType = globalThis[data.dType];
@@ -57,6 +57,18 @@ export class tensor extends Array{
             this.#data = data;
         }
         this.id = genId();
+        // return new Proxy(this, {
+        //     get(target, p, receiver) {
+        //         const value = target[p];
+        //         if (value?.constructor === Function)
+        //             return value.bind(target);
+        //         return value;
+        //     },
+        //     set(target, p, value, receiver) {
+        //         target[p] = value;
+        //         return true;
+        //     }
+        // })
     }
     _resize_data(data, ...shape){
         while (shape.some(i=>Array.isArray(i)))
