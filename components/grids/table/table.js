@@ -260,15 +260,15 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 const bodyRect = this.body.getBoundingClientRect();
                 const cellRect = elem.getBoundingClientRect();
 
-                if (cellRect.x + cellRect.width - bodyRect.x > bodyRect.width - rightFixColsWidth ) {
+                if (cellRect.x + cellRect.width - bodyRect.x > bodyRect.width - rightFixColsWidth) {
                     this.body.scrollLeft += (cellRect.x + cellRect.width + rightFixColsWidth) - bodyRect.width;
                 }
-                else if (cellRect.x - bodyRect.x < leftFixColsWidth){
+                else if (cellRect.x - bodyRect.x < leftFixColsWidth) {
                     this.body.scrollLeft -= leftFixColsWidth - (cellRect.x - bodyRect.x);
                 }
 
             }
-            
+
             const rowIndex = this.rows.findIndex(r => this.compareRows(r, v.row));
             if ((rowIndex + .8) * this.rowHeight > this.$height) {
                 this.$scrollTop += this.rowHeight;
@@ -1337,6 +1337,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                     }
                 }, 300);
             }, { target: cellElement, once: true });
+            this.activeCell = cellElement;
             return cellElement.activate();
         }
         const row = this.focusedCell?.row;
@@ -1830,12 +1831,13 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
                 e.preventDefault();
             }
         },
-        escape() {
+        escape(e) {
             if (this.activeCell) {
                 e.preventDefault();
                 e.stopPropagation();
-                const elem = this.body.getFocusedCellElement();
-                this.deactivateCell(elem);
+                this.deactivateCell(this.activeCell);
+                //const elem = this.body.getFocusedCellElement();
+                //this.deactivateCell(elem);
             }
             this.clearSelection();
         },
