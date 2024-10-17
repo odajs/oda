@@ -502,9 +502,11 @@ export class tensor/* extends Array*/{
                 const from = t.__from ??= 0;
                 const to =  from + step;
                 const slice = t.data.slice(from, to);
-                data.set(slice, idx);
-                t.__from += step;
-                idx += step;
+                if (slice.length) {
+                    data.set(slice, idx);
+                    t.__from += step;
+                    idx += step;
+                }
             })
         }
         tensors.map(t=>{
