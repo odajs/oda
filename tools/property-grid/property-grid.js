@@ -32,6 +32,7 @@ ODA({is: 'oda-property-grid', imports: '@oda/table', extends: 'this, oda-table',
         lazy: true,
         autoWidth: true,
         allowFocus: true,
+        allowFocusCell: true,
         showHeader: true,
         showFooter: false,
         colLines: true,
@@ -350,6 +351,23 @@ cells: {
                 }
             }
         },
+        $keyBindings: {
+            ArrowLeft(e) { e.stopPropagation(); },
+            ArrowRight(e) { e.stopPropagation(); },
+            ArrowUp(e) { e.stopPropagation(); },
+            ArrowDown(e) { e.stopPropagation(); },
+        },
+        attached() {
+            this.listen('dblclick', '_dblclick', { target: this , capture: true })
+        },
+        detached() {
+            this.unlisten('dblclick', '_dblclick', { target: this , capture: true })
+        },
+        _dblclick(e) {
+            if (this.table?.activeCell === this) {
+                e.stopPropagation();
+            }
+        },
         async showDD(e) {
             if (this.__dd_control) {
                 this.__dd_control.fire('cancel');
@@ -370,6 +388,23 @@ cells: {
         },
         resetValue() {
             this.item.value = this.item.default;
+        },
+        activate() {
+            const control = this.$('.field-control');
+            if (control) {
+                control?.activate();
+                this.listen('deactivate', () => {
+                    this.async(() => {
+                        this.fire('deactivate');
+                    }, 300);
+                }, { target: control, once: true });
+            }
+        },
+        deactivate() {
+            const control = this.$('.field-control');
+            if (control) {
+                control?.deactivate();
+            }
         }
     })
     ODA({is: 'oda-pg-cell-name', extends: 'oda-table-cell',
@@ -466,6 +501,48 @@ cells: {
     })
 }
 editors: {
+    ODA({is: 'oda-pg-base',
+        template: /*html*/`
+        <style>
+            :host input[disabled] {
+                filter: unset;
+                opacity: unset;
+            }
+        </style>
+        `,
+        // $listeners: {
+        //     dblclick(e) {
+        //         if (this.table?.activeCell === this.domHost) {
+        //             e.stopPropagation();
+        //         }
+        //     },
+        // },
+        attached() {
+            const input = this.$('input');
+            if (input) {
+                input.disabled = true;
+            }
+        },
+        activate() {
+            const input = this.$('input');
+            if (input) {
+                input.addEventListener('blur', () => { input.disabled = true; this.deactivate(); }, { once: true });
+                input.disabled = false;
+
+                this.async(() => {
+                    input.focus();
+                });
+            }
+        },
+        deactivate() {
+            const input = this.$('input');
+            if (input) {
+                input.blur();
+                input.disabled = true;
+            }
+            this.fire('deactivate');
+        }
+    })
     ODA({is: 'oda-pg-object',
         template: /*html*/`
         <style>
@@ -486,7 +563,7 @@ editors: {
         }
     })
 
-    ODA({is: 'oda-pg-mixed',
+    ODA({is: 'oda-pg-mixed', extends: 'oda-pg-base',
         template: /*html*/`
         <style>
             :host{
@@ -502,7 +579,7 @@ editors: {
         }
     })
 
-    ODA({is: 'oda-pg-string',
+    ODA({is: 'oda-pg-string', extends: 'oda-pg-base',
         template: /*html*/`
         <style>
             :host > input {
@@ -514,7 +591,7 @@ editors: {
         <input class="flex content" type="text" style="border: none; outline: none; min-width: 0;width: 100%;" ::value="item.value" :readonly="item.ro === true">
         `,
     })
-    ODA({is: 'oda-pg-number',
+    ODA({is: 'oda-pg-number', extends: 'oda-pg-base',
         template: /*html*/`
         <input class="flex content"  style="border: none; outline: none; min-width: 0;width: 100%;"  type="number" ::value :readonly="item.ro === true">
         `,
@@ -525,16 +602,28 @@ editors: {
             this.item.value = +n;
         }
     })
-    ODA({is: 'oda-pg-bool', imports: '@oda/checkbox',
+    ODA({is: 'oda-pg-bool', extends: 'oda-pg-base',
         template: /*html*/`
-            <style>
-                :host {
-                    @apply --horizontal;
-                    @apply --flex
-                    align-items: center;
-                }
-            </style>
-            <oda-checkbox class="flex" ::value="item.value" style="justify-content: center;" :readonly="item.ro === true"></oda-checkbox>
+        <style>
+            :host {
+                @apply --horizontal;
+                @apply --flex
+                align-items: center;
+            }
+        </style>
+        <input class="flex content" type="checkbox" ::checked="item.value">
         `,
     })
+    // ODA({is: 'oda-pg-bool', imports: '@oda/checkbox',
+    //     template: /*html*/`
+    //         <style>
+    //             :host {
+    //                 @apply --horizontal;
+    //                 @apply --flex
+    //                 align-items: center;
+    //             }
+    //         </style>
+    //         <oda-checkbox class="flex" ::value="item.value" style="justify-content: center;" :readonly="item.ro === true"></oda-checkbox>
+    //     `,
+    // })
 }

@@ -1,5 +1,5 @@
 globalThis.LEARNING_RATE = 0.1;
-export class tensor{
+export class tensor extends Array{
     #shape = [];
     #data = null;
     #dType = Float32Array;
@@ -9,6 +9,7 @@ export class tensor{
     #bins = undefined;
     #path = undefined;
     constructor(data, dType = Float32Array) {
+        super();
         if(!data) return;
         if (data?.$ === this.constructor.name){
             this.#dType = globalThis[data.dType];
@@ -415,6 +416,12 @@ export class tensor{
     }
     static ones_like(src) {
         return this.ones(src.shape, src.dType);
+    }
+    static randint(size, shape = 1){
+        if (!Array.isArray(shape))
+            shape = [shape];
+        const data = new Uint32Array(shape.mul()).map(i=>Math.random() * size);
+        return tensor.from(data, Uint32Array)._shape(shape);
     }
     static rand(shape, dType) {
         let handler = Math.random;

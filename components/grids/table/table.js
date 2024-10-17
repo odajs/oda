@@ -1685,7 +1685,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
             ~wake="true"
             class="sticky"
             style="top: 0px; min-height: 1px; min-width: 100%;"
-            @pointerdown="onTapRows"
+            @mousedown="onTapRows"
             @contextmenu.catch="_onRowContextMenu"
             @dragleave="table._onDragLeave($event, $detail)"
             @dragover="table._onDragOver($event, $detail)"
