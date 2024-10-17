@@ -1,6 +1,6 @@
 import {tensor} from "../../torus/torus.js";
-import {Linear, NeuroModule} from "../neuro-module.js";
-export class Tokenizer  extends NeuroModule{
+import {nn} from "../neuro-module.js";
+export class Tokenizer  extends nn.NeuroModule{
     _size = undefined;
     constructor(dim = 1024, char_step = 0, win_size = 8, negative_size = 3) {
         super(arguments);

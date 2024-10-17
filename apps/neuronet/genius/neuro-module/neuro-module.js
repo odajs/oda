@@ -1,5 +1,5 @@
 import {tensor} from "../torus/torus.js";
-export class NeuroModule extends Function{
+class NeuroModule extends Function{
     #params = Object.create(null);
     #label = undefined;
     losses  = [];
@@ -147,7 +147,7 @@ export class NeuroModule extends Function{
         return res
     }
 }
-export class Linear extends NeuroModule{
+class Linear extends NeuroModule{
     constructor(shape_in, shape_out, bias = false, dType = Float32Array) {
         if(arguments.length>1){
             if(!Array.isArray(shape_in))
@@ -231,7 +231,12 @@ export class Linear extends NeuroModule{
         return output;
     }
 }
-export class BinLayer extends NeuroModule{
+class Embedding extends Linear{
+    constructor(shape_in, shape_out) {
+        super(arguments);
+    }
+}
+class BinLayer extends NeuroModule{
     constructor(dim_in,  dim_out, bias = false) {
         super(arguments);
     }
@@ -249,7 +254,7 @@ export class BinLayer extends NeuroModule{
         return out;
     }
 }
-export class conv1D extends NeuroModule {
+class conv1D extends NeuroModule {
     constructor(in_channels,
                 out_channels,
                 kernel_size = 4,
@@ -363,7 +368,7 @@ export class conv1D extends NeuroModule {
     }
 
 }
-export class RMSNorm extends NeuroModule {
+class RMSNorm extends NeuroModule {
     constructor(dim, bias = false) {
         super(arguments);
     }
@@ -386,20 +391,6 @@ export class RMSNorm extends NeuroModule {
         if (this.bias)
             out = out.plus(this.B)
         return out;
-    }
-}
-export const nm = {
-    linear(...args){
-        return new Linear(...args);
-    },
-    binLayer(...args){
-        return new BinLayer(...args);
-    },
-    Conv1d(...args){
-        return new conv1D(...args);
-    },
-    RMSNorm(...args){
-        return new RMSNorm(...args);
     }
 }
 
@@ -497,4 +488,24 @@ function Conv1dBackward(input, grad_output, weight, bias = null, stride = 1, pad
 
         return [grad_input, grad_weight];
     }
+}
+
+
+export const nn = {
+    NeuroModule,
+    Linear(...args){
+        return new Linear(...args);
+    },
+    Embedding(...args){
+        return new Linear(...args);
+    },
+    BinLayer(...args){
+        return new BinLayer(...args);
+    },
+    Conv1d(...args){
+        return new conv1D(...args);
+    },
+    RMSNorm(...args){
+        return new RMSNorm(...args);
+    },
 }

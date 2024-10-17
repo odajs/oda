@@ -1566,3 +1566,6 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
     }
 }
 const fn_cache = Object.create(null);
+
+export const tt = tensor
+export const torus = tensor
