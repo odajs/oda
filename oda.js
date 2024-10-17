@@ -1501,7 +1501,10 @@ in the <${host.localName}>`);
     }
     ODA.fetch = function (url, prototype) {
         url = ODA.convertOdaUrl(url, prototype);
-        return ODA.cache[url] ??= fetch(url);
+        return ODA.cache[url] ??= fetch(url).then(res=>{
+            ODA.cache[url] = undefined;
+            return res;
+        });
     }
     ODA.loadJSON = function (url, prototype) {
         return ODA.cache['json:' + url] ??= ODA.fetch(url, prototype).then(file => {
