@@ -313,9 +313,7 @@ export class tensor/* extends Array*/{
         topo[0]?.destroy();
     }
 
-    static concat(tensors, dim= 0){
-        throw new Error(`to do`);
-    }
+
     getDim(dim){
         if (-this.dim > dim || this.dim - 1 < dim)
             throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`);
@@ -486,7 +484,7 @@ export class tensor/* extends Array*/{
         data = new dType(Array(repeat).fill(data).flat());
         return tensor.from(data, dType)._shape(shape);
     }
-    static cat (tensors = [], dim=-1){
+    static concat (tensors = [], dim=-1){
         const first = tensors[0];
         if (dim < 0)
             dim += first.dim;
@@ -496,19 +494,18 @@ export class tensor/* extends Array*/{
         const size = shape.mul();
         const data = new first.dType(size);
         let idx = 0;
-        while (idx < size){
+        do{
             tensors.map((t, i)=>{
                 const step = t.__step ??= t.shape.reduce((r, v, i)=> (r * (i<dim)?1:v), 1)
                 const from = t.__from ??= 0;
                 const to =  from + step;
+                t.__from = to;
                 const slice = t.data.slice(from, to);
-                if (slice.length) {
-                    data.set(slice, idx);
-                    t.__from += step;
-                    idx += step;
-                }
+                data.set(slice, idx);
+                idx += step;
             })
         }
+        while (idx < size)
         tensors.map(t=>{
             t.__step = undefined
             t.__from = undefined
