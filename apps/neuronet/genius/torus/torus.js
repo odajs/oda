@@ -574,12 +574,12 @@ export class tensor/* extends Array*/{
         this._shape([...repeat_shape, ...this.shape]);
         return this;
     }
-    toString(step = 0, max = 6){
+    toString(step = 0, max = 16){
         if (this.shape.length){
             let data = this.array.toTensorString(step, max, this.shape).split('\n');
             data = data.join('\n')
             let tab = ('  ').repeat(step)
-            return tab +`tensor: ${this.label}, ${this.dType.name}, shape(${this.shape}), size(${this.size})\n${tab}[${data}]`;
+            return tab +`tensor: ${this.label}, ${this.dType.name}, shape(${this.shape}), size(${this.size.toLocaleString()})\n${tab}[${data}]`;
         }
         return this.data;
     }
@@ -1098,16 +1098,15 @@ if (!Array.prototype.toTensorString) {
         }
     } )
 }
-
+let max = 8;
 function num2text(x){
-
     let num = x.toString();
     let repeat = (num[0] === '-')?1:2;
     num = ' '.repeat(repeat) + num;
     if (!Number.isInteger(x) && !Number.isNaN(x) && Number.isFinite(x))
-        num = num.substring(0, 8);
+        num = num.substring(0, max);
     else
-        num = num.padStart(8, ' ');
+        num = num.padStart(max, ' ');
     return num
 }
 
