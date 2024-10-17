@@ -848,7 +848,7 @@ tensor.prototype.silu = function (params) {
         return (onePlusEx + ex * y) / (onePlusEx ** 2);
     })
 }
-tensor.prototype.softmax = function (){
+tensor.prototype.softmax = function (dim = -1){
     const step = this.shape[this.shape.length-1];
     const size = this.size/step;
     const exps = this.data.map(Math.exp);
@@ -890,6 +890,9 @@ tensor.prototype.maxIndex = function () {
     }
     const out = tensor.from(data)._label('maxIndex')._shape(this.shape.slice(0, -1));
     return out;
+}
+tensor.prototype.multinominal = (num_samples, replacement = false)=>{
+
 }
 tensor.prototype.hardmax = function (){
     const step = this.shape[this.shape.length-1];
@@ -1564,6 +1567,9 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
         idx = 63-(idx&63);
         return (this[data_idx]>>BigInt(idx))&this.bit_mask;
     }
+}
+BigUint64Array.__proto__.split = (step)=>{
+   return this;
 }
 const fn_cache = Object.create(null);
 
