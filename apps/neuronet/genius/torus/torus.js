@@ -511,7 +511,7 @@ export class tensor/* extends Array*/{
             t.__step = undefined
             t.__from = undefined
         })
-        const out = tensor.from(data)._shape(shape)._label('cat: '+tensors.length);
+        const out = tensor.from(data)._shape(shape)._label('concat('+tensors.length+')');
         out._back = ()=>{
             //todo
         }
@@ -579,7 +579,7 @@ export class tensor/* extends Array*/{
             let data = this.array.toTensorString(step, max, this.shape).split('\n');
             data = data.join('\n')
             let tab = ('  ').repeat(step)
-            return tab +`tensor[${this.label}]: dType=${this.dType.name}, shape(${this.shape}), size(${this.size})\n${tab}(${data})`;
+            return tab +`tensor: ${this.label}, ${this.dType.name}, shape(${this.shape}), size(${this.size})\n${tab}[${data}]`;
         }
         return this.data;
     }
@@ -1069,23 +1069,23 @@ if (!Array.prototype.toTensorString) {
                     let list = Array.from(d).map((v, i)=>{
                         return recurse(v, i, l + 1);
                     })
-                    result += list.join(' ');
+                    result += list.join(',');
                 }
                 else{
                     if (d.length > max){
                         const showing = Math.floor(max/2);
                         result += Array.from(d.slice(0, showing)).map(x=>{
                             return  num2text(x);
-                        }).join(' ') ;
-                        result +=  `  ...  `;
+                        }).join(',') ;
+                        result +=  ` …`;
                         result +=  Array.from(d.slice(-showing)).map(x=>{
                             return num2text(x);
-                        }).join(' ')
+                        }).join(',')
                     }
                     else{
                         result += Array.from(d).map(x=>{
                             return num2text(x);
-                        }).join(' ') || num2text(d);
+                        }).join(',') || num2text(d);
                     }
                 }
 
@@ -1102,10 +1102,12 @@ if (!Array.prototype.toTensorString) {
 function num2text(x){
 
     let num = x.toString();
-    let repeat = (num[0] === '-')?0:1;
+    let repeat = (num[0] === '-')?1:2;
     num = ' '.repeat(repeat) + num;
     if (!Number.isInteger(x) && !Number.isNaN(x) && Number.isFinite(x))
-        num = num.substring(0, 7);
+        num = num.substring(0, 8);
+    else
+        num = num.padStart(8, ' ');
     return num
 }
 
