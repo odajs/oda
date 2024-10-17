@@ -891,8 +891,31 @@ tensor.prototype.maxIndex = function () {
     const out = tensor.from(data)._label('maxIndex')._shape(this.shape.slice(0, -1));
     return out;
 }
-tensor.prototype.multinominal = (num_samples, replacement = false)=>{
-
+tensor.prototype.multinomial = function(num_samples = 1, replacement = false){
+    const data = [];
+    const step = this.shape.last;
+    for (let i = 0; i<this.size; i += step){
+        data.push(this.data.slice(i, i + step));
+    }
+    const sums = data.map(d=>d.reduce((r, v)=>r+v, 0));
+    const res = Array(data.length).fill().map(_=>[]);
+    for (let  i = 0; i< num_samples; i++){
+        const randoms = sums.map(s=>s * Math.random());
+        data.map((d, i)=>{
+            const p = randoms[i];
+            let v = 0;
+            for (let x = 0; x < step; x++){
+                v += d[x];
+                if (p > v) continue;
+                res[i].push(x);
+                break;
+            }
+        })
+    }
+    const shape = [...this.shape];
+    shape[shape.length - 1] = num_samples;
+    const out = tensor.from(res)._shape(shape)._label('multinomial');
+    return out;
 }
 tensor.prototype.hardmax = function (){
     const step = this.shape[this.shape.length-1];
@@ -1567,9 +1590,6 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
         idx = 63-(idx&63);
         return (this[data_idx]>>BigInt(idx))&this.bit_mask;
     }
-}
-BigUint64Array.__proto__.split = (step)=>{
-   return this;
 }
 const fn_cache = Object.create(null);
 
