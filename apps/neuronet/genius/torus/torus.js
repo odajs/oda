@@ -235,6 +235,7 @@ export class tensor/* extends Array*/{
     destroy(){
         this.clearGrad();
         if (!this.src?.length) return
+        if (!this.data.length) return;
         this.data.buffer.transfer(0);
         this.src.forEach(s=>s.destroy())
 
