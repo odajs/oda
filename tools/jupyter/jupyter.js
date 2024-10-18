@@ -6,8 +6,15 @@ run_context.output_data = undefined;
 window.print = window.log = (...e) => {
     e = e.map(i=>{
         if (i && typeof i === 'object'){
-            // if (i === Object || Array.isArray(i))
-            //     return JSON.stringify(i, undefined, 2)
+            if (Array.isArray(i)){
+                i = i.map(s=>{
+                    if (s && typeof s === 'object'){
+                        return s.toString()+'\n';
+                    }
+                    return s.toString()+',';
+                }).join('');
+                return i;
+            }
             return i.toString();
         }
         return i

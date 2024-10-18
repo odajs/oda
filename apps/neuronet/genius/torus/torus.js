@@ -325,7 +325,7 @@ export class tensor/* extends Array*/{
         return  this.shape[dim];
     }
     static split(tensor, split_size_or_sections, dim = 0){
-        return tensor. split(split_size_or_sections, dim = 0);
+        return tensor.split(split_size_or_sections, dim = 0);
     }
     static stack(tensors, dim = 0){
         let first = tensors[0];
@@ -477,7 +477,7 @@ export class tensor/* extends Array*/{
             const size = shape.mul();
             let start = idx;
             const d = new this.dType(size).map(x=>src[++idx]);
-            let out = tensor.from(d)._shape(...shape)._src(this)._label(`split (${shape}): ${i+1} of ${split_size_or_sections.length} -> ${v}`);
+            let out = tensor.from(d)._shape(...shape)._src(this)._label(`split ${i+1} of ${split_size_or_sections.length} -> ${v}`);
             if (this.allowGrad){
                 out._back = ()=>{
                     out.grad.forEach((g, i)=>{
@@ -585,7 +585,7 @@ export class tensor/* extends Array*/{
             let data = this.array.toTensorString(step, max, this.shape).split('\n');
             data = data.join('\n')
             let tab = ('  ').repeat(step)
-            return tab +`tensor: ${this.label}, ${this.dType.name}, shape(${this.shape}), size(${this.size.toLocaleString()})\n${tab}[${data}]\n`;
+            return tab +`tensor: ${this.label}, ${this.dType.name}, shape(${this.shape}), size(${this.size.toLocaleString()})\n${tab}[${data}]`;
         }
         return this.data;
     }
@@ -1106,7 +1106,7 @@ if (!Array.prototype.toTensorString) {
 }
 let max = 8;
 function num2text(x){
-    let num = x.toString();
+    let num = Math.abs(x) > 10000?x.toExponential(2):x.toString();
     let repeat = (num[0] === '-')?1:2;
     num = ' '.repeat(repeat) + num;
     if (!Number.isInteger(x) && !Number.isNaN(x) && Number.isFinite(x))
