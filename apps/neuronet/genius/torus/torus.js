@@ -1106,7 +1106,8 @@ if (!Array.prototype.toTensorString) {
 }
 let max = 8;
 function num2text(x){
-    let num = Math.abs(x) > 10000?x.toExponential(x >= (10000000000?1:2)):x.toString();
+
+    let num = Math.abs(x) > 10000?x.toExponential((x >= 10000000000)?0:1):x.toString();
     let repeat = (num[0] === '-')?1:2;
     if (!Number.isFinite(x))
         num = num.substring(0, 5 - repeat)

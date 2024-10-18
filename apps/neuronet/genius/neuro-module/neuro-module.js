@@ -497,7 +497,7 @@ export const nn = {
         return new Linear(...args);
     },
     Embedding(...args){
-        return new Linear(...args);
+        return new Embedding(...args);
     },
     BinLayer(...args){
         return new BinLayer(...args);
