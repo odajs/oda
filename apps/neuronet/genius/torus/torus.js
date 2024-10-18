@@ -521,7 +521,7 @@ export class tensor/* extends Array*/{
             t.__step = undefined
             t.__from = undefined
         })
-        const out = tensor.from(data)._shape(shape)._label('concat('+tensors.length+')');
+        const out = tensor.from(data)._shape(shape)._label('concat('+tensors.length+')')._src(tensors);
         out._back = ()=>{
             //todo
         }
@@ -1041,7 +1041,13 @@ tensor.prototype.view = function (...shape) {
         shape = shape[0];
     if(Object.equal(shape[0]?.constructor, tensor))
         shape = shape[0].shape;
-    return tensor.from(this.data).reshape(shape);
+    const out =  tensor.from(this.data).reshape(shape)._src(this);
+    out._back = ()=>{
+        for (let i = 0; i < this.grad.length; i++){
+            this.grad[i] += out.grad[i];
+        }
+    }
+    return out;
 }
 
 
