@@ -1041,7 +1041,7 @@ tensor.prototype.view = function (...shape) {
         shape = shape[0];
     if(Object.equal(shape[0]?.constructor, tensor))
         shape = shape[0].shape;
-    const out =  tensor.from(this.data).reshape(shape)._src(this);
+    const out =  tensor.from(this.data).reshape(shape)._src(this)._label('view');
     out._back = ()=>{
         for (let i = 0; i < this.grad.length; i++){
             this.grad[i] += out.grad[i];
