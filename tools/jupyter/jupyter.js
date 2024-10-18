@@ -9,17 +9,17 @@ window.print = window.log = (...e) => {
             if (Array.isArray(i)){
                 i = i.map(s=>{
                     if (s && typeof s === 'object'){
-                        return s.toString()+'\n';
+                        return s.toString()+'\n\n';
                     }
-                    return s.toString()+',';
-                }).join('');
-                return i;
+                    return s.toString();
+                }).join(',');
+                return '['+i+']';
             }
             return i.toString();
         }
         return i
     })
-    run_context.output_data?.push([...e].join('\n'));
+    run_context.output_data?.push([...e].join('\n\n'));
 }
 const console_warn = console.warn;
 window.warning = window.warn =  console.warn = (...e) => {

@@ -588,7 +588,7 @@ export class tensor/* extends Array*/{
             let data = this.array.toTensorString(step, max, this.shape).split('\n');
             data = data.join('\n')
             let tab = ('  ').repeat(step)
-            return tab +`tensor: ${this.label}, ${this.dType.name}, shape(${this.shape}), size(${this.size.toLocaleString()})\n${tab}[${data}]`;
+            return tab +`tensor: ${this.label}, shape(${this.shape}), size(${this.size.toLocaleString()}), ${this.dType.name}\n${tab}[${data}]`;
         }
         return this.data;
     }
@@ -1048,6 +1048,15 @@ tensor.prototype.crossEntropy = function (target) {
     let ys = target.data;
     const step = this.shape.last;
     const size = this.size/step;
+
+    if (target.size === this.size/step){
+        const data = Array.prototype.map.call(target.data, d=>{
+            const one_hot = Array(step).fill(0);
+            one_hot[d] = 1;
+            return one_hot;
+        })
+        target = tensor.from(data).reshape(this.shape);
+    }
 
     let errors = Array(this.size/step).fill().map((d, i)=>{
         let start = i * step
