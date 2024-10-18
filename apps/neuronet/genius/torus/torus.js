@@ -322,7 +322,7 @@ export class tensor/* extends Array*/{
         if (-this.dim > dim || this.dim - 1 < dim)
             throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`);
         if (dim < 0)
-            dim = this.dim + dim;
+            dim += this.dim;
         return  this.shape[dim];
     }
     static split(tensor, split_size_or_sections, dim = 0){
@@ -343,7 +343,7 @@ export class tensor/* extends Array*/{
         let size = first.size;
         let step = size;
         if (dim < 0)
-            dim = first.dim + 1 + dim
+            dim += first.dim + 1
         let d = dim;
         for (let s of first.shape){
             if (!d) break;
@@ -475,7 +475,7 @@ export class tensor/* extends Array*/{
         const src = this.data;
         let shape = [...this.shape];
         if (dim < 0)
-            dim = this.dim + dim;
+            dim += this.dim;
         const result = split_size_or_sections.map((v, i)=>{
             shape[dim] = v;
             const size = shape.mul();
@@ -554,7 +554,7 @@ export class tensor/* extends Array*/{
         if (-this.dim > dim || this.dim - 1 < dim)
             throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`)
         if (dim < 0)
-            dim = this.dim + dim;
+            dim += this.dim;
 
 
         this.data.reverse();
@@ -638,6 +638,8 @@ tensor.prototype.slice = function (...slicers){
             if (slicer.length && !Number.isNaN(+slicer)){
                 add_shape = false;
                 start = +slicer;
+                if (start<0)
+                    start += this.dim;
                 end = start + 1;
                 step = 1;
             }
