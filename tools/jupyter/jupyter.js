@@ -134,13 +134,14 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                     const auto_run = this.$$('oda-jupyter-cell').filter(i=>i.cell.autoRun).last
                     if(auto_run)
                         await auto_run.run(true);
+                    await this.$render();
                     if (!this.selectedCell && this.cells?.[this.savedIndex]) {
                         this.selectedCell = this.cells[this.savedIndex];
                         this.scrollToCell();
                     }
                     this.style.visibility = 'visible';
                     this.style.opacity = 1;
-                }, 100);
+                }, 1000);
             })
             nb.listen('changed', async (e) => {
                 if(this.selectedCell) {

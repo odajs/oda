@@ -135,7 +135,7 @@ export class tensor/* extends Array*/{
         return this;
     }
     reshape(...shape){
-        return this._shape(shape);
+        return this._shape(...shape);
     }
     _shape(...shape){ // shape or tensor
         if(Array.isArray(shape[0]))
@@ -449,6 +449,9 @@ export class tensor/* extends Array*/{
         }
         data = new dType(Array(repeat).fill(data).flat());
         return tensor.from(data, dType)._shape(shape);
+    }
+    static cross_entropy(tensor, target) {
+        return tensor.crossEntropy(target);
     }
     split(split_size_or_sections, dim = 0){
         let max = this.getDim(dim);

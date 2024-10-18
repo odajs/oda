@@ -245,7 +245,9 @@ class Embedding extends Linear{
             return one_hot;
         })
         input = tensor.from(data).reshape(...input.shape, this.size_in);
-        return super.forward(input);
+        let output = super.forward(input);
+        // output = output.maxIndex();
+        return output;
     }
 }
 class BinLayer extends NeuroModule{
