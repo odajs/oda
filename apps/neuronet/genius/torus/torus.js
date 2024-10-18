@@ -498,7 +498,7 @@ export class tensor/* extends Array*/{
         do{
             tensors.map((t, i)=>{
                 const state = states[i];
-                state.step ??= t.shape.reduce((r, v, i)=> (r * (i<dim)?1:v), 1)
+                state.step ??= t.shape.reduce((r, v, i)=> r * (i<dim?1:v), 1)
                 const to =  state.from + state.step;
                 const slice = t.data.slice(state.from, to);
                 state.from = to;
