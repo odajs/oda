@@ -166,6 +166,8 @@ class Linear extends NeuroModule{
             to = 13
             from = -13
         }
+        this.size_in = this.shape_in.mul();
+        this.size_out = this.shape_out.mul();
         let w = tensor.random([...this.shape_in, ...this.shape_out],  from, to, this.dType);
         this.W = tensor.param(w._label(w.label + ': Weights'));
         if(this.bias){
@@ -233,7 +235,17 @@ class Linear extends NeuroModule{
 }
 class Embedding extends Linear{
     constructor(shape_in, shape_out) {
-        super(arguments);
+        super(...arguments);
+    }
+
+    forward(input) {
+        const data = Array.prototype.map.call(input.data, d=>{
+            const one_hot = Array(this.size_in).fill(0);
+            one_hot[d] = 1;
+            return one_hot;
+        })
+        tensor.from(data).reshape(...input.shape, this.size_in);
+        return super.forward(input);
     }
 }
 class BinLayer extends NeuroModule{
