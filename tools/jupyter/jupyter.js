@@ -6,8 +6,8 @@ run_context.output_data = undefined;
 window.print = window.log = (...e) => {
     e = e.map(i=>{
         if (i && typeof i === 'object'){
-            if (i === Object || Array.isArray(i))
-                return JSON.stringify(i, undefined, 2)
+            // if (i === Object || Array.isArray(i))
+            //     return JSON.stringify(i, undefined, 2)
             return i.toString();
         }
         return i
@@ -1093,6 +1093,20 @@ class JupyterCell extends ROCKS({
         let code = this.src.replace(/import\s+([\"|\'])(\S+)([\"|\'])/gm, 'await import($1$2$3)');
         code = code.replace(/import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, '__v__ =  $1 = await import($2$3$4); for(let i in __v__) run_context.i = __v__[i]');
         code = code.replace(/\s(import\s*\()/gm, ' ODA.$1');
+        code = code.split('\n').map(s=>{
+            let cnt = 0;
+            while(s[0] === '>'){
+                cnt++;
+                s = s.slice(1);
+            }
+            if (cnt){
+                cnt = s.lastIndexOf(';')
+                if (cnt>0)
+                    s = s.substring(0, cnt)
+                s = 'print('+s+')';
+            }
+            return s;
+        }).join('\n');
         code = 'with (context) {\n\t' + code + '\n\n}';
         return code;
     }

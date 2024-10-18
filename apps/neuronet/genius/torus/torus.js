@@ -134,6 +134,9 @@ export class tensor/* extends Array*/{
         this.isParam = true;
         return this;
     }
+    reshape(...shape){
+        return this._shape(shape);
+    }
     _shape(...shape){ // shape or tensor
         if(Array.isArray(shape[0]))
             shape = shape[0];
@@ -321,45 +324,8 @@ export class tensor/* extends Array*/{
             dim = this.dim + dim;
         return  this.shape[dim];
     }
-    split(split_sizes, dim = 0){
-        let max = this.getDim(dim);
-        if (Number.isInteger(split_sizes)){
-            let arr = [];
-            let i;
-            for (i = 0; i < max; i += split_sizes){
-                if (i + split_sizes < max)
-                    arr.push(split_sizes);
-                else
-                    arr.push(max - i);
-            }
-            split_sizes = arr;
-        }
-        if (!Array.isArray(split_sizes))
-            throw new Error(`Argument 'split_sizes' (position 1) must be 'Integer' or 'array of Integer', but not '${typeof split_sizes}'`)
-        if(split_sizes.sum() !== max)
-                throw new Error(`split_sizes expects to sum exactly to ${max} (input tensor's size at dimension ${dim}), but got split_sizes=[${split_sizes}]`);
-        let idx = -1;
-        const src = this.data;
-        let shape = [...this.shape];
-        if (dim < 0)
-            dim = this.dim + dim;
-        const result = split_sizes.map((v, i)=>{
-            shape[dim] = v;
-            const size = shape.mul();
-            let start = idx;
-            const d = new this.dType(size).map(x=>src[++idx]);
-            let out = tensor.from(d)._shape(...shape)._src(this)._label(`split (${shape}): ${i+1} of ${split_sizes.length} -> ${v}`);
-            if (this.allowGrad){
-                out._back = ()=>{
-                    out.grad.forEach((g, i)=>{
-                        this.grad[i + start] += g;
-                    })
-                }
-            }
-            return out
-        });
-        return result;
-
+    static split(tensor, split_size_or_sections, dim = 0){
+        return tensor. split(split_size_or_sections, dim = 0);
     }
     static stack(tensors, dim = 0){
         let first = tensors[0];
@@ -484,6 +450,46 @@ export class tensor/* extends Array*/{
         data = new dType(Array(repeat).fill(data).flat());
         return tensor.from(data, dType)._shape(shape);
     }
+    split(split_size_or_sections, dim = 0){
+        let max = this.getDim(dim);
+        if (Number.isInteger(split_size_or_sections)){
+            let arr = [];
+            let i;
+            for (i = 0; i < max; i += split_size_or_sections){
+                if (i + split_size_or_sections < max)
+                    arr.push(split_size_or_sections);
+                else
+                    arr.push(max - i);
+            }
+            split_size_or_sections = arr;
+        }
+        if (!Array.isArray(split_size_or_sections))
+            throw new Error(`Argument 'split_size_or_sections' (position 1) must be 'Integer' or 'array of Integer', but not '${typeof split_size_or_sections}'`)
+        if(split_size_or_sections.sum() !== max)
+            throw new Error(`split_size_or_sections expects to sum exactly to ${max} (input tensor's size at dimension ${dim}), but got split_size_or_sections=[${split_size_or_sections}]`);
+        let idx = -1;
+        const src = this.data;
+        let shape = [...this.shape];
+        if (dim < 0)
+            dim = this.dim + dim;
+        const result = split_size_or_sections.map((v, i)=>{
+            shape[dim] = v;
+            const size = shape.mul();
+            let start = idx;
+            const d = new this.dType(size).map(x=>src[++idx]);
+            let out = tensor.from(d)._shape(...shape)._src(this)._label(`split (${shape}): ${i+1} of ${split_size_or_sections.length} -> ${v}`);
+            if (this.allowGrad){
+                out._back = ()=>{
+                    out.grad.forEach((g, i)=>{
+                        this.grad[i + start] += g;
+                    })
+                }
+            }
+            return out
+        });
+        return result;
+
+    }
     static concat (tensors = [], dim=-1){
         const first = tensors[0];
         if (dim < 0)
@@ -579,7 +585,7 @@ export class tensor/* extends Array*/{
             let data = this.array.toTensorString(step, max, this.shape).split('\n');
             data = data.join('\n')
             let tab = ('  ').repeat(step)
-            return tab +`tensor: ${this.label}, ${this.dType.name}, shape(${this.shape}), size(${this.size.toLocaleString()})\n${tab}[${data}]`;
+            return tab +`tensor: ${this.label}, ${this.dType.name}, shape(${this.shape}), size(${this.size.toLocaleString()})\n${tab}[${data}]\n`;
         }
         return this.data;
     }
