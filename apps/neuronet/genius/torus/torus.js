@@ -1029,6 +1029,16 @@ tensor.prototype.repeat = function (count = 1) {
     return tensor.from(Array(count).fill().map(i=>this));
 }
 
+
+tensor.prototype.view = function (...shape) {
+    if(Array.isArray(shape[0]))
+        shape = shape[0];
+    if(Object.equal(shape[0]?.constructor, tensor))
+        shape = shape[0].shape;
+    return tensor.from(this.data).reshape(shape);
+}
+
+
 tensor.prototype.crossEntropy = function (target) {
     target = tensor.from(target);
 

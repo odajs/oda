@@ -244,7 +244,7 @@ class Embedding extends Linear{
             one_hot[d] = 1;
             return one_hot;
         })
-        tensor.from(data).reshape(...input.shape, this.size_in);
+        input = tensor.from(data).reshape(...input.shape, this.size_in);
         return super.forward(input);
     }
 }
