@@ -1469,10 +1469,9 @@ tensor.einsum = (in_expr, sources = [])=>{
                 return tt;
             })
             let out_back = tensor.einsum(expr, sources);
-            t.grad = out_back.data;
-            // for (let g = 0; g < t.grad.length; g++){
-            //     t.grad[g] += out_back.data[g];
-            // }
+            t.grad = t.grad.map((g,i)=>{
+                return g + out_back.data[i];
+            });
         })
     }
     fn(tensors, out.data);
