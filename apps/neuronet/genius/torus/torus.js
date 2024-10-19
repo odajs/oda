@@ -1070,7 +1070,7 @@ tensor.prototype.crossEntropy = function (target) {
     let ys = target.data;
     let errors = this.data.map((x, i)=>{
         let y = ys[i];
-        x = (y?(-y * Math.log(x)):0);
+        x = (y?(-y * Math.log(x*x)):0); //todo x*x
         return x;
     })
     errors = Array(this.size/step).fill().map((d, i)=>{
@@ -1087,7 +1087,7 @@ tensor.prototype.crossEntropy = function (target) {
         })
     }
     out._back = ()=>{
-        this.grad = errors.map((y, i)=> {
+        this.grad = ys.map((y, i)=> {
             let x = this.data[i];
             return y - x;
         });
