@@ -464,7 +464,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
 
                 } finally {
                     ODA.removeTask(task);
-                    if(!autorun)
+                    if(autorun !== true)
                         this.notebook?.change();
                     resolve();
                 }
