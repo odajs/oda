@@ -236,6 +236,7 @@ export class tensor/* extends Array*/{
         this.clearGrad();
         if (!this.src?.length) return
         if (!this.data.length) return;
+        if(this.isParam) return;
         this.data.buffer.transfer(0);
         this.src.forEach(s=>s.destroy())
 
@@ -314,7 +315,9 @@ export class tensor/* extends Array*/{
                 node.updateParams();
             }
         })
-        topo[0]?.destroy();
+        setTimeout(()=>{
+            topo[0]?.destroy();
+        })
     }
 
 

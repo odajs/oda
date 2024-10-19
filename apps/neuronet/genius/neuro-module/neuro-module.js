@@ -1,4 +1,4 @@
-import {tensor} from "../torus/torus.js";
+import {tensor, torus} from "../torus/torus.js";
 class NeuroModule extends Function{
     #params = Object.create(null);
     #label = undefined;
@@ -6,8 +6,7 @@ class NeuroModule extends Function{
     _listeners = [];
     destroyTime = 0;
     constructor(argumetns) {
-        super()
-
+        super();
         if (argumetns.length === 1 && argumetns[0].constructor === Object){
             this.setModel(Object.assign(this.#params, argumetns[0]));
         }
@@ -33,7 +32,14 @@ class NeuroModule extends Function{
             apply(target, _, args) {
                 const result = target.forward(...args);
                 setTimeout(()=>{
-                    result?.destroy?.();
+                    if(result instanceof tensor)
+                        result.destroy?.();
+                    else if(Array.isArray(result)){
+                        result.forEach(t=>{
+                            if(t instanceof tensor)
+                                result.destroy?.();
+                        })
+                    }
                 }, this.destroyTime);
                 return result;
             }
