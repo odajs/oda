@@ -286,10 +286,10 @@ export class tensor/* extends Array*/{
         }
         else{
             for(let i = 0; i<this.data.length; i++){
-                let prev = this.prev[i];
-                let change = this.grad[i] * tensor.LEARNING_RATE + prev;
+                // let prev = this.prev[i];
+                let change = this.grad[i] * tensor.LEARNING_RATE;// + prev;
                 this.data[i] += change;
-                this.prev[i] = change * tensor.LEARNING_RATE;
+                // this.prev[i] = change * tensor.LEARNING_RATE;
             }
         }
         this.clearGrad();
