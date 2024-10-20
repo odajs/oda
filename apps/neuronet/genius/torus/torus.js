@@ -553,6 +553,11 @@ export class tensor/* extends Array*/{
         src.isSerializable = true;
         return src;
     }
+    static flatShape(...shape){
+        while(shape.some(Array.isArray))
+            shape = shape.flat();
+        return shape;
+    }
     reverse(dim = 0){
         if (-this.dim > dim || this.dim - 1 < dim)
             throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`)
@@ -592,7 +597,7 @@ export class tensor/* extends Array*/{
             let data = this.array.toTensorString(step, max, this.shape).split('\n');
             data = data.join('\n')
             let tab = ('  ').repeat(step)
-            return tab +`tensor: ${this.label}, shape(${this.shape}), size(${this.size.toLocaleString()}), ${this.dType.name}\n${tab}[${data}]`;
+            return tab +`tensor: ${this.label}, shape(${this.shape}), size(${this.size.toLocaleString()}), ${this.dType.name}, ${this._back?.constructor.name || ""}\n${tab}[${data}]`;
         }
         return this.data;
     }
@@ -1040,19 +1045,17 @@ tensor.prototype.repeat = function (count = 1) {
 
 
 tensor.prototype.view = function (...shape) {
-    if(Array.isArray(shape[0]))
-        shape = shape[0];
+    shape = torus.flatShape(shape);
     if(Object.equal(shape[0]?.constructor, tensor))
         shape = shape[0].shape;
     const out =  tensor.from(this.data).reshape(shape)._src(this)._label('view');
-    out._back = ()=>{
+    out._back = function ViewBackward(){
         for (let i = 0; i < this.grad.length; i++){
             this.grad[i] += out.grad[i];
         }
-    }
+    }.bind(this);
     return out;
 }
-
 
 tensor.prototype.crossEntropy = function (target) {
     target = tensor.from(target);
