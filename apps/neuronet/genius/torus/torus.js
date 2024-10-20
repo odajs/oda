@@ -6,6 +6,7 @@ export class tensor/* extends Array*/{
     #label = undefined;
     #src = undefined;
     #grad = undefined;
+    #prev = undefined;
     #bins = undefined;
     #path = undefined;
     constructor(data, dType = Float32Array) {
@@ -285,10 +286,16 @@ export class tensor/* extends Array*/{
         }
         else{
             for(let i = 0; i<this.data.length; i++){
-                this.data[i] += this.grad[i] * tensor.LEARNING_RATE;
+                let prev = this.prev[i];
+                let change = this.grad[i] * tensor.LEARNING_RATE - prev;
+                this.data[i] += change;
+                this.prev[i] = change / 2;
             }
         }
         this.clearGrad();
+    }
+    get prev(){
+        return this.#prev ??= new Float32Array(this.size);
     }
     back(grad){
         let topo = [];
@@ -1073,14 +1080,19 @@ tensor.prototype.crossEntropy = function (target) {
     let ys = target.data;
     let errors = this.data.map((x, i)=>{
         let y = ys[i];
-        x = (y?(-y * Math.log(x*x)):0); //todo x*x
+        x = (y?(y * Math.log(1-x)):0); //todo x*x
         return x;
     })
+
+    // loss = np.multiply(np.log(predY), Y) + np.multiply((1 - Y), np.log(1 - predY)) #cross entropy
+    // cost = -np.sum(loss)/m #num of examples in batch is m
+    //
+
     errors = Array(this.size/step).fill().map((d, i)=>{
         let start = i * step;
         return errors.slice(start, start + step);
     })
-    let loss = errors.reduce((r, e)=>{
+    let loss = -errors.reduce((r, e)=>{
         return r + e.reduce((r,v) => r + v);
     }, 0)/errors.length;
     const out = tensor.from([loss])._src(this)._label('crossEntropy');
