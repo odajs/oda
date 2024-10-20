@@ -286,10 +286,10 @@ export class tensor/* extends Array*/{
         }
         else{
             for(let i = 0; i<this.data.length; i++){
-                // let prev = this.prev[i];
-                let change = this.grad[i] * tensor.LEARNING_RATE// + prev;
+                let prev = this.prev[i];
+                let change = this.grad[i] * tensor.LEARNING_RATE + prev;
                 this.data[i] += change;
-                // this.prev[i] = change / 2;
+                this.prev[i] = change * tensor.LEARNING_RATE;
             }
         }
         this.clearGrad();
@@ -1083,15 +1083,10 @@ tensor.prototype.crossEntropy = function (target) {
     let ys = target.data;
     let errors = this.data.map((x, i)=>{
         let y = ys[i];
-        if(!y)
+        if(y)
             return y * Math.log(x);
         return 0;
     })
-
-    // loss = np.multiply(np.log(predY), Y) + np.multiply((1 - Y), np.log(1 - predY)) #cross entropy
-    // cost = -np.sum(loss)/m #num of examples in batch is m
-    //
-
     errors = Array(this.size/step).fill().map((d, i)=>{
         let start = i * step;
         return errors.slice(start, start + step);
