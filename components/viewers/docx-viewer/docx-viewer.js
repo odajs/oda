@@ -44,13 +44,12 @@ ODA({ is: 'oda-docx-viewer', imports: './lib/docx-preview.min.js, @oda/button',
         let clonedDiv = this.$('#docx-container').cloneNode(true);
         iframe.addEventListener('load', () => {
             iframe.contentDocument.body.appendChild(clonedDiv);
-            iframe.contentWindow.print();
             this.async(() => {
+                iframe.contentWindow.print();
                 document.body.removeChild(iframe);
-                console.log('..... close print window');
-            }, 10000)
+            }, 100)
         })
-        iframe.srcdoc = ' ';
+        iframe.srcdoc = '';
     },
     setFullscreen() {
         this.fullscreenMode = !this.fullscreenMode;

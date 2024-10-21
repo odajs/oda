@@ -50,12 +50,12 @@ ODA({
             }
             :host .fixed-tab{
                 opacity: 1;
-                margin-{{direction === 'horizontal' ? 'left' : 'top'}}: -4px;
                 @apply --content;
                 @apply --shadow;
                 position: sticky !important; /* --focused */
                 z-index: 10;
                 {{direction === 'horizontal' ? 'left' : 'top'}}: 0px;
+                margin-{{direction === 'horizontal' ? 'left' : 'top'}}: -4px;
             }
             {{''}}
         </style>

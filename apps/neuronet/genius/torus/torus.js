@@ -91,7 +91,7 @@ export class tensor/* extends Array*/{
         return path;
     }
     get path(){
-        return this.getPath();
+        return this.getPath().join('\n');
     }
     toJSON(){
         const result =  {
@@ -229,21 +229,21 @@ export class tensor/* extends Array*/{
             return this.size;
         return 0;
     }
-    destroy(){
-        this.clearGrad();
+    __destroy__(){
+        this.__clearGrad__();
         if (!this.src?.length) return
         if (!this.data.length) return;
         if(this.isParam) return;
         this.data.buffer.transfer(0);
-        this.src.forEach(s=>s.destroy())
+        this.src.forEach(s=>s.__destroy__())
 
     }
-    clearGrad(){
+    __clearGrad__(){
         if (!this.#grad?.length) return;
         this.#grad?.buffer.transfer(0);
         this.#grad = undefined;
     }
-    updateParams(){
+    __updateParams__(){
         if (!this.isParam) return;
         if (this.dType === BinaryArray){
             let bins = this.bins;
@@ -288,7 +288,7 @@ export class tensor/* extends Array*/{
                 // this.prev[i] = change * tensor.LEARNING_RATE;
             }
         }
-        this.clearGrad();
+        this.__clearGrad__();
     }
     get prev(){
         return this.#prev ??= new Float32Array(this.size);
@@ -315,11 +315,11 @@ export class tensor/* extends Array*/{
         })
         topo.forEach((node) => {
             if (!node.src){
-                node.updateParams();
+                node.__updateParams__();
             }
         })
         setTimeout(()=>{
-            topo[0]?.destroy();
+            topo[0]?.__destroy__();
         })
     }
 
