@@ -283,9 +283,9 @@ export class tensor/* extends Array*/{
         else{
             for(let i = 0; i<this.data.length; i++){
                 let prev = this.prev[i];
-                let change = prev * tensor.LEARNING_RATE + (1 - tensor.LEARNING_RATE) * this.grad[i];// + prev;
+                let change = prev * .5 + (.5) * this.grad[i] * tensor.LEARNING_RATE;// + prev;
                 this.data[i] += change;
-                this.prev[i] = change * change;
+                this.prev[i] = change;
 
             }
         }
