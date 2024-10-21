@@ -234,7 +234,7 @@ export class tensor/* extends Array*/{
         return 0;
     }
     destroy(){
-        this._clearGrad();
+        this.clearGrad();
         if (!this.src?.length) return
         if (!this.data.length) return;
         if(this.isParam) return;
@@ -242,7 +242,7 @@ export class tensor/* extends Array*/{
         this.src.forEach(s=>s.destroy())
 
     }
-    _clearGrad(){
+    clearGrad(){
         if (!this.#grad?.length) return;
         this.#grad?.buffer.transfer(0);
         this.#grad = undefined;
@@ -292,7 +292,7 @@ export class tensor/* extends Array*/{
                 // this.prev[i] = change * tensor.LEARNING_RATE;
             }
         }
-        this._clearGrad();
+        this.clearGrad();
     }
     get prev(){
         return this.#prev ??= new Float32Array(this.size);
@@ -387,7 +387,7 @@ export class tensor/* extends Array*/{
         return out
     }
     static fill(shape, value_or_handler, dType = Float32Array){
-        shape = torus.flatShape(shape);
+        shape = torus.flat(shape);
         let handler = typeof value_or_handler === 'function'?value_or_handler:i=>value_or_handler;
         let size = shape.mul();
         let data = new dType(size);
@@ -441,7 +441,7 @@ export class tensor/* extends Array*/{
         return this.fill(shape, ()=>Math.sqrt(-2 * Math.log(Math.random()))*Math.cos((2 * Math.PI) * Math.random()), Float32Array);
     }
     static arange(shape, from = 0, to, dType =Float32Array){
-        shape = torus.flatShape(shape);
+        shape = torus.flat(shape);
         let steps = shape.pop();
         let repeat = shape.mul();
         shape.push(steps);
@@ -558,9 +558,7 @@ export class tensor/* extends Array*/{
         src.isSerializable = true;
         return src;
     }
-    static flatShape(...shape){
-        // if (!Array.isArray(shape))
-        //     shape = [shape]
+    static flat(...shape){
         while(shape.some(Array.isArray))
             shape = shape.flat();
         return shape;
@@ -1052,7 +1050,7 @@ tensor.prototype.repeat = function (count = 1) {
 
 
 tensor.prototype.view = function (...shape) {
-    shape = torus.flatShape(shape);
+    shape = torus.flat(shape);
     if(Object.equal(shape[0]?.constructor, tensor))
         shape = shape[0].shape;
     const out =  tensor.from(this.data).reshape(shape)._src(this)._label('view');
@@ -1242,8 +1240,7 @@ tensor.eye = (...shape)=>{
     return tensor.from(data)._shape(shape)._label('eye');
 }
 tensor.einsum = (in_expr, sources = [])=>{
-    sources = torus.flatShape(sources)
-    
+    sources = tensor.flat(sources);
     const tensors = sources.map(t => tensor.from(t));
     let key = in_expr + ':' + tensors.map(i=> i.shape.toString()+'('+ i.dType.name +')' ).join('-');
     let fn = fn_cache.einsum?.[key];
@@ -1495,8 +1492,7 @@ tensor.einsum = (in_expr, sources = [])=>{
     out._label(`einsum (${out.shape}): '${in_expr}'`);
     return out;
 }
-
-torus.prototype.transpose = function(dim0= -1, dim1 = -2) {
+tensor.prototype.transpose = function(dim0= -1, dim1 = -2) {
     if (this.dim < 2)
         throw new Error(`Dimension out of range (expected more 2 or more, but got ${this.dim})`);
 
@@ -1512,11 +1508,20 @@ torus.prototype.transpose = function(dim0= -1, dim1 = -2) {
     if (dim1 > this.dim -1)
         throw new Error(`Выходит за пределы`);
 
-
-
-
+    let char_code = 65;
+    const var_in = this.shape.map((_, i)=>{
+        return String.fromCharCode(i + char_code)
+    })
+    const var_out = var_in.map((v, i)=>{
+        if (i === dim0)
+            return var_in[dim1]
+        if (i === dim1)
+            return var_in[dim0]
+        return v;
+    })
+    const expression = var_in.join('')+'->'+var_out.join('');
+    return tensor.einsum(expression, this)._label(`transpose ${dim0}->${dim1}`);
 }
-
 tensor.prototype.pad = function(paddings, mode = 'constant', constant_value = 0) {
     let new_shape = this.shape.slice();
     for (let i = 0; i < paddings.length; i++) {
