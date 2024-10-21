@@ -35,6 +35,11 @@ ODA({ is: 'oda-docx-viewer', imports: './lib/docx-preview.min.js, @oda/button',
         }
     },
     printScreenValue() {
+        // this.ownerDocument.body.style.display = 'block';
+        // this.async(() => {
+        //     this.ownerDocument.defaultView.print();
+        // }, 100)
+        // return;
         const iframe = document.createElement('iframe');
         iframe.style.position = 'absolute';
         iframe.style.transform = 'translate(-1300px, -1800px)';

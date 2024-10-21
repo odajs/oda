@@ -99,7 +99,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         "ctrl+p"(e){
             e.stopPropagation();
             e.preventDefault();
-            this.printValue();
+            this.printScreenValue();
         }
     },
     $public: {
@@ -200,7 +200,11 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     async attached() {
         await getLoader();
     },
-    async printValue() {
+    async printValue(printAsScreen = false) {
+        if (printAsScreen) {
+            this.printScreenValue();
+            return;
+        }
         let css = {},
             html = {};
         const res = await this.$$('oda-jupyter-cell').map(async (i, idx) => {
@@ -244,6 +248,12 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             this.async(() => document.body.removeChild(iframe), 100);
         })
         iframe.srcdoc = doc;
+    },
+    async printScreenValue() {
+        this.ownerDocument.body.style.display = 'block';
+        this.async(() => {
+            this.ownerDocument.defaultView.print();
+        }, 100)
     }
 })
 

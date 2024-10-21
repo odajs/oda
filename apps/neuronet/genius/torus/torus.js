@@ -282,10 +282,10 @@ export class tensor/* extends Array*/{
         }
         else{
             for(let i = 0; i<this.data.length; i++){
-                // let prev = this.prev[i];
-                let change = this.grad[i] * tensor.LEARNING_RATE;// + prev;
+                let prev = this.prev[i];
+                let change = prev * tensor.LEARNING_RATE + (1 - tensor.LEARNING_RATE) * this.grad[i];// + prev;
                 this.data[i] += change;
-                // this.prev[i] = change * tensor.LEARNING_RATE;
+                this.prev[i] = change;
             }
         }
         this.__clearGrad__();
@@ -624,6 +624,8 @@ export class tensor/* extends Array*/{
         globalThis.LEARNING_RATE = n
     }
 }
+export const tt = tensor;
+export const torus = tensor;
 
 tensor.prototype.slice = function (...slicers){
     if (slicers.length>this.dim)
@@ -1714,5 +1716,3 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
 }
 const fn_cache = Object.create(null);
 
-export const tt = tensor
-export const torus = tensor
