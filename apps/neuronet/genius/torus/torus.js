@@ -218,13 +218,13 @@ export class tensor/* extends Array*/{
         return this.#label ?? (()=>{
             switch (this.dim){
                 case 0:
-                    return `scalar = ${this.data}`;
+                    return `scalar`;
                 case 1:
-                    return `vector (${this.shape})`;
+                    return `vector`;
                 case 2:
-                    return `matrix (${this.shape})`;
+                    return `matrix`;
                 default:
-                    return `tensor (${this.shape})`;
+                    return ``;
             }
         })();
     }
@@ -602,7 +602,7 @@ export class tensor/* extends Array*/{
             let data = this.array.toTensorString(step, max, this.shape).split('\n');
             data = data.join('\n')
             let tab = ('  ').repeat(step)
-            return tab +`tensor: ${this.label}, shape(${this.shape}), size(${this.size.toLocaleString()}), ${this.dType.name}, ${this._back?.constructor.name || ""}\n${tab}[${data}]`;
+            return tab +`tensor: ${this.label}, shape(${this.shape}), size(${this.size.toLocaleString()}), ${this.dType.name}, ${this._back?.constructor.name || ""}\n${tab}(${data})`;
         }
         return this.data;
     }
