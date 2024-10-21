@@ -234,7 +234,7 @@ export class tensor/* extends Array*/{
         return 0;
     }
     destroy(){
-        this.clearGrad();
+        this._clearGrad();
         if (!this.src?.length) return
         if (!this.data.length) return;
         if(this.isParam) return;
@@ -242,7 +242,7 @@ export class tensor/* extends Array*/{
         this.src.forEach(s=>s.destroy())
 
     }
-    clearGrad(){
+    _clearGrad(){
         if (!this.#grad?.length) return;
         this.#grad?.buffer.transfer(0);
         this.#grad = undefined;
@@ -292,7 +292,7 @@ export class tensor/* extends Array*/{
                 // this.prev[i] = change * tensor.LEARNING_RATE;
             }
         }
-        this.clearGrad();
+        this._clearGrad();
     }
     get prev(){
         return this.#prev ??= new Float32Array(this.size);
@@ -559,6 +559,8 @@ export class tensor/* extends Array*/{
         return src;
     }
     static flatShape(...shape){
+        // if (!Array.isArray(shape))
+        //     shape = [shape]
         while(shape.some(Array.isArray))
             shape = shape.flat();
         return shape;
@@ -1240,6 +1242,8 @@ tensor.eye = (...shape)=>{
     return tensor.from(data)._shape(shape)._label('eye');
 }
 tensor.einsum = (in_expr, sources = [])=>{
+    sources = torus.flatShape(sources)
+    
     const tensors = sources.map(t => tensor.from(t));
     let key = in_expr + ':' + tensors.map(i=> i.shape.toString()+'('+ i.dType.name +')' ).join('-');
     let fn = fn_cache.einsum?.[key];
@@ -1490,6 +1494,27 @@ tensor.einsum = (in_expr, sources = [])=>{
     fn(tensors, out.data);
     out._label(`einsum (${out.shape}): '${in_expr}'`);
     return out;
+}
+
+torus.prototype.transpose = function(dim0= -1, dim1 = -2) {
+    if (this.dim < 2)
+        throw new Error(`Dimension out of range (expected more 2 or more, but got ${this.dim})`);
+
+    if (dim0 < 0)
+        dim0 += this.dim ;
+    if (dim1 < 0)
+        dim1 += this.dim;
+
+    if (dim0 === dim1)
+        throw new Error(`Измерения должны отличаться`);
+    if (dim0 > this.dim -1)
+        throw new Error(`Выходит за пределы`);
+    if (dim1 > this.dim -1)
+        throw new Error(`Выходит за пределы`);
+
+
+
+
 }
 
 tensor.prototype.pad = function(paddings, mode = 'constant', constant_value = 0) {
