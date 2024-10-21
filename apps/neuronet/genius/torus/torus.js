@@ -281,12 +281,10 @@ export class tensor/* extends Array*/{
             this.#bins = undefined
         }
         else{
-            for(let i = 0; i<this.data.length; i++){
-                let prev = this.prev[i];
-                let change = prev * .9 + (.1) * this.grad[i] * tensor.LEARNING_RATE;// + prev;
-                this.data[i] += change;
-                this.prev[i] = change;
 
+            for(let i = 0; i<this.data.length; i++){
+                const lr = Math.random() / Math.E;
+                this.data[i] += this.grad[i] * lr;
             }
         }
         this.__clearGrad__();
