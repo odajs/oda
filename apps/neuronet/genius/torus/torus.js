@@ -441,8 +441,7 @@ export class tensor/* extends Array*/{
         return this.fill(shape, ()=>Math.sqrt(-2 * Math.log(Math.random()))*Math.cos((2 * Math.PI) * Math.random()), Float32Array);
     }
     static arange(shape, from = 0, to, dType =Float32Array){
-        if (!Array.isArray(shape))
-            shape = [shape];
+        shape = torus.flatShape(shape);
         let steps = shape.pop();
         let repeat = shape.mul();
         shape.push(steps);
