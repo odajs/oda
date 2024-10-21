@@ -284,11 +284,12 @@ export class tensor/* extends Array*/{
 
             // const lambda = 1 - lr;
             for(let i = 0; i<this.data.length; i++){
-                // let prev = this.prev[i];
-                const lr = Math.random() / Math.E;
-                let change = /*lambda * prev + lr * */this.grad[i] * lr;// + prev;
+                let prev = this.prev[i];
+                const lr = Math.random() / 6;
+                // const lambda = 1 - lr;
+                let change = .25 * prev + this.grad[i] * lr;
                 this.data[i] += change;
-                // this.prev[i] = change;
+                this.prev[i] = change;
 
             }
         }
