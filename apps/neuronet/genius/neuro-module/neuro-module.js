@@ -240,7 +240,7 @@ class Linear extends NeuroModule{
     }
 }
 class Embedding extends Linear{
-    constructor(shape_in, shape_out) {
+    constructor(shape_in, shape_out, bias = false) {
         super(...arguments);
     }
 
