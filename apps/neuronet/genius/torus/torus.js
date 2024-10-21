@@ -285,7 +285,8 @@ export class tensor/* extends Array*/{
                 let prev = this.prev[i];
                 let change = prev * tensor.LEARNING_RATE + (1 - tensor.LEARNING_RATE) * this.grad[i];// + prev;
                 this.data[i] += change;
-                this.prev[i] = change;
+                this.prev[i] = change * change;
+
             }
         }
         this.__clearGrad__();

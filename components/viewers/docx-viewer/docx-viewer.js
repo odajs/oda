@@ -12,7 +12,6 @@ ODA({ is: 'oda-docx-viewer', imports: './lib/docx-preview.min.js, @oda/button',
                 position: relative;
             }
         </style>
-        <oda-button icon="icons:fullscreen" icon-size="32" @tap="setFullscreen" style="position: absolute; top: 8px; right: 8px; z-index: 9999"></oda-button>
         <div id="docx-container" style="overflow: auto;"></div>
     `,
     src: undefined,
@@ -35,11 +34,6 @@ ODA({ is: 'oda-docx-viewer', imports: './lib/docx-preview.min.js, @oda/button',
         }
     },
     printScreenValue() {
-        // this.ownerDocument.body.style.display = 'block';
-        // this.async(() => {
-        //     this.ownerDocument.defaultView.print();
-        // }, 100)
-        // return;
         const iframe = document.createElement('iframe');
         iframe.style.position = 'absolute';
         iframe.style.transform = 'translate(-1300px, -1800px)';
@@ -57,26 +51,15 @@ ODA({ is: 'oda-docx-viewer', imports: './lib/docx-preview.min.js, @oda/button',
         iframe.srcdoc = '';
     },
     setFullscreen() {
-        this.fullscreenMode = !this.fullscreenMode;
         const element = this;
-        if (this.fullscreenMode) {
-            if (element.requestFullscreen) {
-                element.requestFullscreen();
-            } else if (element.mozRequestFullScreen) {
-                element.mozRequestFullScreen();
-            } else if (element.webkitRequestFullscreen) {
-                element.webkitRequestFullscreen();
-            } else if (element.msRequestFullscreen) {
-                element.msRequestFullscreen();
-            }
-        } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.mozCancelFullScreen) {
-                document.mozCancelFullScreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            }
+        if (element.requestFullscreen) {
+            element.requestFullscreen();
+        } else if (element.mozRequestFullScreen) {
+            element.mozRequestFullScreen();
+        } else if (element.webkitRequestFullscreen) {
+            element.webkitRequestFullscreen();
+        } else if (element.msRequestFullscreen) {
+            element.msRequestFullscreen();
         }
     }
 })
