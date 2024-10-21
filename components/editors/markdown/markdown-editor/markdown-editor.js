@@ -77,7 +77,8 @@ ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*
             spellChecker: false,
             status: this.status,
             toolbar: [
-                "heading-1", 'heading-2', 'heading-3', 'heading-smaller', 'heading-bigger', 'bold', 'italic', '|',
+                // "heading-1", 'heading-2', 'heading-3', 'heading-smaller', 'heading-bigger', 'bold', 'italic', '|',
+                "heading", 'bold', 'italic', '|',
                 'quote', 'unordered-list', 'ordered-list', 'horizontal-rule', '|',
                 'code', 'table', 'link', 'image', '|', 'clean-block'
             ],

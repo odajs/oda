@@ -4,15 +4,15 @@
     line-height: 1.6;
 }
 h1, h2, h3, h4, h5, h6 {
-    font-weight: 400;
+    /* font-weight: 400; */
     margin-bottom: .5em;
     margin-top: .5em;
 }
-h1 { font-size: 26px; }
-h2 { font-size: 23px; }
-h3 { font-size: 20px; }
-h4 { font-size: 18px; }
-h4 { font-size: 16px; }
+/* h1 { font-size: 26px; } */
+/* h2 { font-size: 23px; } */
+/* h3 { font-size: 20px; } */
+/* h4 { font-size: 18px; } */
+/* h4 { font-size: 16px; } */
 hr { opacity: .2; }
 blockquote {
     border-left: 5px solid lightgray;

@@ -386,10 +386,9 @@ export class tensor/* extends Array*/{
         }
         return out
     }
-    static fill(shape, value, dType = Float32Array){
-        if (!Array.isArray(shape))
-            shape = [shape];
-        let handler = typeof value === 'function'?value:i=>value;
+    static fill(shape, value_or_handler, dType = Float32Array){
+        shape = torus.flatShape(shape);
+        let handler = typeof value_or_handler === 'function'?value_or_handler:i=>value_or_handler;
         let size = shape.mul();
         let data = new dType(size);
         data = data.map(handler);
