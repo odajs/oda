@@ -196,11 +196,7 @@ export class tensor/* extends Array*/{
         return this.data.getBit(idx);
     }
     get T(){
-        let axis_this = this.shape.reduce((r,v,i)=>r = String.fromCharCode(i + 97) + r, '');
-        let axis_out = axis_this.split('');
-        axis_out.reverse();
-        axis_out = axis_out.join('')
-        return tensor.einsum(axis_this+'->'+axis_out, [this]);
+        return this.transpose();
     }
     get g(){
         return tensor.from(this.grad)._shape(this);
@@ -393,12 +389,6 @@ export class tensor/* extends Array*/{
         let data = new dType(size);
         data = data.map(handler);
         return tensor.from(data, dType)._shape(shape);
-    }
-    static zeros(shape, dType = Float32Array) {
-        return this.fill(shape, 0, dType);
-    }
-    static ones(shape, dType = Float32Array) {
-        return this.fill(shape, 1, dType);
     }
     static ones_like(src) {
         return this.ones(src.shape, src.dType);
@@ -1227,11 +1217,21 @@ tensor.unpack = (expr, inputs)=>{
     //todo
 }
 
-tensor.eye = (...shape)=>{
+
+// ФУНКЦИИ ГЕНЕРАТОРЫ
+
+
+tensor.zeros = (shape, dType = Float32Array) => {
+    return tensor.fill(shape, 0, dType);
+}
+tensor.ones = (shape, dType = Float32Array) => {
+    return tensor.fill(shape, 1, dType);
+}
+tensor.eye = (shape, dType = Float32Array)=>{
     if(Array.isArray(shape[0]))
         shape = shape[0];
     const size = shape.reduce((r, v)=>r * (v || 1), 1);
-    const data = new Float32Array(size);
+    const data = new dType(size);
     let dim = shape.last
     let step = Math.min(size/ dim, dim);
     for (let i = 0; i<step; i++){
@@ -1239,6 +1239,9 @@ tensor.eye = (...shape)=>{
     }
     return tensor.from(data)._shape(shape)._label('eye');
 }
+
+
+
 tensor.einsum = (in_expr, sources = [])=>{
     sources = tensor.flat(sources);
     const tensors = sources.map(t => tensor.from(t));
