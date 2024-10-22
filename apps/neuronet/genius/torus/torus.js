@@ -670,8 +670,12 @@ tensor.prototype.sum = function (dim = -1, keepdim = false){
     expr += var_in.join('');
     const out = torus.einsum(expr, this)
     out._label('sum d=' + dim + ' ('+expr+')');
-    if(keepdim)
-        out._shape([1, out.shape])
+    if(keepdim){
+        const shape = Array.from(this.shape);
+        shape.splice(dim, 1, 1);
+        out._shape(shape);
+    }
+
     return out;
 }
 
