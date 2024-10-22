@@ -360,6 +360,16 @@ export class tensor/* extends Array*/{
             dim += this.dim;
         return  this.shape[dim];
     }
+    static manual_seed(seed){
+        if(seed)
+            this.__random_gererator__ = ()=>{
+                const val = pseudoRandom(seed).next();
+                return val / 2147483647;
+            }
+        else
+            this.__random_gererator__ = Math.random
+        return this.__random_gererator__;
+    }
     static split(tensor, split_size_or_sections, dim = 0){
         return tensor.split(split_size_or_sections, dim = 0);
     }
@@ -655,6 +665,17 @@ export class tensor/* extends Array*/{
 }
 export const tt = tensor;
 export const torus = tensor;
+tensor.__random_gererator__ = Math.random;
+function* pseudoRandom(seed) {
+    let value = seed;
+
+    while(true) {
+        value = value * 16807 % 2147483647
+        yield value;
+    }
+
+}
+// let generator = pseudoRandom(1);
 
 tensor.prototype.item = function (...shape){
     shape = torus.flat(...shape);
