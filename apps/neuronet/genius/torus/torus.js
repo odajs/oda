@@ -139,8 +139,7 @@ export class tensor/* extends Array*/{
         return this._shape(...shape);
     }
     _shape(...shape){ // shape or tensor
-        if(Array.isArray(shape[0]))
-            shape = shape[0];
+        shape = torus.flat(...shape);
         if(Object.equal(shape[0]?.constructor, tensor))
             shape = shape[0].shape;
         const size = shape.reduce((r, v)=>r * (v || 1), 1);
@@ -666,8 +665,14 @@ tensor.prototype.sum = function (dim = -1, keepdim = false){
     const var_in = this.shape.map((_, i)=>{
         return String.fromCharCode(i + char_code)
     })
-    const expr = var_in.join('') + ' -> ' + var_in[dim];
-    return torus.einsum(expr, this)._label('sum d=' + dim);
+    let  expr = var_in.join('') + ' -> ';
+    var_in.splice(dim, 1);
+    expr += var_in.join('');
+    const out = torus.einsum(expr, this)
+    out._label('sum d=' + dim + ' ('+expr+')');
+    if(keepdim)
+        out._shape([1, out.shape])
+    return out;
 }
 
 tensor.prototype.tril = function (diagonal = 0){
