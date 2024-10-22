@@ -283,16 +283,19 @@ export class tensor/* extends Array*/{
         else{
             let lr = torus.LEARNING_RATE || .01
             for(let i = 0; i<this.data.length; i++){
-                this.data[i] += this.grad[i] * lr;
+                let prev = this.prev[i];
+                let change = this.grad[i] * lr + prev;
+                this.data[i] += change;
+                this.prev[i] = change / 3;
             }
 
 
             //
             // for(let i = 0; i<this.data.length; i++){
             //     let prev = this.prev[i];
-            //     const lr = Math.random() / 6;
-            //     // const lambda = 1 - lr;
-            //     let change = .25 * prev + this.grad[i] * lr;
+            //     const lr = Math.random() / 3;
+            //     const lambda = 1 - lr;
+            //     let change = lambda * prev + this.grad[i] * lr;
             //     this.data[i] += change;
             //     this.prev[i] = change;
             //
