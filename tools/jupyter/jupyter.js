@@ -54,6 +54,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 padding: 12px 6px 30px 6px;
                 opacity: 0;
                 transition: opacity 1s;
+                background-color: var(--content-background);
             }
             /* oda-jupyter-cell:hover{
                 @apply --light;
@@ -254,6 +255,18 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         this.async(() => {
             this.ownerDocument.defaultView.print();
         }, 100)
+    },
+    setFullscreen() {
+        const element = this;
+        if (element.requestFullscreen) {
+            element.requestFullscreen();
+        } else if (element.mozRequestFullScreen) {
+            element.mozRequestFullScreen();
+        } else if (element.webkitRequestFullscreen) {
+            element.webkitRequestFullscreen();
+        } else if (element.msRequestFullscreen) {
+            element.msRequestFullscreen();
+        }
     }
 })
 
