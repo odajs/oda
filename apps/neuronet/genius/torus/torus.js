@@ -1149,9 +1149,9 @@ if (!Array.prototype.toTensorString) {
                 let result = (idx?`\n${('  ').repeat(step)+(' ').repeat(l)}[`:'[');
                 if (d[0]?.map){
                     let list = Array.from(d).map((v, i)=>{
-                        return recurse(v, i, l + 1);
+                        return recurse(v, i, l + 1)
                     })
-                    result += list.join(',')
+                    result += list.join(',');
                 }
                 else{
                     if (d.length > max){
@@ -1162,7 +1162,7 @@ if (!Array.prototype.toTensorString) {
                         result +=  ` …`;
                         result +=  Array.from(d.slice(-showing)).map(x=>{
                             return num2text(x);
-                        }).join(',')
+                        }).join(',');
                     }
                     else{
                         result += Array.from(d).map(x=>{
@@ -1171,11 +1171,12 @@ if (!Array.prototype.toTensorString) {
                     }
                 }
 
-                result = result + ']'
-                return result
+                result = result + ']';
+                return result;
             }
             let res = recurse(this);
             res = res.slice(1, -1);
+            res = res.replaceAll(']],', ']],\n')
             return res;
         }
     } )
