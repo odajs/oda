@@ -658,13 +658,26 @@ export const tt = tensor;
 export const torus = tensor;
 
 tensor.prototype.tril = function (diagonal = 0){
-    if (this.dim>2)
+    if (this.dim < 2)
         throw new Error('torus.tril: input tensor must have at least 2 dimensions');
-    const step = this.shape.last;
-    const data = this.data.map((v, i)=>{
-        return i%step;
-    })
-    console.log(data);
+
+    const _x = this.shape[this.dim - 1];
+    const _y = this.shape[this.dim - 2];
+    let step = _x * _y;
+    let _z = this.size/step;
+    const data = new this.dType(this.size)
+    let idx = 0;
+    for (let z = 0; z < _z; z ++){
+        for (let y = 0; y < _y; y++){
+            for (let x = 0; x < _x; x++){
+                data[idx] = (x - y > diagonal)?0:this.data[idx];
+                idx++;
+            }
+        }
+    }
+    const out = tensor.from(data)._shape(this)._label('tril');
+    return out;
+
 }
 torus.tril = function (tensor, diagonal = 0){
     return tensor.tril(diagonal);
@@ -1138,7 +1151,7 @@ if (!Array.prototype.toTensorString) {
                     let list = Array.from(d).map((v, i)=>{
                         return recurse(v, i, l + 1);
                     })
-                    result += list.join(',');
+                    result += list.join(',')
                 }
                 else{
                     if (d.length > max){
