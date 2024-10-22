@@ -87,7 +87,7 @@ ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*
             },
             autofocus: this.autofocus
         })
-        if (this.value) this.simpleMde.value(this.value);
+        this.simpleMde.value(this.value || '');
 
         this.simpleMde.codemirror.on('change', () => {
             this.value = undefined;
