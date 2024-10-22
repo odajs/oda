@@ -281,26 +281,37 @@ export class tensor/* extends Array*/{
             this.#bins = undefined
         }
         else{
+
+            let lr = torus.LEARNING_RATE
+            for(let i = 0; i<this.data.length; i++){
+                let change = this.grad[i] * lr * Math.random();
+                this.data[i] += change;
+            }
+
+
+
+
+
             // let lr = torus.LEARNING_RATE || .01
             // for(let i = 0; i<this.data.length; i++){
             //     let prev = this.prev[i];
-            //     let change = this.grad[i] * lr + prev;
+            //     let change = this.grad[i] * lr + prev * .5;
             //     this.data[i] += change;
-            //     this.prev[i] = change / 3;
+            //     this.prev[i] = change;
             // }
 
 
             //
 
-            for(let i = 0; i<this.data.length; i++){
-                const lr = Math.random() / 3;
-                const lambda = 1 - lr;
-                let prev = this.prev[i];
-                let change = (this.grad[i] + lambda * prev) * lr;
-                this.data[i] += change;
-                this.prev[i] = change * lr;
-
-            }
+            // for(let i = 0; i<this.data.length; i++){
+            //     const lr = Math.random() / 3;
+            //     const lambda = 1 - lr;
+            //     let prev = this.prev[i];
+            //     let change = (this.grad[i] + lambda * prev) * lr;
+            //     this.data[i] += change;
+            //     this.prev[i] = change * lr;
+            //
+            // }
         }
         this.__clearGrad__();
     }

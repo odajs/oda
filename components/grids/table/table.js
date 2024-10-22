@@ -246,7 +246,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     $pdp: {
         /**
          * @this {Table}
-         * @param {TableFocusedCell} v
+         * @param {TableCellInfo} v
         */
         set focusedCell(v) {
             if (!v || v.column.$flex) return;
@@ -1312,6 +1312,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     //     if (el)
     //         this.fire('row-contextmenu', el.row);
     // },
+    /**@this {Table}*/
     _onDownToEmptySpace(e) {
         if (e.button)
             return;
@@ -1320,31 +1321,32 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     },
     /**@this {Table}*/
     activateCell(cellElement) {
-        if (this.activeCell === cellElement) {
-            return this.deactivateCell(cellElement);
+        if (this.activeCell) {
+            this.deactivateCell(this.activeCell);
+            if (this.activeCell === cellElement) {
+                return this.deactivateCell(cellElement);
+            }
         }
         if (typeof cellElement?.activate === 'function' && (cellElement.column?.treeMode || !(cellElement.readOnly || cellElement.readonly))) {
             this.listen('deactivate', () => {
-                this.async(() => {
-                    if (this.activeCell === cellElement) {
+                if (this.activeCell === cellElement) {
+                    if (this.fillingNewLineMode) {
                         this.focus();
-                        if (this.fillingNewLineMode) {
-                            this.moveCellPointer(1, 0);
-                        }
-                        else {
-                            this.activeCell = null;
-                        }
+                        this.moveCellPointer(1, 0);
                     }
-                }, 300);
+                    else {
+                        this.activeCell = null;
+                    }
+                }
             }, { target: cellElement, once: true });
             this.activeCell = cellElement;
             return cellElement.activate();
         }
-        const row = this.focusedCell?.row;
+        const row = cellElement.cellCoordinates.row;
         if (row && this.compareRows(row, this.focusedRow)) {
             const treeColumn = this.activeCols.find(c => c.treeMode);
             if (treeColumn) {
-                const treeCell = this.body.findCellByCoordinates({ row: this.focusedCell.row, column: treeColumn });
+                const treeCell = this.body.findCellByCoordinates({ row, column: treeColumn });
                 if (treeCell) {
                     return this.activateCell(treeCell);
                 }
@@ -1354,7 +1356,12 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     },
     /**@this {Table}*/
     deactivateCell(cellElement) {
-        cellElement.deactivate?.();
+        if (typeof cellElement.deactivate === 'function') {
+            cellElement.deactivate();
+        }
+        else {
+            cellElement.fire('deactivate');
+        }
     }
 });
 
@@ -1715,6 +1722,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
                     <div
                         ~is="_getTemplateTag($for.item, $$for.item)"
                         ~class="{'group' : $for.item.__group__}"
+                        ~style="{'min-height': iconSize + 'px'}"
                         class="flex cell-content"
                         :dark="raisedRows.includes($for.item)"
                         :column="$$for.item"
@@ -1824,12 +1832,10 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
             this.moveCellPointer(0, this.screenLength);
         },
         tab(e) {
+            e.preventDefault();
             const dir = e.shiftKey ? -1 : 1;
             const _ = this.focusedCell;
             this.moveCellPointer(dir, 0);
-            if (!(_.row === this.focusedCell.row && _.column === this.focusedCell.column)) {
-                e.preventDefault();
-            }
         },
         escape(e) {
             if (this.activeCell) {
@@ -2161,7 +2167,7 @@ cells: {
             </div>
             <oda-table-expand ~style="{backgroundColor: expBackground}" class="no-flex" :item :scrolled-children></oda-table-expand>
             <div ~is="item.checkTemplate || checkTemplate" class="no-flex" ~if="_showCheckBox" :column="column" :item="item"></div>
-            <div id="subcell" :dark ::color ~is="subTemplate" :column :item class="flex" @tap="_tap">{{item?.[column[columnId]] || ''}}</div>`,
+            <div id="subcell" :dark ::color ~is="subTemplate" :column :item class="flex" @tap="_tap" @deactivate="fire('deactivate', $event)">{{item?.[column[columnId]] || ''}}</div>`,
             get subcell() {
                 return this.$('#subcell');
             },

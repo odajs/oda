@@ -14,10 +14,10 @@ interface Table extends odaComponent {
     allowFocusCell: boolean;
     allowDrag: boolean;
 
-    focusedCell: TableFocusedCell;
+    focusedCell: TableCellInfo;
     selectedRows: TableRow[];
     focusedRow: TableRow;
-    activeCell: HTMLElement;
+    activeCell: TableCellElement;
 
     headerColumns: TableColumn[];
     filter: string;
@@ -47,23 +47,31 @@ interface Table extends odaComponent {
     focusRow(e: MouseEvent): void;
     getRowByIndex(rowIndex: number): TableRow;
     _applyFilter(items: TableRow[]): void;
-    activateCell(elem: HTMLElement): void;
+    activateCell(elem: TableCellElement): void;
+    deactivateCell(elem: TableCellElement): void;
     compareRows(row1: TableRow, row2: TableRow): boolean;
     scrollToRowIndex(index: number): void;
-    _cellIsFocused(row: TableRow, column: TableColumn, elem: HTMLElement & { cellCoordinates: {row: TableRow, column: TableColumn} }): boolean;
+    _cellIsFocused(row: TableRow, column: TableColumn, elem: TableCellElement): boolean;
+    clearSelection(): void;
 }
 //table $pdp interface
 
-type TableFocusedCell = {
+interface TableCellInfo{
     row: TableRow;
     column: TableColumn;
 }
 
-interface TableBody extends odaComponent{
-    activeCell: HTMLElement;
+interface TableCellElement extends HTMLElement {
+    cellCoordinates: TableCellInfo;
+    activate?: function;
+    deactivate?: function;
+}
 
-    getFocusedCellElement(): HTMLElement;
-    findCellByCoordinates({row: TableRow, column: TableColumn}): HTMLElement
+interface TableBody extends odaComponent{
+    activeCell: TableCellElement;
+
+    getFocusedCellElement(): TableCellElement;
+    findCellByCoordinates({row: TableRow, column: TableColumn}): TableCellElement
 }
 
 interface TableRow {
