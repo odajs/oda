@@ -657,6 +657,19 @@ export class tensor/* extends Array*/{
 export const tt = tensor;
 export const torus = tensor;
 
+tensor.prototype.tril = function (diagonal = 0){
+    if (this.dim>2)
+        throw new Error('torus.tril: input tensor must have at least 2 dimensions');
+    const step = this.shape.last;
+    const data = this.data.map((v, i)=>{
+        return i%step;
+    })
+    console.log(data);
+}
+torus.tril = function (tensor, diagonal = 0){
+    return tensor.tril(diagonal);
+}
+
 tensor.prototype.slice = function (...slicers){
     if (slicers.length>this.dim)
         throw new Error(`IndexError: too many indices for tensor of dimension ${this.dim}`);
