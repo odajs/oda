@@ -956,7 +956,7 @@ tensor.prototype.multinomial = function(num_samples = 1, replacement = false){
     for (let i = 0; i<this.size; i += step){
         data.push(this.data.slice(i, i + step));
     }
-    const sums = data.map(d=>d.reduce((r, v)=>r+v, 0));
+    const sums = data.map(d=>d.reduce((r, v)=>(r + v), 0));
     const res = Array(data.length).fill().map(_=>[]);
     for (let  i = 0; i< num_samples; i++){
         const randoms = sums.map(s=>s * Math.random());

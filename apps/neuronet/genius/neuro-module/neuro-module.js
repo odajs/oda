@@ -252,7 +252,7 @@ class Embedding extends Linear{
         })
         input = tensor.from(data).reshape(...input.shape, this.size_in);
         let output = super.forward(input);
-        output = output.sigm();
+        // output = output.sigm();
         return output;
     }
 }

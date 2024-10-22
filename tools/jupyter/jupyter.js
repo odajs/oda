@@ -673,10 +673,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         ODA.showDropdown('oda-property-grid', { inspectedObject: this.control, filterByFlags: '' }, { minWidth: '480px', parent: e.target, anchor: 'top-right', align: 'left', title: 'Settings', hideCancelButton: true })
     },
     copyCell() {
-        top._jupyterCellData = { ...this.cell.data };
-        let id = getID();
-        top._jupyterCellData.metadata ||= {};
-        top._jupyterCellData.metadata.id = id;
+        top._jupyterCellData = JSON.stringify(this.cell.data);
         this.jupyter.$render();
     }
 })
@@ -855,12 +852,16 @@ class JupyterNotebook extends ROCKS({
         this.isChanged = false;
     },
     add(cell, cell_type = 'text', data) {
+        try {
+            data = data ? JSON.parse(data) : null;
+        } catch (err) { }
         let id = getID();
         if (data?.metadata) {
             data.metadata.id = id;
         }
         data ||= {
             cell_type,
+            source: '',
             metadata: {
                 id
             }
