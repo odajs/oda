@@ -656,6 +656,10 @@ export class tensor/* extends Array*/{
 export const tt = tensor;
 export const torus = tensor;
 
+tensor.prototype.item = function (...shape){
+    shape = torus.flat(...shape);
+    //todo
+}
 tensor.prototype.sum = function (dim = -1, keepdim = false){
     if(dim < -this.dim || dim > this.dim - 1)
         throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`);
@@ -836,7 +840,7 @@ tensor.prototype._element_wise_operator = function (label, other, forward_func, 
         let idx1 = this.shape[this.shape.length - i - 1] || '';
         let idx2 = other.shape[other.shape.length - i - 1] || '';
         if (idx1 && idx2 && idx1 !== idx2)
-            throw new Error(`RuntimeError: The size of first tensor (${idx1}) must match the size of second tensor (${idx2}) at ${i} dimension`);
+            throw new Error(`The size of first tensor (${idx1}) must match the size of second tensor (${idx2}) at ${i} dimension`);
         shape.push(Math.max(idx1, idx2));
     }
     let size = shape.mul();
