@@ -59,14 +59,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             /* oda-jupyter-cell:hover{
                 @apply --light;
             } */
-            @media print {
-                *:not(.printable) {
-                    display: none;
-                }
-            } 
         </style>
         <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
-        <oda-jupyter-cell class="printable" @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
+        <oda-jupyter-cell @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
         <div style="min-height: 50%"></div>
     `,
     output_data: [],
@@ -678,7 +673,10 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         ODA.showDropdown('oda-property-grid', { inspectedObject: this.control, filterByFlags: '' }, { minWidth: '480px', parent: e.target, anchor: 'top-right', align: 'left', title: 'Settings', hideCancelButton: true })
     },
     copyCell() {
-        top._jupyterCellData = this.cell.data;
+        top._jupyterCellData = { ...this.cell.data };
+        let id = getID();
+        top._jupyterCellData.metadata ||= {};
+        top._jupyterCellData.metadata.id = id;
         this.jupyter.$render();
     }
 })

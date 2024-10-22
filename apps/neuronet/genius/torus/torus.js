@@ -281,17 +281,22 @@ export class tensor/* extends Array*/{
             this.#bins = undefined
         }
         else{
-
-            // const lambda = 1 - lr;
+            let lr = torus.LEARNING_RATE || .01
             for(let i = 0; i<this.data.length; i++){
-                let prev = this.prev[i];
-                const lr = Math.random() / 6;
-                // const lambda = 1 - lr;
-                let change = .25 * prev + this.grad[i] * lr;
-                this.data[i] += change;
-                this.prev[i] = change;
-
+                this.data[i] += this.grad[i] * lr;
             }
+
+
+            //
+            // for(let i = 0; i<this.data.length; i++){
+            //     let prev = this.prev[i];
+            //     const lr = Math.random() / 6;
+            //     // const lambda = 1 - lr;
+            //     let change = .25 * prev + this.grad[i] * lr;
+            //     this.data[i] += change;
+            //     this.prev[i] = change;
+            //
+            // }
         }
         this.__clearGrad__();
     }
@@ -597,7 +602,7 @@ export class tensor/* extends Array*/{
             let data = this.array.toTensorString(step, max, this.shape).split('\n');
             data = data.join('\n')
             let tab = ('  ').repeat(step)
-            return tab +`tensor: ${this.label}, shape(${this.shape}), size(${this.size.toLocaleString()}), ${this.dType.name}, ${this._back?.constructor.name || ""}\n${tab}(${data})`;
+            return tab +`tensor: ${this.label}, shape(${this.shape}), size(${this.size.toLocaleString()}), ${this.dType.name}, ${this._back?.name || ""}\n${tab}(${data})`;
         }
         return this.data;
     }
@@ -1081,17 +1086,11 @@ tensor.prototype.crossEntropy = function (target) {
     })
     loss = -loss.reduce((r, v) => r + v, 0) / loss.length;
     const out = tensor.from([loss])._src(this)._label('crossEntropy');
-    this._back = ()=>{
+    this._back = function CrossEntropyBackward(){
         this.src.forEach(src=>{
             src.grad = this.grad;
         })
-    }
-    // out._back = ()=>{
-    //     this.grad = ys.map((y, i)=> {
-    //         let x = this.data[i];
-    //         return y - x;
-    //     });
-    // }
+    }.bind(this);
     return out;
 }
 
