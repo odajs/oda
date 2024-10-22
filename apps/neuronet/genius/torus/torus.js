@@ -436,11 +436,13 @@ export class tensor/* extends Array*/{
     static ones_like(src) {
         return this.ones(src.shape, src.dType);
     }
-    static randint(size, shape = 1){
-        if (!Array.isArray(shape))
-            shape = [shape];
-        const data = new Uint32Array(shape.mul()).map(i=>torus._random() * size);
-        return tensor.from(data, Uint32Array)._shape(shape);
+    static randint(min, max, ...shape){
+        shape = torus.flat(...shape)
+        const data = new Int32Array(shape.mul()).map(i=>{
+            const r = torus._random();
+            return r * (max - min) + min
+        });
+        return tensor.from(data, Int32Array)._shape(shape)._label(`randint ${min}-${max}`);
     }
     static rand(shape, dType) {
         let handler = torus._random;
