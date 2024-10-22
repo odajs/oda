@@ -657,6 +657,19 @@ export class tensor/* extends Array*/{
 export const tt = tensor;
 export const torus = tensor;
 
+tensor.prototype.sum = function (dim = -1, keepdim = false){
+    if(dim < -this.dim || dim > this.dim - 1)
+        throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`);
+    if(dim < 0)
+        dim += this.dim;
+    let char_code = 65;
+    const var_in = this.shape.map((_, i)=>{
+        return String.fromCharCode(i + char_code)
+    })
+    const expr = var_in.join('') + ' -> ' + var_in[dim];
+    return torus.einsum(expr, this)._label('sum d=' + dim);
+}
+
 tensor.prototype.tril = function (diagonal = 0){
     if (this.dim < 2)
         throw new Error('torus.tril: input tensor must have at least 2 dimensions');
