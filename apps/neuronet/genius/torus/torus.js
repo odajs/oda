@@ -862,16 +862,26 @@ tensor.prototype.log_ = function (){
 
 tensor.prototype._element_wise_operator = function (label, other, forward_func, this_back_func, other_back_func){
     other = tensor.from(other);
+    if(this.size%other.size && other.size%this.size)
+        throw new Error(`The dimensions must be multiples, but this.shape(${this.shape}) and other.shape(${other.shape})`);
+    // let main = (this.size>=other.size)?this:other;
+    // let slave = (this.size<other.size)?this:other;
+    // let step = main.size/slave.size;
+
+
     let dim  = Math.max(this.dim, other.dim);
     let shape = []
     for (let i = 0; i<dim; i++){
         let idx1 = this.shape[this.shape.length - i - 1] || '';
         let idx2 = other.shape[other.shape.length - i - 1] || '';
-        if (idx1 && idx2 && idx1 !== idx2)
+        if (idx1 && idx2 && (!idx1%idx2 || !idx2%idx1))
             throw new Error(`The size of first tensor (${idx1}) must match the size of second tensor (${idx2}) at ${i} dimension`);
         shape.push(Math.max(idx1, idx2));
     }
     let size = shape.mul();
+    const data = new Float32Array(size)
+
+
     let func = [`let out = new Float32Array(${size});`];
     func.push('let idx, g;');
     func.push('const x_data = this.data;');
