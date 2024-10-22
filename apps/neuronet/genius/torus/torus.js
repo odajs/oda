@@ -654,7 +654,7 @@ tensor.prototype.slice = function (...slicers){
                 add_shape = false;
                 start = +slicer;
                 if (start<0)
-                    start += this.dim;
+                    start += size;
                 end = start + 1;
                 step = 1;
             }
