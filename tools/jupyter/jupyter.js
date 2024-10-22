@@ -59,9 +59,14 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             /* oda-jupyter-cell:hover{
                 @apply --light;
             } */
+            @media print {
+                *:not(.printable) {
+                    display: none;
+                }
+            } 
         </style>
         <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
-        <oda-jupyter-cell  @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
+        <oda-jupyter-cell class="printable" @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
         <div style="min-height: 50%"></div>
     `,
     output_data: [],
@@ -254,6 +259,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         this.ownerDocument.body.style.display = 'block';
         this.async(() => {
             this.ownerDocument.defaultView.print();
+            this.ownerDocument.body.style.display = 'flex';
         }, 100)
     },
     setFullscreen() {

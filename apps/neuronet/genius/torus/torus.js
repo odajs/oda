@@ -1066,29 +1066,15 @@ tensor.prototype.crossEntropy = function (target) {
     target = tensor.from(target);
     const step = this.shape.last;
     const size = this.size/step;
-
-    if (target.size === this.size/step){
-        const data = Array.prototype.map.call(target.data, d=>{
-            const one_hot = Array(step).fill(0);
-            one_hot[d] = 1;
-            return one_hot;
-        })
-        target = tensor.from(data).reshape(this.shape);
-    }
     let ys = target.data;
-    let errors = this.data.map((x, i)=>{
-        let y = ys[i];
-        if(y)
-            return y * Math.log(x);
-        return 0;
-    })
-    errors = Array(this.size/step).fill().map((d, i)=>{
-        let start = i * step;
-        return errors.slice(start, start + step);
-    })
-    let loss = -errors.reduce((r, e)=>{
-        return r + e.reduce((r,v) => r + v);
-    }, 0)/errors.length;
+    let errors;
+    if (target.size === this.size/step){
+        errors = ys.map((y, i) => Math.log(this.data[i * step + y]))
+    }
+    else{
+        errors = ys.map((y, i) => y?Math.log(this.data[i]):0).filter(i=>i);
+    }
+    let loss = -errors.reduce((r, v) => r + v, 0) / errors.length;
     const out = tensor.from([loss])._src(this)._label('crossEntropy');
     this._back = ()=>{
         this.src.forEach(src=>{
