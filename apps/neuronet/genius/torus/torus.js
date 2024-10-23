@@ -864,9 +864,34 @@ tensor.prototype._element_wise_operator = function (label, other, forward_func, 
     other = tensor.from(other);
     if(this.size%other.size && other.size%this.size)
         throw new Error(`The dimensions must be multiples, but this.shape(${this.shape}) and other.shape(${other.shape})`);
-    // let main = (this.size>=other.size)?this:other;
-    // let slave = (this.size<other.size)?this:other;
-    // let step = main.size/slave.size;
+
+    let master = (this.size>=other.size)?this:other;
+    let slave = (this.size<other.size)?this:other;
+    let master_shape = Array.from(master.shape).reverse();
+    let slave_shape = Array.from(slave.shape).reverse();
+    let char_code = 64;
+    let alter_code = 96;
+    const vars = master_shape.reduce((r, master_d, i)=>{
+        let slave_d = slave_shape[i];
+        if (slave_d === master_d){
+            const v = String.fromCharCode(++char_code);
+            r[0] = v + r[0];
+            r[1] = v + r[1];
+        }
+        else{
+            r[0] = String.fromCharCode(++char_code) + r[0];
+            r[1] = (String.fromCharCode(++alter_code)) || '' + r[1];
+        }
+        return r;
+    }, ['',''])
+    const expr = vars.join(',')+'->'+vars[0];
+    console.log(expr)
+
+    // let char_code = 65;
+    // const var_in = this.shape.map((_, i)=>{
+    //     return String.fromCharCode(i + char_code)
+    // })
+
 
 
     let dim  = Math.max(this.dim, other.dim);
@@ -879,7 +904,7 @@ tensor.prototype._element_wise_operator = function (label, other, forward_func, 
         shape.push(Math.max(idx1, idx2));
     }
     let size = shape.mul();
-    const data = new Float32Array(size)
+    // const data = new Float32Array(size)
 
 
     let func = [`let out = new Float32Array(${size});`];
