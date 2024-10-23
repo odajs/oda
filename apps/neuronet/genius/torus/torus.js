@@ -1381,8 +1381,10 @@ tensor.einsum = (in_expr, sources = [], ...functions)=>{
     let fn = fn_cache.einsum?.[key];
     let inputs, outs;
     if (!fn){         // Выделение из выражения оператора
+        // const more_dims =
+
         let expr = in_expr.split('->');                            // Разделение выражения на вход и выход
-        const axis = [];//Object.keys(ext_axis).map(a =>({a, d:ext_axis[a]}));
+        const axis = JSON.parse('['+(in_expr.split('|')[1] || '')+']');//Object.keys(ext_axis).map(a =>({a, d:ext_axis[a]}));
         const terms = expr[0].trim().split(',');            // Разделение входа на термы
         inputs = terms.map((term, i)=>{                  // Анализ входных термов по размерностям
             term = term.trim();
@@ -1617,7 +1619,10 @@ tensor.einsum = (in_expr, sources = [], ...functions)=>{
                 return tt.map(o=>o.a).join('');
             })
             let out_vars = inputs[i].map(i=>i.a);//.filter(o=>in_vars.some(i => i.includes(o)))
+            let adds = inputs[i].filter(o=>!in_vars.some(i => i.includes(o.a)))
             let expr = in_vars.join(',')  + '->' + out_vars.join('');
+            if (adds.length)
+                expr += '|' + adds.toString();
             let sources = tensors.map((tt,ii)=>{
                 if(ii === i)
                     return grad;
