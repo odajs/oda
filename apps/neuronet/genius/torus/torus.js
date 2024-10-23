@@ -696,6 +696,11 @@ tensor.prototype.item = function (...shape){
     shape = torus.flat(...shape);
     //todo
 }
+
+tensor.prototype.dot = function (other){
+    if (this.shape[this.dim - 1] !== other.shape[other.dim - 2])
+        throw new Error(`mat1 and mat2 shapes cannot be multiplied (${this.shape.slice(-2).join('x')} and ${other.shape.slice(-2).join('x')})`)
+}
 tensor.prototype.sum = function (dim = -1, keepdim = false){
     if(dim < -this.dim || dim > this.dim - 1)
         throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`);
