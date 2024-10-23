@@ -9,6 +9,7 @@ export class tensor/* extends Array*/{
     #prev = undefined;
     #bins = undefined;
     #path = undefined;
+    backs = [];
     constructor(data, dType = Float32Array) {
         // super();
         if(!data) return;
@@ -339,8 +340,15 @@ export class tensor/* extends Array*/{
         }
         topo.forEach((node, index) => {
             if (!node.src) return;
-            node._back?.();
-
+            let back_fn;
+            if (node._back){
+                node._back();
+                back_fn = node.label+'_back';
+            }
+            else{
+                back_fn = 'no-back('+node.label+')';
+            }
+            node.src.forEach(i=>i.backs.push(back_fn))
         })
         topo.forEach((node) => {
             if (!node.src){
@@ -637,7 +645,7 @@ export class tensor/* extends Array*/{
             let data = this.array.toTensorString(step, max, this.shape).split('\n');
             data = data.join('\n')
             let tab = ('  ').repeat(step)
-            return tab +`tensor: ${this.label}, shape(${this.shape}), size(${this.size.toLocaleString()}), ${this.dType.name}, ${this._back?.name || ""}\n${tab}(${data})`;
+            return tab +`tensor: ${this.label}, shape(${this.shape}), size(${this.size.toLocaleString()}), ${this.dType.name}, ${this.backs.join(',')}\n${tab}(${data})`;
         }
         return this.data;
     }
@@ -731,8 +739,10 @@ tensor.prototype.tril = function (diagonal = 0){
     }
     const out = tensor.from(data)._shape(this)._label('tril');
     out._back = function tril_back() {
-        this.grad = out.grad;
-    }
+        this.grad = this.grad.map((g, i)=>{
+            return g + out.grad[i];
+        })
+    }.bind(this);
     return out;
 
 }
