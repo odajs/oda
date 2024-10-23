@@ -883,7 +883,7 @@ tensor.prototype._element_wise_operator = function (label, other, forward_func, 
         return r;
     }, ['',''])
     const expr = vars.join(',')+'->'+(vars[0].length<vars[1]?vars[1]:vars[0]);
-    const res = torus.einsum(expr,  [this, other]);
+    const res = torus.einsum(expr,  [this, other], forward_func, this_back_func, other_back_func);
     console.log(res)
     // let char_code = 65;
     // const var_in = this.shape.map((_, i)=>{
@@ -1373,7 +1373,7 @@ tensor.eye = (shape, dType = Float32Array)=>{
 
 
 
-tensor.einsum = (in_expr, sources = [])=>{
+tensor.einsum = (in_expr, sources = [], ...functions)=>{
     sources = tensor.flat(sources);
     const tensors = sources.map(t => tensor.from(t));
     let key = in_expr + ':' + tensors.map(i=> i.shape.toString()+'('+ i.dType.name +')' ).join('-');
@@ -1428,14 +1428,11 @@ tensor.einsum = (in_expr, sources = [])=>{
                 return str;
             }).join('\n'),
         ].join('\n');
-        // vars += `\nlet mult, sign;`;
-        // if (outs.length)
         vars += `\nlet idx = -1;\n`;
 
 
         const out_tabs = '\t'.repeat(outs.length);
 
-        // let data_idx = (outs.length)?`[++idx]`:'';
         inputs.map((t, i) => {
             let expr = ''
             if(t.length){
@@ -1492,7 +1489,10 @@ tensor.einsum = (in_expr, sources = [])=>{
             }).join('\n');
             if (prev_v.length>1){
                 let v = prev_v.pop();
-                res += `\n\t${tabs + v} *= ${prev_v.join(' * ')};`;
+                if (functions[0])
+                    res += `\n\t${tabs + v} = ${prev_v.join(' * ')} * ${v};`;
+                else
+                    res += `\n\t${tabs + v} = ${prev_v.join(' * ')} * ${v};`;
                 prev_v = [v]
             }
             if (prev_b.length>1){
@@ -1541,7 +1541,7 @@ tensor.einsum = (in_expr, sources = [])=>{
                     }).join('\n');
                     if (prev_v.length>1){
                         let v = prev_v.pop();
-                        result += '\n\t'+tabs + v + ' *= ' + prev_v.join(' * ')+';';
+                        result += `\n\t${tabs + v} = ${prev_v.join(' * ')} * ${v};`;
                         prev_v = [v]
                     }
                     if (prev_b.length>1){
