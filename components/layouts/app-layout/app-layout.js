@@ -84,7 +84,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter', extends: 
             order: 2;
         }
     </style>
-    <div ~show="!isMinimized" id="appHeader" class="top title">
+    <div ~show="!isMinimized" id="appHeader" class="pe-no-print top title">
 <!--        <slot name="title" class="horizontal"></slot>-->
         <slot name="header" class="vertical"></slot>
     </div>
@@ -100,11 +100,12 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter', extends: 
             style="order:1"
             ~style="{filter: (allowCompact && compact && opened)?'brightness(.5)':'none', pointerEvents: (allowCompact && compact && opened)?'none':'auto'}"
         >
-            <slot name="top" class="vertical no-flex"></slot>
+            <slot name="top" class="pe-no-print vertical no-flex"></slot>
             <slot name="main" class="vertical flex" style="overflow: hidden; z-index: 0"></slot>
-            <slot name="bottom" class="vertical no-flex" style="overflow: visible;"></slot>
+            <slot name="bottom" class="pe-no-print vertical no-flex" style="overflow: visible;"></slot>
         </div>
         <app-layout-drawer
+            class="pe-no-print"
             ~for="panels"
             :id="$for.item.pos + '-drawer'"
             :pos="$for.item.pos"
@@ -116,11 +117,11 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter', extends: 
             ::opened="$for.item.opened"
             ::pinned="$for.item.pinned"
         >
-            <slot :name="$for.item.pos + '-header'" class="flex" slot="panel-header"></slot>
-            <slot :name="$for.item.pos + '-panel'"></slot>
+            <slot :name="$for.item.pos + '-header'" class="flex" slot="pe-no-print panel-header"></slot>
+            <slot :name="$for.item.pos + '-panel'" class="pe-no-print"></slot>
         </app-layout-drawer>
     </div>
-    <slot ~show="!isMinimized" name="footer" class="vertical no-flex" style="overflow: visible;"></slot>
+    <slot ~show="!isMinimized" name="footer" class="pe-no-print vertical no-flex" style="overflow: visible;"></slot>
     `,
     leftButtons: [],
     rightButtons: [],

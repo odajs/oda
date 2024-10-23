@@ -369,18 +369,18 @@ export class tensor/* extends Array*/{
         return  this.shape[dim];
     }
     static _random(){
-        return this.__random_generator__();
+        return torus.__random_generator__;
     }
     static manual_seed(seed){
         if(seed){
             const gen = pseudoRandom(seed)
-            this.__random_generator__ = ()=>{
+            torus.__random_generator__ = ()=>{
                 return (gen.next().value / 2147483647);
             };
         }
         else
-            this.__random_generator__ = Math.random
-        return this.__random_generator__;
+            torus.__random_generator__ = Math.random
+        return torus.__random_generator__;
     }
     static split(tensor, split_size_or_sections, dim = 0){
         return tensor.split(split_size_or_sections, dim = 0);
@@ -698,8 +698,49 @@ tensor.prototype.item = function (...shape){
 }
 
 tensor.prototype.dot = function (other){
-    if (this.shape[this.dim - 1] !== other.shape[other.dim - 2])
-        throw new Error(`mat1 and mat2 shapes cannot be multiplied (${this.shape.slice(-2).join('x')} and ${other.shape.slice(-2).join('x')})`)
+    let expr;
+    if (other.dim === 1){
+        if (this.dim > 1)
+            throw new Error(`size mismatch, got input (${this.shape.slice(1).mul()}), mat (${this.shape.slice(1).mul()}x${this.shape.slice(-1)}), vec (${other.size})`)
+        if (this.size !== other.size)
+            throw new Error(`inconsistent tensor size, expected tensor [${other.size}] and src [${this.size}] to have the same number of elements, but got ${other.size} and ${this.size} elements respectively`)
+        expr = 'i,i=>'
+    }
+    else {
+        if (this.shape[this.dim - 1] !== other.shape[other.dim - 2])
+            throw new Error(`mat1 and mat2 shapes cannot be multiplied (${this.shape.slice(-2).join('x')} and ${other.shape.slice(-2).join('x')})`)
+        let char_code = 65;
+        const vars = Array(Math.max(this.dim, other.dim)).fill().reduce((r, _, i)=>{
+            if (i<2){
+                const v = String.fromCharCode(++char_code);
+                r[0] = v + r[0];
+                r[1] = v + r[1];
+            }
+            else{
+                i++;
+                let this_d = this.shape[this.dim - i]
+                let other_d = other.shape[other.dim - i];
+                if (this_d && other_d && this_d !== other_d){
+                    throw new Error(`ОПИСАТЬ ОШИБКУ!`)
+                }
+                const v = String.fromCharCode(++char_code);
+                if (this_d)
+                    r[0] = v + r[0];
+                if (other_d)
+                    r[1] = v + r[1];
+            }
+            return r;
+        }, ['',''])
+        let this_var = vars[0];
+        let other_var = vars[1]
+        this_var[this_var.length - 1] = other_var[other_var.length - 2] = '@';
+        expr = this_var+','+other_var+'->'
+    }
+
+    const out = torus.einsum(expr, [this, other]);
+    out._label('dot ('+expr+')');
+    return out;
+
 }
 tensor.prototype.sum = function (dim = -1, keepdim = false){
     if(dim < -this.dim || dim > this.dim - 1)
