@@ -44,6 +44,9 @@ window.err = window.error = console.error = (...e) => {
 window.run_context = run_context;
 
 import { getLoader } from '../../components/tools/loader/loader.js';
+// https://medium.com/@aszepeshazi/printing-selected-elements-on-a-web-page-from-javascript-a878ac873828
+// https://github.com/szepeshazi/print-elements
+import { PrintElements } from './print_elements.js';
 ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     template: `
         <style>
@@ -58,9 +61,6 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 transition: opacity 1s;
                 background-color: var(--content-background);
             }
-            /* oda-jupyter-cell:hover{
-                @apply --light;
-            } */
         </style>
         <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
         <oda-jupyter-cell @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
@@ -253,11 +253,15 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         iframe.srcdoc = doc;
     },
     async printScreenValue() {
-        this.ownerDocument.body.style.display = 'block';
-        this.async(() => {
-            this.ownerDocument.defaultView.print();
-            this.ownerDocument.body.style.display = 'flex';
-        }, 100)
+        this.ownerDocument.body.classList.add("pe-preserve-ancestor");
+        PrintElements.print([this]);
+        this.ownerDocument.body.classList.remove("pe-preserve-ancestor");
+        return;  
+        // this.ownerDocument.body.style.display = 'block';
+        // this.async(() => {
+        //     this.ownerDocument.defaultView.print();
+        //     this.ownerDocument.body.style.display = 'flex';
+        // }, 100)
     },
     setFullscreen() {
         const element = this;
@@ -365,14 +369,14 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         </style>
 
         <div class="horizontal">
-            <div class="left-panel vertical" :error-invert="status === 'error'">
+            <div class="pe-no-print left-panel vertical" :error-invert="status === 'error'">
                 <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: -4px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run" style="margin: 4px;"></oda-button>
                     <div>{{time}}</div>
                     <div>{{status}}</div>
                 </div>
             </div>
-            <div  class="vertical no-flex" style="width: calc(100% - 34px); position: relative;">
+            <div class="vertical no-flex" style="width: calc(100% - 34px); position: relative;">
                 <div id="main" class="vertical">
                     <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell :control="control()"></oda-jupyter-toolbar>
                     <div class="horizontal" >
@@ -384,7 +388,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         <div style="margin: 8px;">Hidden {{cell.childrenCount}} cells</div>
                     </div>
                 </div>
-                <div  ~if="cell?.outputs?.length || cell?.controls?.length" class="info border"  style="max-height: 100%;">
+                <div ~if="cell?.outputs?.length || cell?.controls?.length" class="info border"  style="max-height: 100%;">
                     <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell></oda-jupyter-outputs-toolbar>
                     <div class="vertical flex" style="overflow: hidden;">
                         <div flex vertical ~if="!cell?.metadata?.hideOutput" style="overflow: hidden;">
@@ -400,7 +404,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         <oda-button :icon-size class="dark header no-flex" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="showOutput">Show hidden outputs data</oda-button>
                     </div>
                 </div>
-                <div class="horizontal left header flex" ~if="!cell?.metadata?.hideOutput && showOutInfo" style="padding: 0 4px; font-size: small; align-items: center; font-family: monospace;">
+                <div class="pe-no-print horizontal left header flex" ~if="!cell?.metadata?.hideOutput && showOutInfo" style="padding: 0 4px; font-size: small; align-items: center; font-family: monospace;">
                     <span style="padding: 9px;">{{outInfo}}</span>
                     <oda-button ~if="!showAllOutputsRow" :icon-size class="dark" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 1)">Show next {{maxOutputsRow.toLocaleString()}}</oda-button>
                     <oda-button ~if="!showAllOutputsRow" :icon-size class="dark" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 0)">Show all</oda-button>
@@ -571,7 +575,7 @@ ODA({ is: 'oda-jupyter-divider',
                 opacity: 1;
             }
         </style>
-        <div class="horizontal center" style="z-index: 2">
+        <div class="pe-no-print horizontal center" style="z-index: 2">
             <oda-button ~if="!readOnly" :icon-size icon="icons:add" ~for="editors" @tap.stop="add($for.key)">{{$for.key}}</oda-button>
             <oda-button ~if="showInsertBtn()" :icon-size icon="icons:add" @tap.stop="insert" style="color: red; fill: red">Insert cell</oda-button>
         </div>
@@ -623,7 +627,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
                  border-radius: 4px;
             }
         </style>
-        <div class="top" ~if="!readOnly && selected" >
+        <div class="pe-no-print top" ~if="!readOnly && selected" >
             <oda-button ~if="cell?.type === 'code'" :icon-size icon="bootstrap:eye-slash" title="Hide/Show code" allow-toggle ::toggled="hideCode"></oda-button>
             <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap.stop="move(-1)"></oda-button>
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="move(1)"></oda-button>
@@ -706,7 +710,7 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
                  border-radius: 4px;
             }
         </style>
-        <div class="top info border" ~if="cell?.outputs?.length || cell?.controls?.length">
+        <div class="pe-no-print top info border" ~if="cell?.outputs?.length || cell?.controls?.length">
             <oda-button :icon-size icon="bootstrap:eye-slash"  title="Hide/Show" allow-toggle ::toggled="toggleOutput"></oda-button>
             <oda-button :icon-size icon="editor:wrap-text" @tap="textWrap" title="Wrap text" allow-toggle :toggled="cell?.metadata?.textWrap"></oda-button>
             <oda-button :icon-size icon="icons:clear" @tap="clearOutputs" title="Clear outputs"></oda-button>

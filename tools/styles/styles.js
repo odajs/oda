@@ -190,6 +190,18 @@ html {
     height: 100%;
     --my-variable: 100px;
 }
+@media print {
+    .pe-no-print {
+        display: none !important;
+    }
+    .pe-preserve-ancestor {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+}
 
 input{
     background-color: var(--content-background);
