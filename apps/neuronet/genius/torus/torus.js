@@ -730,6 +730,9 @@ tensor.prototype.tril = function (diagonal = 0){
         }
     }
     const out = tensor.from(data)._shape(this)._label('tril');
+    out._back = function tril_back() {
+        this.grad = out.grad;
+    }
     return out;
 
 }
@@ -977,19 +980,19 @@ tensor.prototype._element_wise_operator = function (label, other, forward_func, 
     // return out;
 }
 tensor.prototype.plus = function (other){
-    return this._element_wise_operator('plus', other, (x,y)=>x+y, ()=>1);
+    return this._element_wise_operator('plus', other, (x, y) => x + y, (g) => g, (_, g) => g);
 }
 tensor.prototype.minus = function (other){
-    return this._element_wise_operator('minus', other, (x,y)=>x-y, ()=>1, ()=>-1);
+    return this._element_wise_operator('minus', other, (x, y) => x - y, (g) => g, (_, g) => -g);
 }
 tensor.prototype.multiply = function (other){
-    return this._element_wise_operator('multiply', other, (x,y)=>x*y, (x,y)=>y, x=>x);
+    return this._element_wise_operator('multiply', other, (x, y) => x * y, (g, y) => g * y, (x, g) => x * g);
 }
 tensor.prototype.divide = function (other){
-    return this._element_wise_operator('divide', other, (x,y)=>x/y, (x,y)=>1/y, (x,y)=>-x/(y**2));
+    return this._element_wise_operator('divide', other, (x, y) => x / y, (g, y) => g / y, (x, g) => -x / (g ** 2));
 }
 tensor.prototype.pow = function (other){
-    return this._element_wise_operator('pow', other, (x,y)=>x**y, (x,y)=>y * (x ** (y - 1)), (x,y)=>x ** y * Math.log(x));
+    return this._element_wise_operator('pow', other, (x, y) => x ** y, (g, y) => y * (g ** (y - 1)), (x, g) => x ** g * Math.log(x));
 }
 tensor.prototype._element_wise_function = function (label, forward_func, back_func){
     const data = this.data.map(forward_func);
