@@ -648,7 +648,7 @@ export class tensor/* extends Array*/{
         if (this.dType === BinaryArray)
             data = this.bins.match(/0|1/g).map(i=>i==='1'?1:-1);
         else
-            data = this.data;
+            data = Array.from(this.data);
         let res = [];
         const shape = Array.from(this.shape);
         let s
@@ -1415,7 +1415,7 @@ tensor.einsum = (in_expr, sources = [], ...functions)=>{
 
 
         let vars = [
-            [...outs, ...axis].map((o, i) =>`let _${o.a} = ${o.d};`).join('\n'),
+            [...outs, ...axis].map((o, i) =>`let _${o.a} = ${o.d} || 1;`).join('\n'),
             inputs.map((_, i) => {
                 const t = tensors[i]
                 let str =  '';//`let dType${i} = ${t.dType.name};\n`;

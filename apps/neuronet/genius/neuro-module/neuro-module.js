@@ -40,7 +40,7 @@ class NeuroModule extends Function{
                                 result.destroy?.();
                         })
                     }
-                }, this.destroyTime);
+                }, target.destroyTime);
                 return result;
             }
         })
