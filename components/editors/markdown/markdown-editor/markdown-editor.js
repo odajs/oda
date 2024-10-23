@@ -42,8 +42,7 @@ ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*
         value: {
             $type: String,
             set(n) {
-                if (!this.isReady && this.simpleMde && this.simpleMde.value() !== n) {
-                    this.isReady = true;
+                if (this.simpleMde && this.simpleMde.value() !== n) {
                     this.simpleMde.value(n);
                 }
             },
@@ -87,7 +86,7 @@ ODA({ is: 'oda-markdown-editor', imports: './lib/simplemde.min.js', template: /*
             },
             autofocus: this.autofocus
         })
-        this.simpleMde.value(this.value || '');
+        this.simpleMde.value(' ');
 
         this.simpleMde.codemirror.on('change', () => {
             this.value = undefined;

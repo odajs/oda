@@ -587,17 +587,15 @@ ODA({ is: 'oda-jupyter-divider',
         return false
     },
     add(key) {
+        this.jupyter.editMode = false;
         this.selectedCell = this.notebook.add(this.cell, key);
-        this.jupyter.editMode = true;
-        this.async(() => this.jupyter.editMode = false);
     },
     showInsertBtn() {
         return top._jupyterCellData;
     },
     insert() {
+        this.jupyter.editMode = false;
         this.selectedCell = this.notebook.add(this.cell, '', top._jupyterCellData);
-        this.jupyter.editMode = true;
-        this.async(() => this.jupyter.editMode = false);
         top._jupyterCellData = undefined;
     }
 })

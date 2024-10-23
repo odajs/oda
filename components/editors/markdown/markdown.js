@@ -15,8 +15,8 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
             }
         </style>
         <div class="flex horizontal">
-            <div ~if="editMode" class="horizontal no-flex" style="max-height: 80vh; min-width: 120px; width: 50%">
-                <oda-markdown-editor flex ::value style="overflow: hidden" @change="onChange"></oda-markdown-editor>
+            <div ~if="editMode && !readOnly" class="horizontal no-flex" style="max-height: 80vh; min-width: 120px; width: 50%">
+                <oda-markdown-editor flex style="overflow: hidden" @change="onChange"></oda-markdown-editor>
                 <oda-splitter></oda-splitter>
             </div>
             <oda-markdown-viewer flex :value="value || (!readOnly && !editMode ? _value : '')"  @dblclick="_dblClick" ~style="{maxHeight: editMode?'80vh':''}" style="overflow-y: auto; text-wrap: wrap; min-width: 120px;"></oda-markdown-viewer>
@@ -34,11 +34,17 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
         editMode: {
             $def: false,
             set(n){
+                this._isReady = false;
                 if (n) {
-                    if(this.readOnly)
-                        this.editMode = false
-                    this.focus();
-                }  
+                    this.async(() => {
+                        const editor = this.$('oda-markdown-editor');
+                        if (editor) {
+                            editor.value = this.value || '';
+                            editor.focus();
+                            this._isReady = true;
+                        }
+                    }, 100)
+                }
             }
         },
         readOnly: false,
@@ -60,7 +66,11 @@ ODA({is: 'oda-markdown', imports: '@oda/splitter',
             this.editMode = true;
     },
     onChange(e) {
-        this.fire('change', this.value);
+        const val = e.detail.value;
+        if (this._isReady && this.value !== val) {
+            this.value = val || '';
+            this.fire('change', this.value);
+        }
     },
     async exportValue() {
         const viewer = this.$('oda-markdown-viewer');

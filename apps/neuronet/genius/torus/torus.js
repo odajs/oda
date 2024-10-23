@@ -865,15 +865,13 @@ tensor.prototype._element_wise_operator = function (label, other, forward_func, 
     if(this.size%other.size && other.size%this.size)
         throw new Error(`The dimensions must be multiples, but this.shape(${this.shape}) and other.shape(${other.shape})`);
 
-    let master = (this.size>=other.size)?this:other;
-    let slave = (this.size<other.size)?this:other;
-    let master_shape = Array.from(master.shape).reverse();
-    let slave_shape = Array.from(slave.shape).reverse();
     let char_code = 64;
     let alter_code = 96;
-    const vars = master_shape.reduce((r, master_d, i)=>{
-        let slave_d = slave_shape[i];
-        if (slave_d === master_d){
+    const vars = Array(Math.max(this.dim, other.dim)).fill().reduce((r, _, i)=>{
+        i++;
+        let this_d = this.shape[this.dim - i]
+        let other_d = other.shape[other.dim - i];
+        if (this_d === other_d){
             const v = String.fromCharCode(++char_code);
             r[0] = v + r[0];
             r[1] = v + r[1];
@@ -884,9 +882,9 @@ tensor.prototype._element_wise_operator = function (label, other, forward_func, 
         }
         return r;
     }, ['',''])
-    const expr = vars.join(',')+'->'+vars[0];
-    console.log(expr)
-
+    const expr = vars.join(',')+'->'+(vars[0].length<vars[1]?vars[1]:vars[0]);
+    const res = torus.einsum(expr,  [this, other]);
+    console.log(res)
     // let char_code = 65;
     // const var_in = this.shape.map((_, i)=>{
     //     return String.fromCharCode(i + char_code)
