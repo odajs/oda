@@ -883,8 +883,9 @@ tensor.prototype._element_wise_operator = function (label, other, forward_func, 
         return r;
     }, ['',''])
     const expr = vars.join(',')+'->'+(vars[0].length<vars[1]?vars[1]:vars[0]);
-    return torus.einsum(expr,  [this, other], forward_func, this_back_func, other_back_func);
-    console.log(res)
+    const out = torus.einsum(expr,  [this, other], forward_func, this_back_func, other_back_func);
+    out._label(label + ' ('+expr+')');
+    return out;
     // let char_code = 65;
     // const var_in = this.shape.map((_, i)=>{
     //     return String.fromCharCode(i + char_code)
@@ -892,88 +893,88 @@ tensor.prototype._element_wise_operator = function (label, other, forward_func, 
 
 
 
-    let dim  = Math.max(this.dim, other.dim);
-    let shape = []
-    for (let i = 0; i<dim; i++){
-        let idx1 = this.shape[this.shape.length - i - 1] || '';
-        let idx2 = other.shape[other.shape.length - i - 1] || '';
-        if (idx1 && idx2 && (!idx1%idx2 || !idx2%idx1))
-            throw new Error(`The size of first tensor (${idx1}) must match the size of second tensor (${idx2}) at ${i} dimension`);
-        shape.push(Math.max(idx1, idx2));
-    }
-    let size = shape.mul();
-    // const data = new Float32Array(size)
-
-
-    let func = [`let out = new Float32Array(${size});`];
-    func.push('let idx, g;');
-    func.push('const x_data = this.data;');
-    func.push('const y_data = other.data;');
-    if (this.shape.length === 0)
-        func.push(`let x = this.data[0];`);
-    if (other.shape.length === 0)
-        func.push(`let y = other.data[0];`);
-    let t;
-    for (let i = 0; i<dim; i++){
-        t = '\t'.repeat(i);
-        let s = shape.slice(0, i+1).mul();
-        func.push(t+`for(let i${i} = 0; i${i} < ${s}; i${i} += ${s/shape[i]}){`);
-        let idx = Array(i+1).fill().map((_,  i)=>'i'+i).join(' + ')
-        if (dim - i === 1)
-            func.push(t+`\tidx = ${idx};`);
-        if (this.shape.length === i + 1) {
-            func.push(t+`\tlet x = x_data[${dim - i === 1?'idx':idx}];`);
-        }
-        if (other.shape.length === i + 1) {
-            func.push(t+`\tlet y = y_data[${dim - i === 1?'idx':idx}];`);
-        }
-    }
-    func.push(t+`\tout[idx] = func(x,y);`);
-    shape.forEach((_, i)=>func.push('\t'.repeat(dim - i - 1)+`}`))
-    func.push(`return out;`);
-    func = func.join('\n')
-    func = new Function('other', 'func', func);
-    let data = func.call(this, other, forward_func);
-    const out = tensor.from(data)._src(this, other)._shape(shape.toReversed());
-    out._label(label+' ('+out.shape+')');
-    if (this_back_func && (this.allowGrad || other.allowGrad)){
-        out._back = ()=>{
-            func = ['let idx;'];
-            func.push(`let _x, x = 0;`);
-            func.push(`let _y, y = 0;`);
-            func.push('const x_data = this.data;');
-            func.push('const y_data = other.data;');
-            func.push('const o_grad = out.grad;');
-            func.push('const x_grad = this.grad;');
-            func.push('const y_grad = other.grad;');
-            for (let i = 0; i<dim; i++){
-                t = '\t'.repeat(i);
-                let s = shape.slice(0, i+1).mul()
-                func.push(t+`for(let i${i} = 0; i${i} < ${s}; i${i} += ${s/shape[i]}){`);
-                let idx = Array(i+1).fill().map((_,  i)=>'i'+i).join(' + ')
-                if (dim - i === 1)
-                    func.push(t+`\tidx = ${idx};`);
-                if (this.shape.length === i + 1) {
-                    func.push(t+`\tx = ${dim - i === 1?'idx':idx};`);
-                }
-                if (other.shape.length === i + 1) {
-                    func.push(t+`\ty = ${dim - i === 1?'idx':idx};`);
-                }
-            }
-            func.push(t+`\tg = o_grad[idx];`);
-            func.push(t+`\t_x = x_data[x];`);
-            func.push(t+`\t_y = y_data[y];`);
-            if (this.allowGrad)
-                func.push(t+`\tx_grad[x] += x_func(_x,_y) * g;`);
-            if (other.allowGrad)
-                func.push(t+`\ty_grad[y] += y_func(_x,_y) * g;`);
-            shape.forEach((_, i)=>func.push('\t'.repeat(dim - i - 1)+`}`));
-            func = func.join('\n')
-            func = new Function('other', 'out', 'x_func', 'y_func', func);
-            func.call(this, other, out, this_back_func, other_back_func || this_back_func);
-        }
-    }
-    return out;
+    // let dim  = Math.max(this.dim, other.dim);
+    // let shape = []
+    // for (let i = 0; i<dim; i++){
+    //     let idx1 = this.shape[this.shape.length - i - 1] || '';
+    //     let idx2 = other.shape[other.shape.length - i - 1] || '';
+    //     if (idx1 && idx2 && (!idx1%idx2 || !idx2%idx1))
+    //         throw new Error(`The size of first tensor (${idx1}) must match the size of second tensor (${idx2}) at ${i} dimension`);
+    //     shape.push(Math.max(idx1, idx2));
+    // }
+    // let size = shape.mul();
+    // // const data = new Float32Array(size)
+    //
+    //
+    // let func = [`let out = new Float32Array(${size});`];
+    // func.push('let idx, g;');
+    // func.push('const x_data = this.data;');
+    // func.push('const y_data = other.data;');
+    // if (this.shape.length === 0)
+    //     func.push(`let x = this.data[0];`);
+    // if (other.shape.length === 0)
+    //     func.push(`let y = other.data[0];`);
+    // let t;
+    // for (let i = 0; i<dim; i++){
+    //     t = '\t'.repeat(i);
+    //     let s = shape.slice(0, i+1).mul();
+    //     func.push(t+`for(let i${i} = 0; i${i} < ${s}; i${i} += ${s/shape[i]}){`);
+    //     let idx = Array(i+1).fill().map((_,  i)=>'i'+i).join(' + ')
+    //     if (dim - i === 1)
+    //         func.push(t+`\tidx = ${idx};`);
+    //     if (this.shape.length === i + 1) {
+    //         func.push(t+`\tlet x = x_data[${dim - i === 1?'idx':idx}];`);
+    //     }
+    //     if (other.shape.length === i + 1) {
+    //         func.push(t+`\tlet y = y_data[${dim - i === 1?'idx':idx}];`);
+    //     }
+    // }
+    // func.push(t+`\tout[idx] = func(x,y);`);
+    // shape.forEach((_, i)=>func.push('\t'.repeat(dim - i - 1)+`}`))
+    // func.push(`return out;`);
+    // func = func.join('\n')
+    // func = new Function('other', 'func', func);
+    // let data = func.call(this, other, forward_func);
+    // const out = tensor.from(data)._src(this, other)._shape(shape.toReversed());
+    // out._label(label+' ('+out.shape+')');
+    // if (this_back_func && (this.allowGrad || other.allowGrad)){
+    //     out._back = ()=>{
+    //         func = ['let idx;'];
+    //         func.push(`let _x, x = 0;`);
+    //         func.push(`let _y, y = 0;`);
+    //         func.push('const x_data = this.data;');
+    //         func.push('const y_data = other.data;');
+    //         func.push('const o_grad = out.grad;');
+    //         func.push('const x_grad = this.grad;');
+    //         func.push('const y_grad = other.grad;');
+    //         for (let i = 0; i<dim; i++){
+    //             t = '\t'.repeat(i);
+    //             let s = shape.slice(0, i+1).mul()
+    //             func.push(t+`for(let i${i} = 0; i${i} < ${s}; i${i} += ${s/shape[i]}){`);
+    //             let idx = Array(i+1).fill().map((_,  i)=>'i'+i).join(' + ')
+    //             if (dim - i === 1)
+    //                 func.push(t+`\tidx = ${idx};`);
+    //             if (this.shape.length === i + 1) {
+    //                 func.push(t+`\tx = ${dim - i === 1?'idx':idx};`);
+    //             }
+    //             if (other.shape.length === i + 1) {
+    //                 func.push(t+`\ty = ${dim - i === 1?'idx':idx};`);
+    //             }
+    //         }
+    //         func.push(t+`\tg = o_grad[idx];`);
+    //         func.push(t+`\t_x = x_data[x];`);
+    //         func.push(t+`\t_y = y_data[y];`);
+    //         if (this.allowGrad)
+    //             func.push(t+`\tx_grad[x] += x_func(_x,_y) * g;`);
+    //         if (other.allowGrad)
+    //             func.push(t+`\ty_grad[y] += y_func(_x,_y) * g;`);
+    //         shape.forEach((_, i)=>func.push('\t'.repeat(dim - i - 1)+`}`));
+    //         func = func.join('\n')
+    //         func = new Function('other', 'out', 'x_func', 'y_func', func);
+    //         func.call(this, other, out, this_back_func, other_back_func || this_back_func);
+    //     }
+    // }
+    // return out;
 }
 tensor.prototype.plus = function (other){
     return this._element_wise_operator('plus', other, (x,y)=>x+y, ()=>1);
@@ -1607,23 +1608,28 @@ tensor.einsum = (in_expr, sources = [], ...functions)=>{
     out._src(tensors);
     out._back = function (){
         const grad = tensor.from(out.grad)._shape(out);
+        const out_res = []
         tensors.forEach((t, i)=>{
             if(!t.allowGrad) return;
-            let expr =  inputs.map((tt, ii)=>{
+            const in_vars = inputs.map((tt, ii)=>{
                 if(ii === i)
                     return outs.map(o=>o.a).join('');
                 return tt.map(o=>o.a).join('');
-            }).join(',') + '->' + inputs[i].map(i=>i.a).join('');
+            })
+            let out_vars = inputs[i].map(i=>i.a);//.filter(o=>in_vars.some(i => i.includes(o)))
+            let expr = in_vars.join(',')  + '->' + out_vars.join('');
             let sources = tensors.map((tt,ii)=>{
                 if(ii === i)
                     return grad;
                 return tt;
             })
             let out_back = tensor.einsum(expr, sources, functions[i+1]);
+            out_res.push(out_back);
             t.grad = t.grad.map((g,i)=>{
                 return g + out_back.data[i];
             });
         })
+        return out_res;
     }
     fn(tensors, out.data);
     out._label(`einsum (${out.shape}): '${in_expr}'`);
