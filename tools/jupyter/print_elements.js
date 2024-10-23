@@ -62,7 +62,7 @@ export const PrintElements = (function () {
             _walkTree(elements[i], _attachPrintClasses);
         }
         window.print();
-        for (i = 0; i < elements.length; i++) {
+        for (let i = 0; i < elements.length; i++) {
             _walkTree(elements[i], _cleanup);
         }
     }

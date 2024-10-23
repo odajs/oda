@@ -365,7 +365,11 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             :host(:hover) .left-panel {
                 @apply --header;
             }
-
+            @media print {
+                .pe-preserve-print {
+                    width: 100%!important;
+                }
+            }
         </style>
 
         <div class="horizontal">
@@ -376,11 +380,11 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <div>{{status}}</div>
                 </div>
             </div>
-            <div class="vertical no-flex" style="width: calc(100% - 34px); position: relative;">
+            <div class="pe-preserve-print vertical no-flex" style="width: calc(100% - 34px); position: relative;">
                 <div id="main" class="vertical">
                     <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell :control="control()"></oda-jupyter-toolbar>
                     <div class="horizontal" >
-                        <oda-icon ~if="cell.allowExpand" :icon="expanderIcon" @dblclick.stop @tap.stop="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
+                        <oda-icon ~if="cell.type!=='code' && cell.allowExpand" :icon="expanderIcon" @dblclick.stop @tap.stop="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
                         <div flex id="control" ~is="editor" :cell ::edit-mode ::value :read-only show-preview :_value :show-border="editMode"></div>
                     </div>
                     <div info ~if="cell.collapsed" class="horizontal" @tap="cell.collapsed = false">
