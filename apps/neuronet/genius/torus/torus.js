@@ -1413,11 +1413,11 @@ tensor.unpack = (expr, inputs)=>{
 // ФУНКЦИИ ГЕНЕРАТОРЫ
 
 
-tensor.zeros = (shape, dType = Float32Array) => {
-    return tensor.fill(shape, 0, dType);
+tensor.zeros = (...shape) => {
+    return tensor.fill(shape, 0, Int8Array);
 }
-tensor.ones = (shape, dType = Float32Array) => {
-    return tensor.fill(shape, 1, dType);
+tensor.ones = (...shape) => {
+    return tensor.fill(shape, 1, Int8Array);
 }
 tensor.eye = (shape, dType = Float32Array)=>{
     if(Array.isArray(shape[0]))

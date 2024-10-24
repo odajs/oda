@@ -62,6 +62,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 transition: opacity 1s;
                 background-color: var(--content-background);
             }
+            @media print {
+                .pe-preserve-print::-webkit-scrollbar { width: 0px; height: 0px; }
+            }
         </style>
         <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
         <oda-jupyter-cell @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
@@ -103,12 +106,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         async "ctrl+p"(e){
             e.stopPropagation();
             e.preventDefault();
-            this.scrollTop = 100000;
-            await this.$render();
-            this.async(() => {
-                this.scrollTop = 0;
-                this.printScreenValue();
-            }, 1000)
+            this.printValue();          
         }
     },
     $public: {
@@ -207,68 +205,19 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         cellElement.scrollIntoView();
     },
     async attached() {
-        this.$wake = true;
         await getLoader();
     },
-    async printValue(printAsScreen = false) {
-        if (printAsScreen) {
-            this.printScreenValue();
-            return;
+    async printValue() {
+        const cellElements = this.jupyter.$$('oda-jupyter-cell');
+        this.scrollTop = this.scrollHeight;
+        cellElements[0].scrollIntoView({ behavior: "smooth" });
+        while (this.scrollTop > 100) {
+            await new Promise(resolve => this.async(resolve, 100));
         }
-        let css = {},
-            html = {};
-        const res = await this.$$('oda-jupyter-cell').map(async (i, idx) => {
-            let exp = i.control()?.exportValue && await i.control().exportValue();
-            if (exp) {
-                css[exp.type] = exp.css;
-                html[idx] = exp.html + '<hr>';
-            }
-            const out = i.$$('oda-jupyter-cell-out');
-            if (out?.length) {
-                out.map(o => {
-                    const outsrc = o.$('#out-src');
-                    if (outsrc?.outerHTML) {
-                        html[idx] ||= '';
-                        html[idx] += '<div class="out-src">' + outsrc.outerHTML + '</div>';
-                    }
-                })
-                html[idx] += '<hr>';
-            }
-        })
-        await Promise.all(res)
-        let doc = `<html><head><title>${this.contextItem?.label || this.file_path || 'Jupyter document'}</title></head><body>`;
-        doc += `<style> .out-src { min-height: 6px; color: violet; border-left: violet 12px  solid; padding-left: 12px; font-size: x-small; }</style>`
-        Object.values(css).map(i => doc += `<style> ${i}</style>`);
-        Object.values(html).map(i => doc += i);
-        doc += "</body></html>";
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-        iframe.addEventListener('load', () => {
-            // const rules = Array.from(document.styleSheets).reduce((sum, sheet) => {
-            //     try {
-            //         return [...sum, ...Array.from(sheet.cssRules).map(rule => rule.cssText)];
-            //     } catch (e) {
-            //         return sum;
-            //     }
-            // }, [])
-            // const newSheet = iframe.contentDocument.querySelector('head').appendChild(document.createElement('style')).sheet;
-            // rules.forEach(rule => newSheet.insertRule(rule, newSheet.length));
-            iframe.contentWindow.print();
-            this.async(() => document.body.removeChild(iframe), 100);
-        })
-        iframe.srcdoc = doc;
-    },
-    async printScreenValue() {
         this.ownerDocument.body.classList.add("pe-preserve-ancestor");
         PrintElements.print([this]);
+        // this.ownerDocument.defaultView.print();
         this.ownerDocument.body.classList.remove("pe-preserve-ancestor");
-        return;  
-        // this.ownerDocument.body.style.display = 'block';
-        // this.async(() => {
-        //     this.ownerDocument.defaultView.print();
-        //     this.ownerDocument.body.style.display = 'flex';
-        // }, 100)
     },
     setFullscreen() {
         const element = this;
@@ -342,9 +291,6 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
     },
     get error() {
         return this.cell?.status === 'error';
-    },
-    attached() {
-        this.$wake = true;
     }
 })
 
@@ -562,9 +508,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         this.cell.metadata.hideOutput = false;
         this.jupyter.$render();
         this.notebook.change();
-    },
-    attached() {
-        this.$wake = true;
     }
 })
 
