@@ -296,6 +296,7 @@ export class tensor/* extends Array*/{
             for(let i = 0; i<this.data.length; i++){
                 let gamma = torus.generator();
                 let prev = this.prev[i] * gamma;
+                lr = 1 - gamma;
                 let change = prev + this.grad[i] * lr;
                 this.data[i] += change;
                 this.prev[i] = change
@@ -687,7 +688,7 @@ tensor.prototype.dot = function (other){
     return out;
 
 }
-tensor.prototype.sum = function (dim = -1, keepdim = false){
+torus.prototype.sum = function (dim = -1, keepdim = false){
     if(dim < -this.dim || dim > this.dim - 1)
         throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`);
     if(dim < 0)
@@ -709,7 +710,9 @@ tensor.prototype.sum = function (dim = -1, keepdim = false){
 
     return out;
 }
-
+torus.sum = (tensor, dim = -1, keepdim = false)=>{
+    return tensor.sum(dim, keepdim)
+}
 tensor.prototype.tril = function (diagonal = 0){
     if (this.dim < 2)
         throw new Error('torus.tril: input tensor must have at least 2 dimensions');
