@@ -653,14 +653,16 @@ torus.prototype.dot = function (other){
     let expr, max_d = Math.max(this.dim, other.dim);
     if(other.dim < 2){
         const vars = torus.genVarsArray(max_d);
-        const key = vars.pop();
+        vars.pop();
+        const key = '$'
         const out = vars.join('');
-        expr = out + key + ',' + key + '->' + out;
+        expr = out + key + ', ' + key + ' -> ' + out;
     }
     else{
-        const t_vars = torus.genVarsArray(this.dim);
-        const key = t_vars.pop();
-        const o_vars = torus.genVarsArray(other.dim, true);
+        const t_vars = torus.genVarsArray(this.dim).reverse();
+        t_vars.pop();
+        const key = '$'
+        const o_vars = torus.genVarsArray(other.dim, true).reverse();
         let o_adds = o_vars.pop();
         const outs = [o_adds];
         let t_adds = t_vars.pop();
@@ -668,11 +670,11 @@ torus.prototype.dot = function (other){
             outs.unshift(t_adds)
         o_vars.pop()
         debugger
-        for(let i = 0; i<max_d - 2; i++){
+        for(let i = 0; i<max_d - 1; i++){
             let t_idx = t_vars.length - i;
             let o_idx = o_vars.length - i
-            let t_dim = this.shape[t_idx + 2]
-            let o_dim = this.shape[o_idx + 2]
+            let t_dim = this.shape[this.shape.length - i -2]
+            let o_dim = other.shape[other.shape.length - i -2]
             let t_axis = t_vars[t_idx]
             let o_axis = o_vars[o_idx]
             if(t_dim === o_dim){
@@ -690,10 +692,10 @@ torus.prototype.dot = function (other){
         t_vars.push(t_adds)
         const t_var = t_vars.join('');
         const o_var = o_vars.join('');
-        expr = t_var + key + ',' + o_var + key + o_adds + '->' + out;
+        expr = t_var + key + ', ' + o_var + key + o_adds + ' -> ' + out;
     }
     const out = torus.einsum(expr, [this, other]);
-    out._label('dot ('+expr+')');
+    out._label('dot product ('+expr+')');
     return out;
 }
 torus.prototype.sum = function (dim = -1, keepdim = false){
@@ -1426,7 +1428,7 @@ torus.zeros = (...shape) => {
     return torus.fill(shape, 0, Int8Array);
 }
 torus.ones = (...shape) => {
-    return torus.fill(shape, 1, Int8Array);
+    return torus.fill(shape, 1, Int8Array)._label('ones');
 }
 torus.eye = (...shape)=>{
     shape = torus.flat(shape);
