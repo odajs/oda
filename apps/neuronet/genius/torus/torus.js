@@ -644,57 +644,57 @@ tensor.prototype.item = function (...shape){
     //todo
 }
 
-tensor.prototype.dot = function (other){
-    let expr;
-    if (other.dim < 2){
-        if (this.dim > 1)
-            throw new Error(`size mismatch, got input (${this.shape.slice(1).mul()}), mat (${this.shape.slice(1).mul()}x${this.shape.slice(-1)}), vec (${other.size})`)
-        if (this.size !== other.size)
-            throw new Error(`inconsistent tensor size, expected tensor [${other.size}] and src [${this.size}] to have the same number of elements, but got ${other.size} and ${this.size} elements respectively`)
-        expr = 'i,i->'
+torus.genVarsArray = function(size, upper = false){
+    let char_code = upper?65:97;
+    return Array(size).fill().map((_,i)=>String.fromCharCode(i + char_code))
+}
+
+torus.prototype.dot = function (other){
+    let expr, max_d = Math.max(this.dim, other.dim);
+    if(other.dim < 2){
+        const vars = torus.genVarsArray(max_d);
+        const key = vars.pop();
+        const out = vars.join('');
+        expr = out + key + ',' + key + '->' + out;
     }
-    else {
-        if (this.shape[this.dim - 1] !== other.shape[other.dim - 2])
-            throw new Error(`mat1 and mat2 shapes cannot be multiplied (${this.shape.slice(-2).join('x')} and ${other.shape.slice(-2).join('x')})`)
-        let char_code = 65;
-        const vars = Array(Math.max(this.dim, other.dim)).fill().reduce((r, _, i)=>{
-            if (i<2){
-                const v = String.fromCharCode(++char_code);
-                r[0] = v + r[0];
-                r[1] = v + r[1];
+    else{
+        const t_vars = torus.genVarsArray(this.dim);
+        const key = t_vars.pop();
+        const o_vars = torus.genVarsArray(other.dim, true);
+        let o_adds = o_vars.pop();
+        const outs = [o_adds];
+        let t_adds = t_vars.pop();
+        if(t_adds)
+            outs.unshift(t_adds)
+        o_vars.pop()
+        debugger
+        for(let i = 0; i<max_d - 2; i++){
+            let t_idx = t_vars.length - i;
+            let o_idx = o_vars.length - i
+            let t_dim = this.shape[t_idx + 2]
+            let o_dim = this.shape[o_idx + 2]
+            let t_axis = t_vars[t_idx]
+            let o_axis = o_vars[o_idx]
+            if(t_dim === o_dim){
+                outs.unshift(t_axis)
+                o_vars[o_idx] = t_axis;
+            }
+            else if((t_dim || 0) > (o_dim || 0)){
+                outs.unshift(t_axis)
             }
             else{
-                i++;
-                let this_d = this.shape[this.dim - i]
-                let other_d = other.shape[other.dim - i];
-                if (this_d && other_d && this_d !== other_d){
-                    throw new Error(`ОПИСАТЬ ОШИБКУ!`)
-                }
-                const v = String.fromCharCode(++char_code);
-                if (this_d)
-                    r[0] = v + r[0];
-                if (other_d)
-                    r[1] = v + r[1];
+                outs.unshift(o_axis)
             }
-            return r;
-        }, ['',''])
-        let this_var = vars[0];
-        this_var = this_var.split('');
-        this_var[this_var.length - 1] = '$';
-        this_var = this_var.join('')
-
-
-        let other_var = vars[1]
-        other_var = other_var.split('');
-        other_var[other_var.length - 2] = '$';
-        other_var = other_var.join('')
-        expr = this_var+','+other_var+'->CB'
+        }
+        const out = outs.join('');
+        t_vars.push(t_adds)
+        const t_var = t_vars.join('');
+        const o_var = o_vars.join('');
+        expr = t_var + key + ',' + o_var + key + o_adds + '->' + out;
     }
-
     const out = torus.einsum(expr, [this, other]);
     out._label('dot ('+expr+')');
     return out;
-
 }
 torus.prototype.sum = function (dim = -1, keepdim = false){
     if(dim < -this.dim || dim > this.dim - 1)
@@ -1482,7 +1482,7 @@ tensor.einsum = (in_expr, sources = [], ...functions)=>{
                     axis.push(ax);
                 }
                 else if(ax.d !== d)
-                    throw new Error(`Axis '${a}' == ${ax.d} but on tensor №${i+1} this axis == ${d}`);
+                    throw new Error(`In expression '${in_expr}':\n axis '${a}' have size ${ax.d} but on tensor №${i+1} this got ${d}`);
                 return ax;
             })
             inp.t = tensor;
