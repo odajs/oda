@@ -51,7 +51,9 @@ export class tensor/* extends Array*/{
                     this.#shape = [data?.binLength];
             }
             else{
-                if (data?.length)
+                if (data?.length === 1)
+                    this.#shape = []
+                else if (data?.length)
                     this.#shape = [data?.length]
                 else
                     data = new this.dType([data])
@@ -440,26 +442,9 @@ export class tensor/* extends Array*/{
         let size = shape.mul();
         let data = new dType(size);
         data = data.map(handler);
+        if (shape.sum() === 1)
+            shape = []
         return tensor.from(data, dType)._shape(shape);
-    }
-    static ones_like(src) {
-        return this.ones(src.shape, src.dType);
-    }
-
-    static random(shape, from = 0, to = 1, dType = Float32Array) {
-        let handler = ()=>{
-            return torus.generator() * (to - from) + from;
-        }
-        if (dType === BinaryArray){
-            // handler = BigInt('0b'+Math.round(torus.generator() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(torus.generator() * 2 ** 32).toString(2).padStart(32, '0'));
-            handler = ()=>{
-                // return 5508166759905001231n
-                let value = torus.generator().toString(2).substring(2);
-                return BigInt('0b' + value.padEnd(64, value))
-                //return BigInt('0b'+Math.round(torus.generator() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(torus.generator() * 2 ** 32).toString(2).padStart(32, '0'));
-            }
-        }
-        return this.fill(shape, handler, dType);
     }
     static cross_entropy(tensor, target) {
         return tensor.crossEntropy(target);
@@ -600,13 +585,12 @@ export class tensor/* extends Array*/{
         return this;
     }
     toString(step = 0, max = 16){
-        if (this.shape.length){
-            let data = this.array.toTensorString(step, max, this.shape).split('\n');
-            data = data.join('\n')
-            let tab = ('  ').repeat(step)
+        let data = this.array.toTensorString(step, max, this.shape).split('\n');
+        data = data.join('\n')
+        let tab = ('  ').repeat(step)
+        if (this.dim)
             return tab +`tensor: ${this.label}, shape(${this.shape}), size(${this.size.toLocaleString()}), ${this.dType.name}, ${this.backs.join(',')}\n${tab}(${data})`;
-        }
-        return this.data;
+        return tab +`tensor: ${this.label}, ${this.dType.name}, ${this.backs.join(',')}\n${tab}(${data.replaceAll('[', '').replaceAll(']', '')})`;
     }
     get array() {
         if(this.shape.length<2)
@@ -1375,8 +1359,11 @@ torus.rand_n = (...shape)=>{
     }
     return torus.fill(shape, handle, Float32Array)._label(`rand_n`);
 }
+torus.ones_like = (src) => {
+    return torus.ones(src.shape);
+}
 torus.arange = (from = 1, to, ...shape)=>{
-    shape = torus.flat(...shape);
+    shape = torus.flat(shape);
     let steps = shape.pop();
     let repeat = shape.mul();
     shape.push(steps);
@@ -1395,7 +1382,7 @@ torus.arange = (from = 1, to, ...shape)=>{
     return tensor.from(data)._shape(shape)._label(`arange ${from}-${to}`);
 }
 torus.rand_int = (min, max, ...shape)=>{
-    shape = torus.flat(...shape)
+    shape = torus.flat(shape)
     const data = new Int32Array(shape.mul()).map(i=>{
         const r = torus.generator();
         return r * (max - min) + min
