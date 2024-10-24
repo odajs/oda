@@ -679,9 +679,16 @@ tensor.prototype.dot = function (other){
             return r;
         }, ['',''])
         let this_var = vars[0];
+        this_var = this_var.split('');
+        this_var[this_var.length - 1] = '$';
+        this_var = this_var.join('')
+
+
         let other_var = vars[1]
-        this_var[this_var.length - 1] = other_var[other_var.length - 2] = '@';
-        expr = this_var+','+other_var+'->'
+        other_var = other_var.split('');
+        other_var[other_var.length - 2] = '$';
+        other_var = other_var.join('')
+        expr = this_var+','+other_var+'->CB'
     }
 
     const out = torus.einsum(expr, [this, other]);
