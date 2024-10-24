@@ -176,6 +176,7 @@ export class tensor/* extends Array*/{
         return this.#grad ??= new Float32Array(this.size);
     }
     get data(){
+        this.#data.__tensor__ = this.label;
         return this.#data;
     }
     set data(n){
@@ -357,7 +358,7 @@ export class tensor/* extends Array*/{
         })
         setTimeout(()=>{
             topo[0]?.__destroy__();
-        })
+        }, 100)
     }
 
 
@@ -1281,7 +1282,7 @@ tensor.prototype.crossEntropy = function (target) {
     const out = tensor.from([loss])._src(this)._label('crossEntropy');
     this._back = function CrossEntropyBackward(){
         this.src.forEach(src=>{
-            src.grad = this.grad;
+            src.grad = this.grad.map(i=>i);
         })
     }.bind(this);
     return out;
