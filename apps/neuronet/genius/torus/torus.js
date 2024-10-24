@@ -253,7 +253,7 @@ export class tensor/* extends Array*/{
             let val = '';
 
             for(let i = 0; i<bins.length; i++){
-                const rand = torus._random();
+                const rand = torus.generator();
                 let g = this.grad[i]// * tensor.LEARNING_RATE;
                 let value = bins[i];
                 if (g !== 0){
@@ -285,11 +285,11 @@ export class tensor/* extends Array*/{
 
             let lr = torus.LEARNING_RATE
             // for(let i = 0; i<this.data.length; i++){
-            //     let change = this.grad[i] * lr * torus._random();
+            //     let change = this.grad[i] * lr * torus.generator();
             //     this.data[i] += change;
             // }
 
-            let gamma = torus._random();
+            let gamma = torus.generator();
             for(let i = 0; i<this.data.length; i++){
                 let prev = this.prev[i] * gamma;
                 let change = prev + this.grad[i] * lr;
@@ -310,7 +310,7 @@ export class tensor/* extends Array*/{
             //
 
             // for(let i = 0; i<this.data.length; i++){
-            //     const lr = torus._random() / 3;
+            //     const lr = torus.generator() / 3;
             //     const lambda = 1 - lr;
             //     let prev = this.prev[i];
             //     let change = (this.grad[i] + lambda * prev) * lr;
@@ -369,7 +369,7 @@ export class tensor/* extends Array*/{
             dim += this.dim;
         return  this.shape[dim];
     }
-    static get _random(){
+    static get generator(){
         return torus.__random_generator__;
     }
     static manual_seed(seed){
@@ -448,15 +448,15 @@ export class tensor/* extends Array*/{
 
     static random(shape, from = 0, to = 1, dType = Float32Array) {
         let handler = ()=>{
-            return torus._random() * (to - from) + from;
+            return torus.generator() * (to - from) + from;
         }
         if (dType === BinaryArray){
-            // handler = BigInt('0b'+Math.round(torus._random() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(torus._random() * 2 ** 32).toString(2).padStart(32, '0'));
+            // handler = BigInt('0b'+Math.round(torus.generator() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(torus.generator() * 2 ** 32).toString(2).padStart(32, '0'));
             handler = ()=>{
                 // return 5508166759905001231n
-                let value = torus._random().toString(2).substring(2);
+                let value = torus.generator().toString(2).substring(2);
                 return BigInt('0b' + value.padEnd(64, value))
-                //return BigInt('0b'+Math.round(torus._random() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(torus._random() * 2 ** 32).toString(2).padStart(32, '0'));
+                //return BigInt('0b'+Math.round(torus.generator() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(torus.generator() * 2 ** 32).toString(2).padStart(32, '0'));
             }
         }
         return this.fill(shape, handler, dType);
@@ -640,7 +640,7 @@ export const tt = tensor;
 export const torus = tensor;
 torus.__random_generator__ = Math.random;
 function* pseudoRandom(seed) {
-    let value = seed;
+    let value = seed * 16807 % 2147483647
 
     while(true) {
         value = value * 16807 % 2147483647
@@ -1111,7 +1111,7 @@ tensor.prototype.multinomial = function(num_samples = 1, replacement = false){
     const sums = data.map(d=>d.reduce((r, v)=>(r + v), 0));
     const res = Array(data.length).fill().map(_=>[]);
     for (let  i = 0; i< num_samples; i++){
-        const randoms = sums.map(s=>s * torus._random());
+        const randoms = sums.map(s=>s * torus.generator());
         data.map((d, i)=>{
             const p = randoms[i];
             let v = 0;
@@ -1371,7 +1371,7 @@ tensor.unpack = (expr, inputs)=>{
 // ФУНКЦИИ ГЕНЕРАТОРЫ
 torus.rand_n = (...shape)=>{
     const handle = ()=>{
-        return Math.sqrt(-2 * Math.log(torus._random())) * Math.cos((2 * Math.PI) * torus._random())
+        return Math.sqrt(-2 * Math.log(torus.generator())) * Math.cos((2 * Math.PI) * torus.generator())
     }
     return torus.fill(shape, handle, Float32Array)._label(`rand_n`);
 }
@@ -1397,17 +1397,17 @@ torus.arange = (from = 1, to, ...shape)=>{
 torus.rand_int = (min, max, ...shape)=>{
     shape = torus.flat(...shape)
     const data = new Int32Array(shape.mul()).map(i=>{
-        const r = torus._random();
+        const r = torus.generator();
         return r * (max - min) + min
     });
     return torus.from(data, Int32Array)._shape(shape)._label(`rand_int ${min}-${max}`);
 }
 torus.rand = (...shape) => {
-    return torus.fill(...shape, torus._random, Float32Array)._label('rand');
+    return torus.fill(shape, torus.generator, Float32Array)._label('rand');
 }
 torus.rand_bin = (...shape) => {
     const handler = ()=>{
-        let value = torus._random().toString(2).substring(2);
+        let value = torus.generator().toString(2).substring(2);
         return BigInt('0b' + value.padEnd(64, value))
     }
     return torus.fill(...shape, handler, BinaryArray)._label('rand_bin');
