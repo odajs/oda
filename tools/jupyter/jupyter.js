@@ -100,10 +100,15 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             if (!this.editMode && this.cells.length - 1 > this.selectedCell.index)
                 this.selectedCell = this.cells[this.selectedCell.index + 1]
         },
-        "ctrl+p"(e){
+        async "ctrl+p"(e){
             e.stopPropagation();
             e.preventDefault();
-            this.printScreenValue();
+            this.scrollTop = 100000;
+            await this.$render();
+            this.async(() => {
+                this.scrollTop = 0;
+                this.printScreenValue();
+            }, 1000)
         }
     },
     $public: {
@@ -202,6 +207,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         cellElement.scrollIntoView();
     },
     async attached() {
+        this.$wake = true;
         await getLoader();
     },
     async printValue(printAsScreen = false) {
@@ -556,6 +562,9 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         this.cell.metadata.hideOutput = false;
         this.jupyter.$render();
         this.notebook.change();
+    },
+    attached() {
+        this.$wake = true;
     }
 })
 
