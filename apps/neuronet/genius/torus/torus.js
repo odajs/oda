@@ -369,7 +369,7 @@ export class tensor/* extends Array*/{
             dim += this.dim;
         return  this.shape[dim];
     }
-    static _random(){
+    static get _random(){
         return torus.__random_generator__;
     }
     static manual_seed(seed){
@@ -680,7 +680,7 @@ export class tensor/* extends Array*/{
 }
 export const tt = tensor;
 export const torus = tensor;
-tensor.__random_generator__ = Math.random;
+torus.__random_generator__ = Math.random;
 function* pseudoRandom(seed) {
     let value = seed;
 
