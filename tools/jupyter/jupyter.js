@@ -32,7 +32,6 @@ window.show = (...e) => {
     e = e.map(i=>{
         if (typeof i === 'string' && window.customElements.get(i))    
             i = document.createElement(i);
-        i.$wake = true;
         return i;
     })
     run_context.output_data?.push(...e);

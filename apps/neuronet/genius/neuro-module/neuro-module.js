@@ -154,7 +154,7 @@ class NeuroModule extends Function{
     }
 }
 class Linear extends NeuroModule{
-    constructor(shape_in, shape_out, bias = false, dType = Float32Array) {
+    constructor(shape_in, shape_out, bias = false) {
         if(arguments.length>1){
             if(!Array.isArray(shape_in))
                 shape_in = [shape_in];
@@ -166,18 +166,12 @@ class Linear extends NeuroModule{
         super(arguments);
     }
     __init__() {
-        let to = .5
-        let from = -.5
-        if (this.dType === Int8Array){
-            to = 13
-            from = -13
-        }
         this.size_in = this.shape_in.mul();
         this.size_out = this.shape_out.mul();
-        let w = tensor.random([...this.shape_in, ...this.shape_out],  from, to, this.dType);
+        let w = tensor.rand_n(this.shape_in, this.shape_out);
         this.W = tensor.param(w._label(w.label + ': Weights'));
         if(this.bias){
-            let b = tensor.random(this.shape_out, from, to, this.dType);
+            let b = tensor.rand_n(this.shape_out);
             this.B = tensor.param(b._label(b.label + ': Bias'));
         }
 
@@ -261,9 +255,9 @@ class BinLayer extends NeuroModule{
         super(arguments);
     }
     __init__(){
-        this.WEIGHTS = tensor.param(tensor.rand([this.dim_in, this.dim_out], BinaryArray));
+        this.WEIGHTS = tensor.param(tensor.rand_bin([this.dim_in, this.dim_out], BinaryArray));
         if (this.bias)
-            this.BIAS = tensor.param(tensor.rand([this.dim_out], BinaryArray));
+            this.BIAS = tensor.param(tensor.rand_bin([this.dim_out], BinaryArray));
     }
     forward(x) {
         x = tensor.from(x);

@@ -445,27 +445,7 @@ export class tensor/* extends Array*/{
     static ones_like(src) {
         return this.ones(src.shape, src.dType);
     }
-    static randint(min, max, ...shape){
-        shape = torus.flat(...shape)
-        const data = new Int32Array(shape.mul()).map(i=>{
-            const r = torus._random();
-            return r * (max - min) + min
-        });
-        return tensor.from(data, Int32Array)._shape(shape)._label(`randint ${min}-${max}`);
-    }
-    static rand(shape, dType) {
-        let handler = torus._random;
-        if (dType === BinaryArray){
-            // handler = BigInt('0b'+Math.round(torus._random() * 2 ** 32).toString(2).padStart(32, '0') + torus._random(torus._random() * 2 ** 32).toString(2).padStart(32, '0'));
-            handler = ()=>{
-                // return 5508166759905001231n
-                let value = torus._random().toString(2).substring(2);
-                return BigInt('0b' + value.padEnd(64, value))
-                //return BigInt('0b'+Math.round(torus._random() * 2 ** 32).toString(2).padStart(32, '0') + Math.round(torus._random() * 2 ** 32).toString(2).padStart(32, '0'));
-            }
-        }
-        return this.fill(shape, handler, dType);
-    }
+
     static random(shape, from = 0, to = 1, dType = Float32Array) {
         let handler = ()=>{
             return torus._random() * (to - from) + from;
@@ -480,28 +460,6 @@ export class tensor/* extends Array*/{
             }
         }
         return this.fill(shape, handler, dType);
-    }
-    static randNorm(shape){
-        return this.fill(shape, ()=>Math.sqrt(-2 * Math.log(torus._random()))*Math.cos((2 * Math.PI) * torus._random()), Float32Array);
-    }
-    static arange(shape, from = 0, to, dType =Float32Array){
-        shape = torus.flat(shape);
-        let steps = shape.pop();
-        let repeat = shape.mul();
-        shape.push(steps);
-        if (to === undefined){
-            to = from + steps - 1;
-        }
-        let step = (to - from) / (steps - 1);
-        let data = [];
-        let idx = -1;
-        let v = from-step;
-        for (let i = 0; i < steps; i++){
-            data[++idx] = (v += step);
-
-        }
-        data = new dType(Array(repeat).fill(data).flat());
-        return tensor.from(data, dType)._shape(shape);
     }
     static cross_entropy(tensor, target) {
         return tensor.crossEntropy(target);
@@ -1411,17 +1369,57 @@ tensor.unpack = (expr, inputs)=>{
 
 
 // ФУНКЦИИ ГЕНЕРАТОРЫ
-
-
-tensor.zeros = (...shape) => {
-    return tensor.fill(shape, 0, Int8Array);
+torus.rand_n = (...shape)=>{
+    const handle = ()=>{
+        return Math.sqrt(-2 * Math.log(torus._random())) * Math.cos((2 * Math.PI) * torus._random())
+    }
+    return torus.fill(shape, handle, Float32Array)._label(`rand_n`);
 }
-tensor.ones = (...shape) => {
-    return tensor.fill(shape, 1, Int8Array);
+torus.arange = (from = 1, to, ...shape)=>{
+    shape = torus.flat(...shape);
+    let steps = shape.pop();
+    let repeat = shape.mul();
+    shape.push(steps);
+    if (to === undefined){
+        to = from + steps - 1;
+    }
+    let step = (to - from) / (steps - 1);
+    let data = [];
+    let idx = -1;
+    let v = from-step;
+    for (let i = 0; i < steps; i++){
+        data[++idx] = (v += step);
+
+    }
+    data = new Float32Array(Array(repeat).fill(data).flat());
+    return tensor.from(data)._shape(shape)._label(`arange ${from}-${to}`);
 }
-tensor.eye = (shape, dType = Float32Array)=>{
-    if(Array.isArray(shape[0]))
-        shape = shape[0];
+torus.rand_int = (min, max, ...shape)=>{
+    shape = torus.flat(...shape)
+    const data = new Int32Array(shape.mul()).map(i=>{
+        const r = torus._random();
+        return r * (max - min) + min
+    });
+    return torus.from(data, Int32Array)._shape(shape)._label(`rand_int ${min}-${max}`);
+}
+torus.rand = (...shape) => {
+    return torus.fill(...shape, torus._random, Float32Array)._label('rand');
+}
+torus.rand_bin = (...shape) => {
+    const handler = ()=>{
+        let value = torus._random().toString(2).substring(2);
+        return BigInt('0b' + value.padEnd(64, value))
+    }
+    return torus.fill(...shape, handler, BinaryArray)._label('rand_bin');
+}
+torus.zeros = (...shape) => {
+    return torus.fill(shape, 0, Int8Array);
+}
+torus.ones = (...shape) => {
+    return torus.fill(shape, 1, Int8Array);
+}
+torus.eye = (...shape)=>{
+    shape = torus.flat(shape);
     const size = shape.reduce((r, v)=>r * (v || 1), 1);
     const data = new dType(size);
     let dim = shape.last
@@ -1429,8 +1427,10 @@ tensor.eye = (shape, dType = Float32Array)=>{
     for (let i = 0; i<step; i++){
         data[i * dim + i] = 1;
     }
-    return tensor.from(data)._shape(shape)._label('eye');
+    return torus.from(data)._shape(shape)._label('eye');
 }
+
+
 
 
 
