@@ -183,9 +183,10 @@ export class tensor/* extends Array*/{
         return this.#data;
     }
     set data(n){
-        if (n.length !== this.#data.length)
+        if (n.length !== this.size)
             throw new Error(`Dimension out of range (expected ${this.#data.length}, but got ${n.length})`);
         this.#data = n
+        this.#dType = this.#data.constructor;
     }
     set grad(n){
         this.#grad = n;
@@ -233,14 +234,14 @@ export class tensor/* extends Array*/{
             return this.size;
         return 0;
     }
-    __destroy__(){
+    __destroy__(recurce = true){
         this.__clearGrad__();
-        if (!this.src?.length) return
-        if (!this.data.length) return;
         if(this.isParam) return;
+        if (!this.data.length) return;
         this.data.buffer.transfer(0);
-        this.src.forEach(s=>s.__destroy__())
-
+        if (!recurce) return;
+        if (!this.src?.length) return
+        this.src.forEach(s=>s.__destroy__(recurce))
     }
     __clearGrad__(){
         if (!this.#grad?.length) return;
@@ -710,9 +711,7 @@ torus.prototype.sum = function (dim = -1, keepdim = false){
 
     return out;
 }
-torus.sum = (tensor, dim = -1, keepdim = false)=>{
-    return tensor.sum(dim, keepdim)
-}
+
 tensor.prototype.tril = function (diagonal = 0){
     if (this.dim < 2)
         throw new Error('torus.tril: input tensor must have at least 2 dimensions');
@@ -1429,6 +1428,21 @@ torus.eye = (...shape)=>{
     return torus.from(data)._shape(shape)._label('eye');
 }
 
+
+
+section_convertors:{
+    torus.prototype.float = function (){
+        if (this.dtype !== Float32Array){
+            let data = new Float32Array(this.size);
+            for (let i = 0; i<this.size; i++){
+                data[i] = this.data[i];
+            }
+            this.__destroy__(false);
+            this.data = data;
+        }
+        return this;
+    }
+}
 
 
 
