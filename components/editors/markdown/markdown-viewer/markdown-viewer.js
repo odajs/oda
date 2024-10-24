@@ -1,12 +1,13 @@
 import * as markdown from './lib/markdown-wasm/markdown.es.js';
 import './lib/mathjax-config.js';
 import './lib/mathjax/tex-mml-chtml.js';
+import './lib/highlight.min.js';
 await markdown.ready;
 await MathJax.startup.promise;
 const PATH = import.meta.url.replace('markdown-viewer.js','');
 ODA({ is: 'oda-markdown-viewer', template: /*html*/`
-    <link rel="stylesheet" :href="presetcss">
-    <div class="md-wasm"></div>
+        <link rel="stylesheet" :href="presetcss">
+        <div class="md-wasm"></div>
     `,
     value: String,
     presetcss: `${PATH}lib/preset.css`,
@@ -27,7 +28,20 @@ ODA({ is: 'oda-markdown-viewer', template: /*html*/`
         srcChanged(value, domIsReady) {
             if (!value) this.$('div').innerHTML = '';
             else if (value && domIsReady) {
-                this.$('div').innerHTML = markdown.parse(value);
+                this.$('div').innerHTML = markdown.parse(value, {
+                    onCodeBlock(lang, str) {
+                        str = String.fromCharCode.apply(null, str);
+                        if (lang && hljs.getLanguage(lang)) {
+                            try {
+                                return hljs.highlight(lang, str).value;
+                            } catch (err) { }
+                        }
+                        try {
+                            return hljs.highlightAuto(str).value;
+                        } catch (err) { }
+                        return '';
+                    }
+                })
                 MathJax.texReset();
                 MathJax.typesetClear();
                 MathJax.typesetPromise([this.$('div')]).then(() => {
