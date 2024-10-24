@@ -1651,7 +1651,7 @@ tensor.einsum = (in_expr, sources = [], ...functions)=>{
 
         fn = new Function('t', 'out', fwd_expr);
         fn_cache.einsum ??= Object.create(null);
-        fn = (fn_cache.einsum[in_expr + ': ' + key] = {fn, outs, inputs}).fn;
+        fn = (fn_cache.einsum[key] = {fn, outs, inputs}).fn;
     }
     else{
         outs = fn.outs;

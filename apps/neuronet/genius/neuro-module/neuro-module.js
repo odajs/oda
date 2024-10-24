@@ -239,15 +239,13 @@ class Embedding extends Linear{
     }
 
     forward(input) {
-        const data = Array.prototype.map.call(input.data, d=>{
-            const one_hot = Array(this.size_in).fill(0);
-            one_hot[d] = 1;
-            return one_hot;
-        })
-        input = tensor.from(data).reshape(...input.shape, this.size_in);
-        let output = super.forward(input);
-        // output = output.sigm();
-        return output;
+        const data = new Uint8Array(input.size * this.size_in);
+        for (let i = 0; i<input.size; i++){
+            const idx = i * this.size_in;
+            data[idx + input.data[i]] = 1;
+        }
+        input = tensor.from(data).reshape(input.shape, this.size_in);
+        return super.forward(input);
     }
 }
 class BinLayer extends NeuroModule{
