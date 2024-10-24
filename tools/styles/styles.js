@@ -201,7 +201,7 @@ html {
         border: none !important;
         box-shadow: none !important;
     }
-    .pe-preserve-print::-webkit-scrollbar { width: 0px; height: 0px; }
+    *::-webkit-scrollbar { width: 0px; height: 0px; }
     .raised, [raised] {
         border: none !important;
         box-shadow: none !important;

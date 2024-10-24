@@ -1381,13 +1381,19 @@ torus.arange = (from = 1, to, ...shape)=>{
     data = new Float32Array(Array(repeat).fill(data).flat());
     return tensor.from(data)._shape(shape)._label(`arange ${from}-${to}`);
 }
-torus.rand_int = (min, max, ...shape)=>{
+torus.rand_int = (from_or_size = 1, to, ...shape)=>{
     shape = torus.flat(shape)
+    if (to === undefined){
+        to = from_or_size - 1;
+        from_or_size = 0;
+        if (!shape.length)
+            shape = [to - from_or_size]
+    }
     const data = new Int32Array(shape.mul()).map(i=>{
         const r = torus.generator();
-        return r * (max - min) + min
+        return r * (to - from_or_size) + from_or_size
     });
-    return torus.from(data, Int32Array)._shape(shape)._label(`rand_int ${min}-${max}`);
+    return torus.from(data)._shape(shape)._label(`rand_int ${from_or_size}-${to}`);
 }
 torus.rand = (...shape) => {
     return torus.fill(shape, torus.generator, Float32Array)._label('rand');

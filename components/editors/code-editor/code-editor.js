@@ -157,6 +157,7 @@ ODA({is: 'oda-code-editor',
                 }
             }
         });
+        this.editor.commands.removeCommand('find');
         this.fire('loaded', this.editor);
     },
     async exportValue() {

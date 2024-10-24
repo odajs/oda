@@ -83,4 +83,4 @@ tbody tr:hover {
 .hjln { min-width:34px; color:gray; border-right:.1em solid; counter-reset: l; cursor:default; float:left; padding:8px 0; margin:0 0.5em 0 0; text-align:right; -moz-user-select:none; -webkit-user-select:none }
 .hjln span { counter-increment:l; display:block;padding:0 .5em 0 1em }
 .hjln span:before { content:counter(l) }
-code { font-size: large; }
+code { font-size: large; white-space: break-spaces; }
