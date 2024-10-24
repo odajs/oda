@@ -646,12 +646,12 @@ tensor.prototype.item = function (...shape){
 
 tensor.prototype.dot = function (other){
     let expr;
-    if (other.dim === 1){
+    if (other.dim < 2){
         if (this.dim > 1)
             throw new Error(`size mismatch, got input (${this.shape.slice(1).mul()}), mat (${this.shape.slice(1).mul()}x${this.shape.slice(-1)}), vec (${other.size})`)
         if (this.size !== other.size)
             throw new Error(`inconsistent tensor size, expected tensor [${other.size}] and src [${this.size}] to have the same number of elements, but got ${other.size} and ${this.size} elements respectively`)
-        expr = 'i,i=>'
+        expr = 'i,i->'
     }
     else {
         if (this.shape[this.dim - 1] !== other.shape[other.dim - 2])
