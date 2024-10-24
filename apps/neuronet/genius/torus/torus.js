@@ -589,7 +589,7 @@ export class tensor/* extends Array*/{
         return this;
     }
     toString(step = 0, max = 16){
-        let data = this.array.toTensorString(step, max, this.shape).split('\n');
+        let data = this.array.toTensorString(step, max, this.shape, this.dType).split('\n');
         data = data.join('\n')
         let tab = ('  ').repeat(step)
         if (this.dim)
@@ -1238,7 +1238,8 @@ if (!Array.prototype.toTensorString) {
     Object.defineProperty(Array.prototype, 'toTensorString', {
         configurable:true,
         enumerable:false,
-        value (step = 0, max = 4, shape = []) {
+        value (step = 0, max = 4, shape = [], dType = Float32Array) {
+            let float_type = dType.name[0] === 'F'
             function recurse(d, idx = 0, l = 0){
                 let result = (idx?`\n${('  ').repeat(step)+(' ').repeat(l)}[`:'[');
                 if (d[0]?.map){
@@ -1251,17 +1252,17 @@ if (!Array.prototype.toTensorString) {
                     if (d.length > max){
                         const showing = Math.floor(max/2);
                         result += Array.from(d.slice(0, showing)).map(x=>{
-                            return  num2text(x);
+                            return  num2text(x, float_type);
                         }).join(',') ;
                         result +=  ` …`;
                         result +=  Array.from(d.slice(-showing)).map(x=>{
-                            return num2text(x);
+                            return num2text(x, float_type);
                         }).join(',');
                     }
                     else{
                         result += Array.from(d).map(x=>{
-                            return num2text(x);
-                        }).join(',') || num2text(d);
+                            return num2text(x, float_type);
+                        }).join(',') || num2text(d, float_type);
                     }
                 }
 
@@ -1276,7 +1277,7 @@ if (!Array.prototype.toTensorString) {
     } )
 }
 let max = 8;
-function num2text(x){
+function num2text(x, float_type = false){
 
     let num = Math.abs(x) > 10000?x.toExponential((x >= 10000000000)?0:1):x.toString();
     let repeat = (num[0] === '-')?1:2;
@@ -1284,9 +1285,13 @@ function num2text(x){
         num = num.substring(0, 5 - repeat)
     num = ' '.repeat(repeat) + num;
     if (!Number.isInteger(x) && !Number.isNaN(x) && Number.isFinite(x))
-        num = num.substring(0, max);
-    else
+        num = num.substring(0, max).padEnd(max, '0');
+    else{
+        if (Number.isInteger(x) && float_type)
+            num+='.';
         num = num.padStart(max, ' ');
+    }
+
     return num
 }
 
