@@ -30,8 +30,9 @@ window.warning = window.warn =  console.warn = (...e) => {
 }
 window.show = (...e) => {
     e = e.map(i=>{
-        if (typeof i === 'string' && window.customElements.get(i))
-            return document.createElement(i);
+        if (typeof i === 'string' && window.customElements.get(i))    
+            i = document.createElement(i);
+        i.$wake = true;
         return i;
     })
     run_context.output_data?.push(...e);
@@ -335,6 +336,9 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
     },
     get error() {
         return this.cell?.status === 'error';
+    },
+    attached() {
+        this.$wake = true;
     }
 })
 
