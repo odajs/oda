@@ -38,10 +38,14 @@ export class tensor/* extends Array*/{
                         return r
                     }, next);
                 }
-                else{
-                    if (!(data instanceof dType))
+                else {
+                    if(!dType)
+                        dType = Float32Array
+                    if(!(data instanceof dType))
                         data = new dType(data);
                 }
+
+
                 this.#shape = shape;
 
 
@@ -698,26 +702,31 @@ torus.prototype.dot = function (other){
     out._label('dot product ('+expr+')');
     return out;
 }
-torus.prototype.sum = function (dim = -1, keepdim = false){
-    if(dim < -this.dim || dim > this.dim - 1)
-        throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`);
-    if(dim < 0)
-        dim += this.dim;
-    let char_code = 65;
-    const var_in = this.shape.map((_, i)=>{
-        return String.fromCharCode(i + char_code)
+
+torus.prototype.check_dims = function(...dims){
+    dims = torus.flat(dims);
+    return dims.map(d=>{
+        r = d
+        if(r < 0)
+            r = d + this.dim;
+        if(r >= this.dim)
+            throw new Error(`dim ${d} out of range ${this.dim}`);
+        return r;
     })
-    let  expr = var_in.join('') + ' -> ';
-    var_in.splice(dim, 1);
-    expr += var_in.join('');
-    const out = torus.einsum(expr, this)
-    out._label('sum d=' + dim + ' ('+expr+')');
+}
+
+torus.prototype.sum = function (dims = [], keepdim = false){
+    dims = torus.flat(dims);
+    dims = this.check_dims(dims);
+    const vars = torus.genVarsArray(this.dim).reverse();
+    let out = dims.length && vars.filter((v, i)=>!dims.includes(i)).join('') || '';
+    let expr = vars.join('') + ' -> ' + out;
+    out = torus.einsum(expr, this, (x,y) => x + y, (g) => g)
+    out._label('sum d = [' + dims + '] ('+expr+')');
     if(keepdim){
-        const shape = Array.from(this.shape);
-        shape.splice(dim, 1, 1);
+        const shape = this.shape.map((v, i)=>dims.includes(i)?1:v);
         out._shape(shape);
     }
-
     return out;
 }
 
