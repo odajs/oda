@@ -1439,7 +1439,7 @@ torus.rand_bin = (...shape) => {
     return torus.fill(...shape, handler, BinaryArray)._label('rand_bin');
 }
 torus.zeros = (...shape) => {
-    return torus.fill(shape, 0, Int8Array);
+    return torus.fill(shape, 0, Int8Array)._label('zeros');
 }
 torus.ones = (...shape) => {
     return torus.fill(shape, 1, Int8Array)._label('ones');
