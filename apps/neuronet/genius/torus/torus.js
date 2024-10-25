@@ -10,7 +10,7 @@ export class tensor/* extends Array*/{
     #bins = undefined;
     #path = undefined;
     backs = [];
-    constructor(data, dType = Float32Array) {
+    constructor(data, dType) {
         // super();
         if(!data) return;
         if (data?.$ === this.constructor.name){
@@ -60,7 +60,7 @@ export class tensor/* extends Array*/{
             }
             this.#data = data;
         }
-        this.#dType = dType;
+        this.#dType = dType || this.#data.constructor || this.#dType;
         this.id = genId();
         // return new Proxy(this, {
         //     get(target, p, receiver) {
@@ -1433,7 +1433,7 @@ torus.ones = (...shape) => {
 torus.eye = (...shape)=>{
     shape = torus.flat(shape);
     const size = shape.reduce((r, v)=>r * (v || 1), 1);
-    const data = new dType(size);
+    const data = new Int8Array(size);
     let dim = shape.last
     let step = Math.min(size/ dim, dim);
     for (let i = 0; i<step; i++){
