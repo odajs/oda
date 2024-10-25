@@ -735,7 +735,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             }
         </style>
         <div  class="horizontal" :border="!hideCode" style="min-height: 32px;">
-            <oda-code-editor  ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" wrap max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>
+            <oda-code-editor  ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>
             <div ~if="hideCode" class="horizontal left content flex" style="padding: 4px 4px; text-decoration: underline;">
                 <span style="margin-top: 4px;cursor: pointer;" @tap="hideCode=false">Show hidden code...</span>
             </div>
