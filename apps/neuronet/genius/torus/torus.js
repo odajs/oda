@@ -719,17 +719,22 @@ torus.prototype.sum = function (dims = [], keepdim = false){
     dims = torus.flat(dims);
     dims = this.check_dims(dims);
     const vars = torus.genVarsArray(this.dim).reverse();
-    let out = (dims.length && vars.filter((v, i)=>!dims.includes(i)).join('')) || '';
+    let out = (dims.length && vars.filter((v, i)=>(!dims.includes(i))).join('')) || '';
     let expr = vars.join('') + ' -> ' + out;
     out = torus.einsum(expr, this, (x,y) => x + y, (g) => g)
     out._label('sum d = [' + dims + '] ('+expr+')');
     if(keepdim){
-        const shape = this.shape.map((v, i)=>dims.includes(i)?1:v);
+        const shape = this.shape.map((v, i)=>(!dims.length || dims.includes(i)?1:v));
         out._shape(shape);
     }
     return out;
 }
-
+torus.prototype.mean = function(dims = [], keepdim = false){
+    let out = this.sum(...arguments);
+    out = out.divide(this.size / out.size);
+    out._label('mean')
+    return out;
+}
 tensor.prototype.tril = function (diagonal = 0){
     if (this.dim < 2)
         throw new Error('torus.tril: input tensor must have at least 2 dimensions');
