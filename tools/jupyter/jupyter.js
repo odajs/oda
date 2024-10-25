@@ -1098,6 +1098,7 @@ class JupyterCell extends ROCKS({
         code = code.replace(/\s(import\s*\()/gm, ' ODA.$1');
         code = code.replace(/print\s*\((.*)\)/gm, ' log($1)');
         code = code.split('\n').map(s=>{
+            s = s.trim();
             let cnt = 0;
             while(s[0] === '>'){
                 cnt++;
@@ -1105,8 +1106,14 @@ class JupyterCell extends ROCKS({
             }
             if (cnt){
                 cnt = s.lastIndexOf(';')
-                if (cnt>0)
-                    s = s.substring(0, cnt)
+                if (cnt > 0)
+                    s = s.substring(0, cnt);
+                cnt = s.lastIndexOf('//')
+                if (cnt > 0)
+                    s = s.substring(0, cnt);
+                cnt = s.lastIndexOf('/*')
+                if (cnt > 0)
+                    s = s.substring(0, cnt);
                 s = 'log('+s+')';
             }
             return s;

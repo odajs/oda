@@ -1949,3 +1949,6 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
 }
 const fn_cache = Object.create(null);
 
+globalThis.range ??= (count = 0)=>{
+    return Array(count).fill().map((_, i)=>i);
+}
