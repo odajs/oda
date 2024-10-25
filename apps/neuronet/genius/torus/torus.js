@@ -706,7 +706,7 @@ torus.prototype.dot = function (other){
 torus.prototype.check_dims = function(...dims){
     dims = torus.flat(dims);
     return dims.map(d=>{
-        r = d
+        let r = d
         if(r < 0)
             r = d + this.dim;
         if(r >= this.dim)
@@ -719,7 +719,7 @@ torus.prototype.sum = function (dims = [], keepdim = false){
     dims = torus.flat(dims);
     dims = this.check_dims(dims);
     const vars = torus.genVarsArray(this.dim).reverse();
-    let out = dims.length && vars.filter((v, i)=>!dims.includes(i)).join('') || '';
+    let out = (dims.length && vars.filter((v, i)=>!dims.includes(i)).join('')) || '';
     let expr = vars.join('') + ' -> ' + out;
     out = torus.einsum(expr, this, (x,y) => x + y, (g) => g)
     out._label('sum d = [' + dims + '] ('+expr+')');
@@ -1237,7 +1237,7 @@ tensor.prototype.crossEntropy = function (target) {
             return y?i%step:0;
         }).filter(i=>i);
     }
-    let loss = ys.map((y, i) => {
+    let loss = Array.prototype.map.call(ys, (y, i) => {
         let idx = i * step + y;
         this.grad[idx] += 1;
         return Math.log(this.data[i * step + y])
