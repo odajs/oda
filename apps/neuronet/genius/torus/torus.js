@@ -1382,7 +1382,7 @@ torus.ones_like = (src) => {
 }
 torus.arange = (from = 1, to, ...shape)=>{
     shape = torus.flat(shape);
-    let steps = shape.pop();
+    let steps = shape.pop() || 0;
     let repeat = shape.mul();
     shape.push(steps);
     if (to === undefined){
