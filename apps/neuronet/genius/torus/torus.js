@@ -673,7 +673,6 @@ torus.prototype.dot = function (other){
         if(t_adds)
             outs.unshift(t_adds)
         o_vars.pop()
-        debugger
         for(let i = 0; i<max_d - 1; i++){
             let t_idx = t_vars.length - i;
             let o_idx = o_vars.length - i
