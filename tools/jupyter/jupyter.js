@@ -1092,7 +1092,9 @@ class JupyterCell extends ROCKS({
             this.controls = jupyter.output_data.filter(i=>i instanceof HTMLElement).map(i=>({data:{"text/plain": i}}));
         }
         catch (e){
-            let error = e.toString();
+            let error = e.stack;
+            error = error.replaceAll('<', '&lt;')
+            error = error.replaceAll('>', '&gt;')
             this.outputs = [{data:{"text/plain": error}}];
             this.status = 'error';
         }
