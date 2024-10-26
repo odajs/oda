@@ -733,6 +733,22 @@ torus.prototype.sum = function (dims = [], keepdim = false){
     }
     return out;
 }
+torus.prototype.findIndex = function(...indexes){
+    indexes = torus.flat(indexes);
+    return indexes.reduce((r, v, i)=> (r + v * this.multipliers[i]), 0)
+}
+torus.prototype.get = function(...indexes){
+    indexes = torus.flat(indexes);
+    const idx = indexes.reduce((r, v, i)=> (r + v * this.multipliers[i]), 0)
+    if(indexes.length === this.multipliers.length)
+        return this.data[idx];
+    return this.data.slice(idx, idx + this.multipliers.slice(indexes.length-1).mul())
+}
+torus.prototype.set = function(value, ...indexes){
+    indexes = torus.flat(indexes);
+    const idx = indexes.reduce((r, v, i)=>(r + v * this.multipliers[i]), 0)
+    this.data.set(value.data || torus.flat(value), idx);
+}
 torus.prototype.mean = function(dims = [], keepdim = false){
     let out = this.sum(...arguments);
     out = out.divide(this.size / out.size);
@@ -1398,24 +1414,27 @@ torus.rand_n = (...shape)=>{
 torus.ones_like = (src) => {
     return torus.ones(src.shape);
 }
-torus.arange = (from = 1, to, ...shape)=>{
+torus.arange = (from_or_size = 0, to, ...shape)=>{
     shape = torus.flat(shape);
-    let steps = shape.pop() || 0;
+    if (to === undefined){
+        to = from_or_size;
+        from_or_size = 0;
+    }
+    if(!shape.length)
+        shape = [Math.round(to - from_or_size)]
+    let steps = shape.pop();
     let repeat = shape.mul();
     shape.push(steps);
-    if (to === undefined){
-        to = from + steps - 1;
-    }
-    let step = (to - from) / (steps - 1);
+    let step = (to - from_or_size) / steps;
     let data = [];
     let idx = -1;
-    let v = from-step;
+    let v = from_or_size - step;
     for (let i = 0; i < steps; i++){
         data[++idx] = (v += step);
 
     }
     data = new Float32Array(Array(repeat).fill(data).flat());
-    return tensor.from(data)._shape(shape)._label(`arange ${from}-${to}`);
+    return tensor.from(data)._shape(shape)._label(`arange ${from_or_size}-${to}`);
 }
 torus.rand_int = (min_or_max = 0, max, ...shape)=>{
     shape = torus.flat(shape)
