@@ -9,6 +9,7 @@ export class tensor/* extends Array*/{
     #prev = undefined;
     #bins = undefined;
     #path = undefined;
+    #multipliers = undefined;
     backs = [];
     constructor(data, dType) {
         // super();
@@ -101,6 +102,9 @@ export class tensor/* extends Array*/{
     get path(){
         return this.getPath().join('\n');
     }
+    get multipliers(){
+        return this.#multipliers ??= this.shape.map((_,i)=> this.shape.slice(i+1).mul());
+    }
     toJSON(){
         const result =  {
             $: this.constructor.name,
@@ -153,6 +157,7 @@ export class tensor/* extends Array*/{
         const size = shape.reduce((r, v)=>r * (v || 1), 1);
         if (size !== this.size)
             throw new Error(`_shape from (${this.shape}) to (${shape}) not allow.`);
+        this.#multipliers = undefined;
         this.#shape = shape
         return this;
     }
