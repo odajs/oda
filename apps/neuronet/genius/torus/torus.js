@@ -911,7 +911,10 @@ tensor.prototype.log_ = function (){
     }
     return this;
 }
-
+torus.prototype.allclose = function(other, rtol = 1e-05, atol = 1e-08, equal_nan = false ){
+    const fn = equal_nan?(r, y, i)=>(r && (this.data[i] || 0) - (y || 0) <= atol + rtol * (y || 0)):((r, y, i)=>r && this.data[i] - y <= atol + rtol * y)
+    return other.data.reduce(fn, true);
+}
 tensor.prototype._element_wise_operator = function (label, other, forward_func, this_back_func, other_back_func){
     other = tensor.from(other);
     if(this.size%other.size && other.size%this.size)
