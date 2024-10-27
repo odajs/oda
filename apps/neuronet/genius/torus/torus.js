@@ -552,6 +552,9 @@ export class tensor/* extends Array*/{
             return data;
         return new tensor(data, dType);
     }
+    static tensor(data, dType){
+        return torus.from(...arguments);
+    }
     static param(src){
         src = tensor.from(src);
         src.isParam = true;
