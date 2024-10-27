@@ -682,15 +682,15 @@ torus.prototype.dot = function (other){
             outs.unshift(t_adds)
         o_vars.pop()
         for(let i = 0; i<max_d - 1; i++){
-            let t_idx = t_vars.length - i;
-            let o_idx = o_vars.length - i
-            let t_dim = this.shape[this.shape.length - i -2]
-            let o_dim = other.shape[other.shape.length - i -2]
+            let t_idx = t_vars.length - i - 1;
+            let o_idx = o_vars.length - i - 1
+            let t_dim = this.shape[this.shape.length - i - 2]
+            let o_dim = other.shape[other.shape.length - i - 2]
             let t_axis = t_vars[t_idx]
             let o_axis = o_vars[o_idx]
             if(t_dim === o_dim){
-                outs.unshift(t_axis)
-                o_vars[o_idx] = t_axis;
+                outs.unshift(t_axis || o_axis)
+                o_vars[o_idx] = t_axis || o_axis;
             }
             else if((t_dim || 0) > (o_dim || 0)){
                 outs.unshift(t_axis)
