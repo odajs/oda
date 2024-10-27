@@ -911,6 +911,14 @@ tensor.prototype.log_ = function (){
     }
     return this;
 }
+torus.prototype.masked_fill = function(other, value = 0, mask = 0){
+    const data = new Float32Array(this.size);
+    for(let i  = 0; i<this.size; i++){
+        data[i] = (other.data[i] === mask?value:this.data[i]);
+    }
+    const out = torus.from(data)._label('masked_fill')._shape(this.shape);
+    return out;
+}
 torus.prototype.allclose = function(other, rtol = 1e-05, atol = 1e-08, equal_nan = false ){
     const fn = equal_nan?(r, y, i)=>(r && (this.data[i] || 0) - (y || 0) <= atol + rtol * (y || 0)):((r, y, i)=>r && this.data[i] - y <= atol + rtol * y)
     return other.data.reduce(fn, true);
