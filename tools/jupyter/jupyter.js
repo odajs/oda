@@ -21,7 +21,7 @@ window.log = (...e) => {
         }
         return i
     })
-    run_context.output_data?.push([...e].join('\n\n'));
+    run_context.output_data?.push([...e].join(''));
 }
 const console_warn = console.warn;
 window.warning = window.warn =  console.warn = (...e) => {
@@ -1128,7 +1128,7 @@ class JupyterCell extends ROCKS({
                 cnt = s.lastIndexOf('/*')
                 if (cnt > 0)
                     s = s.substring(0, cnt);
-                s = 'log(\"'+s+':\", '+s+')';
+                s = 'log(\"<b><u>'+s+':</u></b>\", '+s+')';
             }
             return s;
         }).join('\n');
