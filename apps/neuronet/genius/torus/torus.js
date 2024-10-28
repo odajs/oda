@@ -562,9 +562,10 @@ export class tensor/* extends Array*/{
         return src;
     }
     static flat(...shape){
-        while(shape.some(Array.isArray))
-            shape = shape.flat();
-        return shape;
+        // while(shape.some(Array.isArray))
+        //     shape = shape.flat();
+        // return shape;
+        return shape.flat(Infinity);
     }
     reverse(dim = 0){
         if (-this.dim > dim || this.dim - 1 < dim)
