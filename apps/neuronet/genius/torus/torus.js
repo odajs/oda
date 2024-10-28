@@ -937,7 +937,7 @@ torus.prototype._element_wise_operator = function (other, forward = '', this_bac
             axis = o_axis;
         outs.push(axis);
     }
-    let expr = t_vars.reverse().join('') + ', ' + o_vars.reverse().join('') + ' -> ' + outs.reverse().join('');
+    let expr = (t_vars.reverse().join('') || '$') + ', ' + (o_vars.reverse().join('') || '$') + ' -> ' + outs.reverse().join('');
     const out = torus.einsum(expr,  [this, other], eval(forward), eval(this_backward), eval(other_backward));
     let label;
     try{
