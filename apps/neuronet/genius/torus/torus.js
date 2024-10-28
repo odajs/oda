@@ -9,7 +9,7 @@ export class tensor/* extends Array*/{
     #prev = undefined;
     #bins = undefined;
     #path = undefined;
-    #multipliers = undefined;
+    #shape_multipliers = undefined;
     backs = [];
     constructor(data, dType) {
         // super();
@@ -102,8 +102,8 @@ export class tensor/* extends Array*/{
     get path(){
         return this.getPath().join('\n');
     }
-    get multipliers(){
-        return this.#multipliers ??= this.shape.map((_,i)=> this.shape.slice(i+1).mul());
+    get shape_multipliers(){
+        return this.#shape_multipliers ??= this.shape.map((_,i)=> this.shape.slice(i+1).mul());
     }
     toJSON(){
         const result =  {
@@ -157,7 +157,7 @@ export class tensor/* extends Array*/{
         const size = shape.reduce((r, v)=>r * (v || 1), 1);
         if (size !== this.size)
             throw new Error(`_shape from (${this.shape}) to (${shape}) not allow.`);
-        this.#multipliers = undefined;
+        this.#shape_multipliers = undefined;
         this.#shape = shape
         return this;
     }
@@ -734,18 +734,18 @@ torus.prototype.sum = function (dims = [], keepdim = false){
 }
 torus.prototype.findIndex = function(...indexes){
     indexes = torus.flat(indexes);
-    return indexes.reduce((r, v, i)=> (r + v * this.multipliers[i]), 0)
+    return indexes.reduce((r, v, i)=> (r + v * this.shape_multipliers[i]), 0)
 }
 torus.prototype.get = function(...indexes){
     indexes = torus.flat(indexes);
-    const idx = indexes.reduce((r, v, i)=> (r + v * this.multipliers[i]), 0)
-    if(indexes.length === this.multipliers.length)
+    const idx = indexes.reduce((r, v, i)=> (r + v * this.shape_multipliers[i]), 0)
+    if(indexes.length === this.shape_multipliers.length)
         return this.data[idx];
-    return this.data.slice(idx, idx + this.multipliers.slice(indexes.length-1).mul())
+    return this.data.slice(idx, idx + this.shape_multipliers.slice(indexes.length-1).mul())
 }
 torus.prototype.set = function(value, ...indexes){
     indexes = torus.flat(indexes);
-    const idx = indexes.reduce((r, v, i)=>(r + v * this.multipliers[i]), 0)
+    const idx = indexes.reduce((r, v, i)=>(r + v * this.shape_multipliers[i]), 0)
     this.data.set(value.data || torus.flat(value), idx);
 }
 torus.prototype.mean = function(dims = [], keepdim = false){
