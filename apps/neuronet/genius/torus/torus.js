@@ -676,7 +676,6 @@ torus.prototype.dot = function (other){
         expr = out + key + ', ' + key + ' -> ' + out;
     }
     else{
-        debugger
         const t_vars = torus.genVarsArray(this.dim + 1);
         const o_vars = torus.genVarsArray(other.dim, true);
         const t_shape = this.shape.toReversed();
@@ -909,18 +908,14 @@ tensor.prototype.log_ = function (){
     return this;
 }
 torus.prototype.masked_fill = function(other, value = 0, mask = 0){
-    const data = new Float32Array(this.size);
-    for(let i  = 0; i<this.size; i++){
-        data[i] = (other.data[i] === mask?value:this.data[i]);
-    }
-    const out = torus.from(data)._label('masked_fill')._shape(this.shape);
-    return out;
+    const h = `(x,y) => y === ${mask}?${value}:x`;
+    return this._element_wise_operator(other, h);
 }
 torus.prototype.allclose = function(other, rtol = 1e-05, atol = 1e-08, equal_nan = false ){
     const fn = equal_nan?(r, y, i)=>(r && (this.data[i] || 0) - (y || 0) <= atol + rtol * (y || 0)):((r, y, i)=>r && this.data[i] - y <= atol + rtol * y)
     return other.data.reduce(fn, true);
 }
-torus.prototype._element_wise_operator = function (label, other, forward = '', this_backward = '', other_backward = ''){
+torus.prototype._element_wise_operator = function (other, forward = '', this_backward = '', other_backward = ''){
     other = torus.from(other);
     let max_d = Math.max(this.dim, other.dim);
     const t_vars = torus.genVarsArray(this.dim);
@@ -944,27 +939,51 @@ torus.prototype._element_wise_operator = function (label, other, forward = '', t
     }
     let expr = t_vars.reverse().join('') + ', ' + o_vars.reverse().join('') + ' -> ' + outs.reverse().join('');
     const out = torus.einsum(expr,  [this, other], eval(forward), eval(this_backward), eval(other_backward));
+    let label;
+    try{
+        throw new Error()
+    }
+    catch (e){
+        label = e.stack.split('\n');
+        const idx = label.findIndex(v=>v.includes('._element_wise')) + 1;
+        label = label[idx];
+        label = label.substr(label.indexOf('.') + 1);
+        label = label.substr(0, label.indexOf(' '));
+
+    }
     out._label(label + ' ('+expr+')');
     return out;
 }
 tensor.prototype.plus = function (other){
-    return this._element_wise_operator('plus', other, (x, y) => x + y, (g) => g, (_, g) => g);
+    return this._element_wise_operator(other, (x, y) => x + y, (g) => g, (_, g) => g);
 }
 tensor.prototype.minus = function (other){
-    return this._element_wise_operator('minus', other, (x, y) => x - y, (g) => g, (_, g) => -g);
+    return this._element_wise_operator( other, (x, y) => x - y, (g) => g, (_, g) => -g);
 }
 tensor.prototype.multiply = function (other){
-    return this._element_wise_operator('multiply', other, (x, y) => x * y, (g, y) => g * y, (x, g) => x * g);
+    return this._element_wise_operator(other, (x, y) => x * y, (g, y) => g * y, (x, g) => x * g);
 }
 tensor.prototype.divide = function (other){
-    return this._element_wise_operator('divide', other, (x, y) => x / y, (g, y) => g / y, (x, g) => -x / (g ** 2));
+    return this._element_wise_operator(other, (x, y) => x / y, (g, y) => g / y, (x, g) => -x / (g ** 2));
 }
 tensor.prototype.pow = function (other){
-    return this._element_wise_operator('pow', other, (x, y) => x ** y, (g, y) => y * (g ** (y - 1)), (x, g) => x ** g * Math.log(x));
+    return this._element_wise_operator(other, (x, y) => x ** y, (g, y) => y * (g ** (y - 1)), (x, g) => x ** g * Math.log(x));
 }
-tensor.prototype._element_wise_function = function (label, forward_func, back_func){
+tensor.prototype._element_wise_function = function (forward_func, back_func){
     const data = this.data.map(forward_func);
     const out = tensor.from(data)._src(this)._shape(this);
+    let label;
+    try{
+        throw new Error()
+    }
+    catch (e){
+        label = e.stack.split('\n');
+        const idx = label.findIndex(v=>v.includes('._element_wise')) + 1;
+        label = label[idx];
+        label = label.substr(label.indexOf('.') + 1);
+        label = label.substr(0, label.indexOf(' '));
+
+    }
     out._label(label+' ('+out.shape+')');
     if (back_func && this.allowGrad){
         out._back = ()=>{
@@ -976,37 +995,37 @@ tensor.prototype._element_wise_function = function (label, forward_func, back_fu
     return out;
 }
 tensor.prototype.invert = function (){
-    return this._element_wise_function('invert', x=>x * -1, ()=>-1);
+    return this._element_wise_function(x=>x * -1, ()=>-1);
 }
 tensor.prototype.exp = function (){
-    return this._element_wise_function('exp', Math.exp, x=>x);
+    return this._element_wise_function(Math.exp, x=>x);
 }
 tensor.prototype.log = function (){
-    return this._element_wise_function('log', Math.log, (x, y)=>1/x*y);
+    return this._element_wise_function(Math.log, (x, y)=>1/x*y);
 }
 tensor.prototype.tanh = function (){
-    return this._element_wise_function('tanh', Math.tanh, x=>(1 - x ** 2));
+    return this._element_wise_function(Math.tanh, x=>(1 - x ** 2));
 }
 tensor.prototype.sigmoid = function (params){
-    return this._element_wise_function('sigmoid', x=>(1 / (1 + Math.exp(-x))), (x, y)=>y * (1 - y));
+    return this._element_wise_function(x=>(1 / (1 + Math.exp(-x))), (x, y)=>y * (1 - y));
 }
 tensor.prototype.sigm = function (params){
     return this.sigmoid(params);
 }
 tensor.prototype.relu = function (params) {
-    return this._element_wise_function('relu', (x)=>(x>0?x:0), (x, y)=>(y>0?1:0));
+    return this._element_wise_function((x)=>(x>0?x:0), (x, y)=>(y>0?1:0));
 }
 tensor.prototype.mandelbrot = function (params){
-    return this._element_wise_function('mandelbrot', x=>(Math.pow(x,  2) + 1), (x, y)=>(2 * y));
+    return this._element_wise_function(x=>(Math.pow(x,  2) + 1), (x, y)=>(2 * y));
 }
 tensor.prototype.softplus = function (params) {
-    return this._element_wise_function('softplus', x=>(Math.log(1 + Math.exp(x))), (x, y)=> {
+    return this._element_wise_function(x=>(Math.log(1 + Math.exp(x))), (x, y)=> {
         let exp = Math.exp(y);
         return exp / (1 + exp);
     });
 }
 tensor.prototype.silu = function (params) {
-    return this._element_wise_function('silu', x=>(x  / (1 + Math.exp(-x))), (x, y)=> {
+    return this._element_wise_function(x=>(x  / (1 + Math.exp(-x))), (x, y)=> {
         let ex = Math.exp(-y);
         let onePlusEx = 1 + ex;
         return (onePlusEx + ex * y) / (onePlusEx ** 2);
