@@ -930,119 +930,36 @@ torus.prototype.allclose = function(other, rtol = 1e-05, atol = 1e-08, equal_nan
 }
 torus.prototype._element_wise_operator = function (label, other, forward_func, this_back_func, other_back_func){
     other = torus.from(other);
-    if(this.size%other.size && other.size%this.size)
-        throw new Error(`The dimensions must be multiples, but this.shape(${this.shape}) and other.shape(${other.shape})`);
-
-    let char_code = 64;
-    let alter_code = 96;
-    const vars = Array(Math.max(this.dim, other.dim)).fill().reduce((r, _, i)=>{
-        i++;
-        let this_d = this.shape[this.dim - i]
-        let other_d = other.shape[other.dim - i];
-        if (this_d === other_d){
-            const v = String.fromCharCode(++char_code);
-            r[0] = v + r[0];
-            r[1] = v + r[1];
+    let max_d = Math.max(this.dim, other.dim);
+    const t_vars = torus.genVarsArray(this.dim);
+    const o_vars = torus.genVarsArray(other.dim, true);
+    const t_shape = this.shape.toReversed();
+    const o_shape = other.shape.toReversed();
+    const outs = [];
+    for(let i = 0; i<max_d; i++){
+        let t_axis = t_vars[i] || '';
+        let o_axis = o_vars[i] || '';
+        let t_dim = t_shape[i] || 0;
+        let o_dim = o_shape[i] || 0;
+        if(t_dim === o_dim){
+            outs.push(t_axis || o_axis)
+            o_vars[i] = t_axis || o_axis;
+        }
+        else if(t_dim > o_dim){
+            outs.push(t_axis)
+            if(o_dim>1)
+                outs.push(o_axis)
         }
         else{
-            r[0] = String.fromCharCode(++char_code) + r[0];
-            r[1] = (String.fromCharCode(++alter_code)) || '' + r[1];
+            outs.push(o_axis);
+            if(t_dim>1)
+                outs.push(t_axis)
         }
-        return r;
-    }, ['',''])
-    const expr = vars.join(',')+'->'+(vars[0].length<vars[1]?vars[1]:vars[0]);
+    }
+    let expr = t_vars.reverse().join('') + ', ' + o_vars.reverse().join('') + ' -> ' + outs.reverse().join('');
     const out = torus.einsum(expr,  [this, other], forward_func, this_back_func, other_back_func);
     out._label(label + ' ('+expr+')');
     return out;
-    // let char_code = 65;
-    // const var_in = this.shape.map((_, i)=>{
-    //     return String.fromCharCode(i + char_code)
-    // })
-
-
-
-    // let dim  = Math.max(this.dim, other.dim);
-    // let shape = []
-    // for (let i = 0; i<dim; i++){
-    //     let idx1 = this.shape[this.shape.length - i - 1] || '';
-    //     let idx2 = other.shape[other.shape.length - i - 1] || '';
-    //     if (idx1 && idx2 && (!idx1%idx2 || !idx2%idx1))
-    //         throw new Error(`The size of first tensor (${idx1}) must match the size of second tensor (${idx2}) at ${i} dimension`);
-    //     shape.push(Math.max(idx1, idx2));
-    // }
-    // let size = shape.mul();
-    // // const data = new Float32Array(size)
-    //
-    //
-    // let func = [`let out = new Float32Array(${size});`];
-    // func.push('let idx, g;');
-    // func.push('const x_data = this.data;');
-    // func.push('const y_data = other.data;');
-    // if (this.shape.length === 0)
-    //     func.push(`let x = this.data[0];`);
-    // if (other.shape.length === 0)
-    //     func.push(`let y = other.data[0];`);
-    // let t;
-    // for (let i = 0; i<dim; i++){
-    //     t = '\t'.repeat(i);
-    //     let s = shape.slice(0, i+1).mul();
-    //     func.push(t+`for(let i${i} = 0; i${i} < ${s}; i${i} += ${s/shape[i]}){`);
-    //     let idx = Array(i+1).fill().map((_,  i)=>'i'+i).join(' + ')
-    //     if (dim - i === 1)
-    //         func.push(t+`\tidx = ${idx};`);
-    //     if (this.shape.length === i + 1) {
-    //         func.push(t+`\tlet x = x_data[${dim - i === 1?'idx':idx}];`);
-    //     }
-    //     if (other.shape.length === i + 1) {
-    //         func.push(t+`\tlet y = y_data[${dim - i === 1?'idx':idx}];`);
-    //     }
-    // }
-    // func.push(t+`\tout[idx] = func(x,y);`);
-    // shape.forEach((_, i)=>func.push('\t'.repeat(dim - i - 1)+`}`))
-    // func.push(`return out;`);
-    // func = func.join('\n')
-    // func = new Function('other', 'func', func);
-    // let data = func.call(this, other, forward_func);
-    // const out = tensor.from(data)._src(this, other)._shape(shape.toReversed());
-    // out._label(label+' ('+out.shape+')');
-    // if (this_back_func && (this.allowGrad || other.allowGrad)){
-    //     out._back = ()=>{
-    //         func = ['let idx;'];
-    //         func.push(`let _x, x = 0;`);
-    //         func.push(`let _y, y = 0;`);
-    //         func.push('const x_data = this.data;');
-    //         func.push('const y_data = other.data;');
-    //         func.push('const o_grad = out.grad;');
-    //         func.push('const x_grad = this.grad;');
-    //         func.push('const y_grad = other.grad;');
-    //         for (let i = 0; i<dim; i++){
-    //             t = '\t'.repeat(i);
-    //             let s = shape.slice(0, i+1).mul()
-    //             func.push(t+`for(let i${i} = 0; i${i} < ${s}; i${i} += ${s/shape[i]}){`);
-    //             let idx = Array(i+1).fill().map((_,  i)=>'i'+i).join(' + ')
-    //             if (dim - i === 1)
-    //                 func.push(t+`\tidx = ${idx};`);
-    //             if (this.shape.length === i + 1) {
-    //                 func.push(t+`\tx = ${dim - i === 1?'idx':idx};`);
-    //             }
-    //             if (other.shape.length === i + 1) {
-    //                 func.push(t+`\ty = ${dim - i === 1?'idx':idx};`);
-    //             }
-    //         }
-    //         func.push(t+`\tg = o_grad[idx];`);
-    //         func.push(t+`\t_x = x_data[x];`);
-    //         func.push(t+`\t_y = y_data[y];`);
-    //         if (this.allowGrad)
-    //             func.push(t+`\tx_grad[x] += x_func(_x,_y) * g;`);
-    //         if (other.allowGrad)
-    //             func.push(t+`\ty_grad[y] += y_func(_x,_y) * g;`);
-    //         shape.forEach((_, i)=>func.push('\t'.repeat(dim - i - 1)+`}`));
-    //         func = func.join('\n')
-    //         func = new Function('other', 'out', 'x_func', 'y_func', func);
-    //         func.call(this, other, out, this_back_func, other_back_func || this_back_func);
-    //     }
-    // }
-    // return out;
 }
 tensor.prototype.plus = function (other){
     return this._element_wise_operator('plus', other, (x, y) => x + y, (g) => g, (_, g) => g);
