@@ -602,11 +602,16 @@ export class tensor/* extends Array*/{
     }
     toString(step = 0, max = 16){
         let data = this.array.toTensorString(step, max, this.shape, this.dType).split('\n');
-        data = data.join('\n')
+        data = data.join('\n');
         let tab = ('  ').repeat(step)
+        let result  = tab + `tensor: ${this.label}`;
         if (this.dim)
-            return tab +`tensor: ${this.label}, shape(${this.shape}), size(${this.size.toLocaleString()}), ${this.dType.name}, ${this.backs.join(',')}\n${tab}(${data})`;
-        return tab +`tensor: ${this.label}, ${this.dType.name}, ${this.backs.join(',')}\n${tab}(${data.replaceAll('[', '').replaceAll(']', '')})`;
+            result += `, shape(${this.shape}), size(${this.size.toLocaleString()}), ${this.dType.name}, ${this.backs.join(',')}\n${tab}(${data})`;
+        else
+            result += `${this.dType.name}, ${this.backs.join(',')}\n${tab}(${data.replaceAll('[', '').replaceAll(']', '')})`;
+        if (this.isParam)
+            result = tab + 'Parameter containing:\n'+result;
+        return result;
     }
     get array() {
         if(this.shape.length<2)

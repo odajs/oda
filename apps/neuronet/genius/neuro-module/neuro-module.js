@@ -169,7 +169,7 @@ class Linear extends NeuroModule{
         this.size_in = this.shape_in.mul();
         this.size_out = this.shape_out.mul();
         let w = tensor.rand_n(this.shape_in, this.shape_out);
-        this.W = tensor.param(w._label(w.label + ': Weights'));
+        this.weight = tensor.param(w._label(w.label + ': Weights'));
         if(this.bias){
             let b = tensor.rand_n(this.shape_out);
             this.B = tensor.param(b._label(b.label + ': Bias'));
@@ -226,7 +226,7 @@ class Linear extends NeuroModule{
             return this._axis_ext;
         })();
         let expression = `${this._axis_ext + this._axis_in}, ${this._axis_in + this._axis_out} -> ${this._axis_ext + this._axis_out}`;
-        let output = tensor.einsum(expression, [input, this.W]);
+        let output = tensor.einsum(expression, [input, this.weight]);
         if (this.bias)
             output = output.plus(this.B)._label('plus BIAS');
         output._label(`Linear (${output.shape}): bias=`+this.bias);
