@@ -213,6 +213,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         while (this.scrollTop > 100) {
             await new Promise(resolve => this.async(resolve, 100));
         }
+        this.scrollTop = 0;
         this.ownerDocument.body.classList.add("pe-preserve-ancestor");
         PrintElements.print([this]);
         // this.ownerDocument.defaultView.print();
