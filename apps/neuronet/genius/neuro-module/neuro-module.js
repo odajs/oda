@@ -168,10 +168,10 @@ class Linear extends NeuroModule{
     __init__() {
         this.size_in = this.shape_in.mul();
         this.size_out = this.shape_out.mul();
-        let w = tensor.rand_n(this.shape_in, this.shape_out);
+        let w = tensor.empty(this.shape_in, this.shape_out);
         this.weight = tensor.param(w._label(w.label + ': Weights'));
         if(this.bias){
-            let b = tensor.rand_n(this.shape_out);
+            let b = tensor.empty(this.shape_out);
             this.B = tensor.param(b._label(b.label + ': Bias'));
         }
 

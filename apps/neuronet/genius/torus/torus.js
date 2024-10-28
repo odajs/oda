@@ -928,8 +928,8 @@ torus.prototype.allclose = function(other, rtol = 1e-05, atol = 1e-08, equal_nan
     const fn = equal_nan?(r, y, i)=>(r && (this.data[i] || 0) - (y || 0) <= atol + rtol * (y || 0)):((r, y, i)=>r && this.data[i] - y <= atol + rtol * y)
     return other.data.reduce(fn, true);
 }
-tensor.prototype._element_wise_operator = function (label, other, forward_func, this_back_func, other_back_func){
-    other = tensor.from(other);
+torus.prototype._element_wise_operator = function (label, other, forward_func, this_back_func, other_back_func){
+    other = torus.from(other);
     if(this.size%other.size && other.size%this.size)
         throw new Error(`The dimensions must be multiples, but this.shape(${this.shape}) and other.shape(${other.shape})`);
 
@@ -1424,6 +1424,12 @@ tensor.unpack = (expr, inputs)=>{
 
 
 // ФУНКЦИИ ГЕНЕРАТОРЫ
+
+torus.empty = (...shape)=>{
+    const handle = ()=>(torus.generator() - .5) / 2
+    return torus.fill(shape, handle, Float32Array)._label(`empty`);
+}
+
 torus.rand_n = (...shape)=>{
     const handle = ()=>{
         return Math.sqrt(-2 * Math.log(torus.generator())) * Math.cos((2 * Math.PI) * torus.generator())
