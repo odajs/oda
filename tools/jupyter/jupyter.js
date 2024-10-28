@@ -1128,7 +1128,7 @@ class JupyterCell extends ROCKS({
                 cnt = s.lastIndexOf('/*')
                 if (cnt > 0)
                     s = s.substring(0, cnt);
-                s = 'log(\"<b><u>'+s+':</u></b>\", '+s+')';
+                s = 'log(\"<u style=\'font-size: large; margin-bottom: 4px;\'>'+s+':</u>\", '+s+')';
             }
             return s;
         }).join('\n');
