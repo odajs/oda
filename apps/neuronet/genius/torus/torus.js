@@ -677,13 +677,15 @@ torus.prototype.dot = function (other){
         expr = out + key + ', ' + key + ' -> ' + out;
     }
     else{
-        const t_vars = torus.genVarsArray(this.dim + 1);
+        const t_vars = torus.genVarsArray(this.dim);
         const o_vars = torus.genVarsArray(other.dim, true);
         const t_shape = this.shape.toReversed();
-        t_shape.unshift(1);
         const o_shape = other.shape.toReversed();
-        const outs = []
-        for(let i = 0; i<max_d+1; i++){
+        const outs = ['A'];
+        if(this.dim>1)
+            outs.push('b');
+        debugger
+        for(let i = 2; i<max_d+1; i++){
             let t_axis = t_vars[i] || '';
             let o_axis = o_vars[i] || '';
             let t_dim = t_shape[i] || 0;
@@ -697,9 +699,7 @@ torus.prototype.dot = function (other){
                 axis = o_axis;
             outs.push(axis);
         }
-        outs.splice(1,1);
-        t_vars[1] = o_vars[1] = '$';
-        t_vars.splice(0,1);
+        t_vars[0] = o_vars[1] = '$';
         expr = t_vars.reverse().join('') + ', ' + o_vars.reverse().join('') + ' -> ' + outs.reverse().join('');
     }
     const out = torus.einsum(expr, [this, other]);
