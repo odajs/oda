@@ -676,39 +676,31 @@ torus.prototype.dot = function (other){
         expr = out + key + ', ' + key + ' -> ' + out;
     }
     else{
-        const t_vars = torus.genVarsArray(this.dim).reverse();
-        t_vars.pop();
-        const key = '$'
-        const o_vars = torus.genVarsArray(other.dim, true).reverse();
-        let o_adds = o_vars.pop();
-        const outs = [o_adds];
-        let t_adds = t_vars.pop();
-        if(t_adds)
-            outs.unshift(t_adds)
-        o_vars.pop()
-        for(let i = 0; i<max_d - 1; i++){
-            let t_idx = t_vars.length - i - 1;
-            let o_idx = o_vars.length - i - 1
-            let t_dim = this.shape[this.shape.length - i - 2]
-            let o_dim = other.shape[other.shape.length - i - 2]
-            let t_axis = t_vars[t_idx]
-            let o_axis = o_vars[o_idx]
-            if(t_dim === o_dim){
-                outs.unshift(t_axis || o_axis)
-                o_vars[o_idx] = t_axis || o_axis;
-            }
-            else if((t_dim || 0) > (o_dim || 0)){
-                outs.unshift(t_axis)
-            }
-            else{
-                outs.unshift(o_axis)
-            }
+        debugger
+        const t_vars = torus.genVarsArray(this.dim + 1);
+        const o_vars = torus.genVarsArray(other.dim, true);
+        const t_shape = this.shape.toReversed();
+        t_shape.unshift(1);
+        const o_shape = other.shape.toReversed();
+        const outs = []
+        for(let i = 0; i<max_d+1; i++){
+            let t_axis = t_vars[i] || '';
+            let o_axis = o_vars[i] || '';
+            let t_dim = t_shape[i] || 0;
+            let o_dim = o_shape[i] || 0;
+            let axis = t_axis || o_axis;
+            if(t_dim === o_dim)
+                o_vars[i] = axis;
+            else if(t_dim > o_dim)
+                axis = t_axis;
+            else
+                axis = o_axis;
+            outs.push(axis);
         }
-        const out = outs.join('');
-        t_vars.push(t_adds)
-        const t_var = t_vars.join('');
-        const o_var = o_vars.join('');
-        expr = t_var + key + ', ' + o_var + key + o_adds + ' -> ' + out;
+        outs.splice(1,1);
+        t_vars[1] = o_vars[1] = '$';
+        t_vars.splice(0,1);
+        expr = t_vars.reverse().join('') + ', ' + o_vars.reverse().join('') + ' -> ' + outs.reverse().join('');
     }
     const out = torus.einsum(expr, [this, other]);
     out._label('dot product ('+expr+')');
@@ -928,7 +920,7 @@ torus.prototype.allclose = function(other, rtol = 1e-05, atol = 1e-08, equal_nan
     const fn = equal_nan?(r, y, i)=>(r && (this.data[i] || 0) - (y || 0) <= atol + rtol * (y || 0)):((r, y, i)=>r && this.data[i] - y <= atol + rtol * y)
     return other.data.reduce(fn, true);
 }
-torus.prototype._element_wise_operator = function (label, other, forward_func, this_back_func, other_back_func){
+torus.prototype._element_wise_operator = function (label, other, forward = '', this_backward = '', other_backward = ''){
     other = torus.from(other);
     let max_d = Math.max(this.dim, other.dim);
     const t_vars = torus.genVarsArray(this.dim);
@@ -941,23 +933,17 @@ torus.prototype._element_wise_operator = function (label, other, forward_func, t
         let o_axis = o_vars[i] || '';
         let t_dim = t_shape[i] || 0;
         let o_dim = o_shape[i] || 0;
-        if(t_dim === o_dim){
-            outs.push(t_axis || o_axis)
-            o_vars[i] = t_axis || o_axis;
-        }
-        else if(t_dim > o_dim){
-            outs.push(t_axis)
-            if(o_dim>1)
-                outs.push(o_axis)
-        }
-        else{
-            outs.push(o_axis);
-            if(t_dim>1)
-                outs.push(t_axis)
-        }
+        let axis = t_axis || o_axis;
+        if(t_dim === o_dim)
+            o_vars[i] = axis;
+        else if(t_dim > o_dim)
+            axis = t_axis;
+        else
+            axis = o_axis;
+        outs.push(axis);
     }
     let expr = t_vars.reverse().join('') + ', ' + o_vars.reverse().join('') + ' -> ' + outs.reverse().join('');
-    const out = torus.einsum(expr,  [this, other], forward_func, this_back_func, other_back_func);
+    const out = torus.einsum(expr,  [this, other], eval(forward), eval(this_backward), eval(other_backward));
     out._label(label + ' ('+expr+')');
     return out;
 }
