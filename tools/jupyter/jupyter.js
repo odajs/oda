@@ -330,7 +330,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
 
         <div class="horizontal">
             <div class="pe-no-print left-panel vertical" :error-invert="status === 'error'">
-                <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: -4px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
+                <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: 2px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run" style="margin: 4px;"></oda-button>
                     <div>{{time}}</div>
                     <div>{{status}}</div>
@@ -737,7 +737,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         </style>
         <div  class="horizontal" :border="!hideCode" style="min-height: 32px;">
             <oda-code-editor :wrap ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>
-            <div ~if="hideCode" class="horizontal left content flex" style="cursor: pointer; padding: 4px 4px; text-decoration: underline;" @tap="hideCode=false">
+            <div ~if="hideCode" class="horizontal left content flex" style="cursor: pointer; padding: 8px 4px; text-decoration: underline;" @tap="hideCode=false">
                 <oda-icon icon="bootstrap:eye-slash"></oda-icon>
                 <span bold style="margin: 4px; font-size: large; cursor: pointer;" >{{cell.name}}...</span>
             </div>
@@ -1129,7 +1129,7 @@ class JupyterCell extends ROCKS({
                 cnt = s.lastIndexOf('/*')
                 if (cnt > 0)
                     s = s.substring(0, cnt);
-                s = 'log(\"<u style=\'font-size: large; margin-bottom: 4px;\'>'+s+':</u>\", '+s+')';
+                s = 'log(\"<u style=\'font-size: large; margin-bottom: 4px; cursor: pointer;\'>'+s+':</u>\", '+s+')';
             }
             return s;
         }).join('\n');
