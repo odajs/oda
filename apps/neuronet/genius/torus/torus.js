@@ -717,7 +717,26 @@ torus.prototype.check_dims = function(...dims){
         return r;
     })
 }
-
+torus.prototype.max = function(dim, keepdim = false){
+    if(dim === undefined){
+        const data = this.data.reduce((r, v)=>r>v?r:v,this.data[0]);
+        return torus.tensor(data)._label('max');
+    }
+    else{
+        // const dims = this.check_dims([dim]);
+        throw new Error('not ready!')
+    }
+}
+torus.prototype.min = function(dim, keepdim = false){
+    if(dim === undefined){
+        const data = this.data.reduce((r, v)=>r<v?r:v,this.data[0]);
+        return  torus.tensor(data)._label('min');
+    }
+    else{
+        // const dims = this.check_dims([dim]);
+        throw new Error('not ready!')
+    }
+}
 torus.prototype.sum = function (dims = [], keepdim = false){
     dims = torus.flat(dims);
     dims = this.check_dims(dims);
