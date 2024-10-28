@@ -1,14 +1,14 @@
-import '../../../components/grids/table/tree/tree.js';
-ODA({ is: 'oda-jupyter-tree', extends: 'oda-tree',
+ODA({ is: 'oda-jupyter-tree', imports: '@oda/tree', extends: 'oda-tree',
     allowFocus: true,
     get dataSet() {
-        return this.notebook?.items
+        return [this.notebook];
     },
     cellTemplate: 'oda-jupyter-tree-cell',
     onTapRows(e) {
         this.$super('oda-table', 'onTapRows', e);
         this.scrollToCell?.(e.target.item);
-    }
+    },
+    hideRoot: true
  });
 ODA({
     is: 'oda-jupyter-tree-cell', extends: 'this, oda-table-cell',
