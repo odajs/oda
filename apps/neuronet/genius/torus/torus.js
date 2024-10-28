@@ -684,7 +684,6 @@ torus.prototype.dot = function (other){
         const outs = ['A'];
         if(this.dim>1)
             outs.push('b');
-        debugger
         for(let i = 2; i<max_d+1; i++){
             let t_axis = t_vars[i] || '';
             let o_axis = o_vars[i] || '';
