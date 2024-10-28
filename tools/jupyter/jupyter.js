@@ -1110,6 +1110,8 @@ class JupyterCell extends ROCKS({
         code = code.replace(/print\s*\((.*)\)/gm, ' log($1)');
         code = code.split('\n').map(s=>{
             s = s.trim();
+            if (s[0] === '[' || s[0] === '{')
+                s = ';' + s;
             let cnt = 0;
             while(s[0] === '>'){
                 cnt++;
