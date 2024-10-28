@@ -1129,7 +1129,7 @@ class JupyterCell extends ROCKS({
                 cnt = s.lastIndexOf('/*')
                 if (cnt > 0)
                     s = s.substring(0, cnt);
-                s = 'log(\"<u style=\'font-size: large; margin-bottom: 4px; cursor: pointer;\'>'+s+':</u>\", '+s+')';
+                s = 'log(\"<u onclick=\'find()\' style=\'font-size: large; margin-bottom: 4px; cursor: pointer;\'>'+s+':</u>\", '+s+')';
             }
             return s;
         }).join('\n');
