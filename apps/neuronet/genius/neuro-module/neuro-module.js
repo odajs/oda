@@ -45,6 +45,9 @@ class NeuroModule extends Function{
             }
         })
     }
+    get loss(){
+        return this.losses.last;
+    }
     listen(event, handler){
         const listeners = this._listeners[event] ??= [];
         listeners.add(handler);
@@ -87,7 +90,7 @@ class NeuroModule extends Function{
     get params(){
         return this.#params;
     }
-    forward(x){
+    forward(x, target, backward = true){
         return x;
     }
     train(input, target, loss_func = 'MSE'){
