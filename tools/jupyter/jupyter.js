@@ -355,10 +355,10 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell></oda-jupyter-outputs-toolbar>
                     <div class="vertical flex" style="overflow: hidden;">
                         <div flex vertical ~if="!cell?.metadata?.hideOutput" style="overflow: hidden;">
-                            <div raised ~for="cell.controls" style="font-family: monospace;" >
+                            <div  ~for="cell.controls" style="font-family: monospace;" >
                                 <oda-jupyter-cell-out  ~for="$for.item.data" :row="$$for" :max="control().maxRow"></oda-jupyter-cell-out>
                             </div>
-                            <div raised ~for="outputFor" style="font-family: monospace;" >
+                            <div  ~for="outputFor" style="font-family: monospace;" >
                                 <oda-jupyter-cell-out ~for="$for.item.data" :row="$$for" :max="control().maxRow"></oda-jupyter-cell-out>
                             </div>
                         </div>
