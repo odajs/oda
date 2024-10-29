@@ -14,9 +14,9 @@ export class tensor/* extends Array*/{
     backs = [];
     constructor(data, dType) {
         // super();
-        if(data === undefined || Number.isNaN(data))
-            return;
-        if (data?.$ === this.constructor.name){
+        if(data === undefined)
+            this.#data = new (dType || this.#dType)(0);
+        else if (data?.$ === this.constructor.name){
             this.#dType = globalThis[data.dType];
             this.#shape = data.shape;
             data = data.data.split(' ');
@@ -221,7 +221,8 @@ export class tensor/* extends Array*/{
         return this.#shape;
     }
     get size(){
-        return this.shape.mul();
+        // return this.shape.mul();
+        return this.data.length;
     }
     get dim(){
         return this.shape.length;
@@ -232,8 +233,12 @@ export class tensor/* extends Array*/{
     get type(){
         return this.#type ?? (()=>{
             switch (this.dim){
-                case 0:
+                case 0:{
+                    if (!this.size)
+                        return 'empty';
                     return `scalar`;
+                }
+
                 case 1:
                     return `vector`;
                 case 2:
