@@ -230,6 +230,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         } else if (element.msRequestFullscreen) {
             element.msRequestFullscreen();
         }
+    },
+    createElement(...args){
+        return ODA.createElement(...args);
     }
 })
 

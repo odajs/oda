@@ -24,7 +24,7 @@ export class Tokenizer  extends nn.NeuroModule{
                 id: 0,
                 w: "[end]",
                 emb: tensor.param(tensor.zeros(this.dim))._label('emb: [end]'),
-                cnt: tensor.param(tensor.random(this.dim, -.1,.1))._label('cnt: [end]')
+                cnt: tensor.param(tensor.empty(this.dim))._label('cnt: [end]')
             }}
     }
     forward(x){
@@ -218,8 +218,8 @@ export class Tokenizer  extends nn.NeuroModule{
                 if (type)
                     res.t = type;
                 // res.id = Object.keys(this.vocabulary).length;
-                res.emb = tensor.param(tensor.random(this.dim, -.1, .1))._label('emb: ' + w);
-                res.cnt = tensor.param(tensor.random(this.dim, -.1, .1))._label('cnt: ' + w);
+                res.emb = tensor.param(tensor.empty(this.dim))._label('emb: ' + w);
+                res.cnt = tensor.param(tensor.empty(this.dim))._label('cnt: ' + w);
                 this._tokens = undefined
                 this._size = (this._size || 1) + 1;
                 return res;
