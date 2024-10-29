@@ -3,17 +3,19 @@ export class tensor/* extends Array*/{
     #shape = [];
     #data = null;
     #dType = Float32Array;
-    #label = undefined;
+    #label = '';
     #src = undefined;
     #grad = undefined;
     #prev = undefined;
     #bins = undefined;
     #path = undefined;
+    #type = undefined;
     #shape_multipliers = undefined;
     backs = [];
     constructor(data, dType) {
         // super();
-        if(!data) return;
+        if(data === undefined || Number.isNaN(data))
+            return;
         if (data?.$ === this.constructor.name){
             this.#dType = globalThis[data.dType];
             this.#shape = data.shape;
@@ -225,7 +227,10 @@ export class tensor/* extends Array*/{
         return this.shape.length;
     }
     get label(){
-        return this.#label ?? (()=>{
+        return this.#label
+    }
+    get type(){
+        return this.#type ?? (()=>{
             switch (this.dim){
                 case 0:
                     return `scalar`;
@@ -234,7 +239,7 @@ export class tensor/* extends Array*/{
                 case 2:
                     return `matrix`;
                 default:
-                    return ``;
+                    return `tensor`;
             }
         })();
     }
@@ -605,9 +610,9 @@ export class tensor/* extends Array*/{
         let data = this.array.toTensorString(step, max, this.shape, this.dType).split('\n');
         data = data.join('\n');
         let tab = ('  ').repeat(step)
-        let result  = tab + `tensor: ${this.label}`;
+        let result  = tab + this.type + `: ${this.label?this.label+', ':''}`;
         if (this.dim)
-            result += `, shape(${this.shape}), size(${this.size.toLocaleString()}), ${this.dType.name}, ${this.backs.join(',')}\n${tab}(${data})`;
+            result += `shape(${this.shape}), size(${this.size.toLocaleString()}), ${this.dType.name}, ${this.backs.join(',')}\n${tab}(${data})`;
         else
             result += `${this.dType.name}, ${this.backs.join(',')}\n${tab}(${data.replaceAll('[', '').replaceAll(']', '')})`;
         if (this.isParam)
