@@ -1216,7 +1216,7 @@ tensor.prototype.crossEntropy = function (target) {
     const size = this.size/step;
     let ys = target.data;
 
-    this.grad = this.data.map(x => -x);
+    this.grad = this.data.map((x, i) => ys[i] - x);
     if (target.size === this.size){
         ys = ys.map((y, i) => {
             return y?i%step:0;
