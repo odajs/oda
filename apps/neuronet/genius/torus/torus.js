@@ -611,7 +611,7 @@ export class tensor/* extends Array*/{
         this._shape([...repeat_shape, ...this.shape]);
         return this;
     }
-    toString(step = 0, max = 16){
+    toString(step = 0, max = 8){
         let data = this.array.toTensorString(step, max, this.shape, this.dType).split('\n');
         data = data.join('\n');
         let tab = ('  ').repeat(step)
@@ -1268,7 +1268,7 @@ if (!Array.prototype.toTensorString) {
                         result += Array.from(d.slice(0, showing)).map(x=>{
                             return  num2text(x, float_type);
                         }).join(',') ;
-                        result +=  ` …`;
+                        result +=  ` ...,`;
                         result +=  Array.from(d.slice(-showing)).map(x=>{
                             return num2text(x, float_type);
                         }).join(',');
