@@ -381,7 +381,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             return this.cell?.outputs.slice(0, this.maxOutputsRow * (this.outputsStep + 1));
         }
     },
-    _value: '<b><u>Double click for edit...</u></b>',
+    _value: '<b style="margin: 4px; cursor: pointer; align-self: center;"><u>Empty text</u></b> <gray>(double click for edit...)</gray>',
     get maxOutputsRow() {
         return this.control().maxRow;
     },
