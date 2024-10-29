@@ -1217,11 +1217,12 @@ tensor.prototype.crossEntropy = function (target) {
     let ys = target.data;
 
     this.grad = this.data.map(x => - x);
-    if (target.size === this.size){
-        ys = ys.map((y, i) => {
-            return y?i%step:0;
-        }).filter(i=>i);
-    }
+    if (target.size === this.size)
+        ys = ys.reduce((r,v,i)=>{
+            if(v) r.push(i%step);
+            return r;
+        }, [])
+
     let loss = Array.prototype.map.call(ys, (y, i) => {
         let idx = i * step + y;
         this.grad[idx] += 1;
