@@ -330,7 +330,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
 
         <div class="horizontal">
             <div class="pe-no-print left-panel vertical" :error-invert="status === 'error'">
-                <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: 2px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
+                <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: 2px; min-height: 50px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run" style="margin: 4px;"></oda-button>
                     <div>{{time}}</div>
                     <div>{{status}}</div>
