@@ -1132,7 +1132,7 @@ class JupyterCell extends ROCKS({
                 cnt = s.lastIndexOf('/*')
                 if (cnt > 0)
                     s = s.substring(0, cnt);
-                s = 'log(\"<u onclick=\'find()\' style=\'font-size: large; margin-bottom: 4px; cursor: pointer;\'>'+s.replaceAll('"', '\\\"')+':</u>\", '+s+')';
+                s = 'log(\"<u onclick=\'top._onLogTap(this)\' style=\'font-size: large; margin-bottom: 4px; cursor: pointer;\'>'+s.replaceAll('"', '\\\"')+':</u>\", '+s+')';
             }
             return s;
         }).join('\n');
@@ -1142,4 +1142,9 @@ class JupyterCell extends ROCKS({
 }
 function getID() {
     return Math.floor(Math.random() * Date.now()).toString(16);
+}
+
+top._onLogTap = (e) => {
+    console.log(e);
+    find(e.innerText);
 }
