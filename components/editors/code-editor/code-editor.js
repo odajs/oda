@@ -8,11 +8,14 @@ ODA({is: 'oda-code-editor',
             .ace_hidden-cursors {
                 opacity: {{showCursor ? 1 : 0}};
             }
-
+            .ace_editor .ace_marker-layer .ace_selection {
+                background: {{marker?marker+'!important':''}};
+            }
         </style>
         <div @keydown.stop  style="min-height: 100%; font-size: large;"></div>
     `,
     $public: {
+        marker: '',
         value: {
             $def: '',
             get() {

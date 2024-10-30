@@ -127,7 +127,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         levelStep: {
             $def: 8,
             $save: true
-        }
+        },
+        marker: 'yellow'
     },
     $pdp: {
         showLoader: false,
@@ -248,7 +249,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
                 overflow-x: auto;
             }
         </style>
-        <div id="out-src" :src="outSrc" ~is="outIs" vertical  ~html="outHtml" ~style="{whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning :error></div>
+        <div id="out-src" :src="outSrc" ~is="outIs" vertical  ~html="outHtml" ~style="{overflowWrap: (textWrap ? 'break-word': ''), whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning :error></div>
         <div ~if="curRowsLength<maxRowsLength && !showAll" class="horizontal left header flex" style="font-size: small; align-items: center;">
             <span style="padding: 9px;">Rows: {{curRowsLength.toLocaleString()}} of {{maxRowsLength.toLocaleString()}}</span>
             <oda-button ~if="!showAll" :icon-size class="dark border" style="margin: 4px; border-radius: 2px;" @tap="setStep($event, 1)">Show next {{max.toLocaleString()}}</oda-button>
@@ -743,7 +744,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             }
         </style>
         <div  class="horizontal" :border="!hideCode" style="min-height: 32px;">
-            <oda-code-editor :wrap ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>
+            <oda-code-editor :marker :wrap ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>
             <div ~if="hideCode" class="horizontal left content flex" style="cursor: pointer; padding: 8px 4px; text-decoration: underline;" @tap="hideCode=false">
                 <oda-icon icon="bootstrap:eye-slash"></oda-icon>
                 <span bold style="margin: 4px; font-size: large; cursor: pointer;" >{{cell.name}}...</span>
@@ -1136,7 +1137,7 @@ class JupyterCell extends ROCKS({
                 cnt = s.lastIndexOf('/*')
                 if (cnt > 0)
                     s = s.substring(0, cnt);
-                s = 'log(\"<u onclick=\'top._onLogTap(this)\' style=\'font-size: large; margin-bottom: 4px; cursor: pointer;\'>'+s.replaceAll('"', '\\\"')+':</u>\", '+s+')';
+                s = 'log(\"<u onclick=\'_onLogTap(this, jupyter)\' style=\'font-size: large; margin-bottom: 4px; cursor: pointer;\'>'+s.replaceAll('"', '\\\"')+':</u>\", '+s+')';
             }
             return s;
         }).join('\n');
@@ -1148,7 +1149,21 @@ function getID() {
     return Math.floor(Math.random() * Date.now()).toString(16);
 }
 
-top._onLogTap = (e) => {
-    console.log(e);
-    find(e.innerText);
+window._onLogTap = (e, j) => {
+    const text = '>' + e.innerText.replace(':', '');
+    const cellElements = j.$$('oda-jupyter-cell');
+    const cellElement = cellElements.find(el => el.cell.id === j.selectedCell.id);
+    const codeEditor = cellElement.control().$('oda-code-editor');
+    const aceEditor = codeEditor.editor;
+    const value = aceEditor.session.getValue();
+    const startRow = value.substr(0, value.indexOf(text)).split(/\r\n|\r|\n/).length - 1;
+    const startCol = aceEditor.session.getLine(startRow).indexOf(text);
+    const endRowOffset = text.split(/\r\n|\r|\n/).length;
+    const endRow = startRow + endRowOffset - 1;
+    const endCollOffset = text.split(/\r\n|\r|\n/)[endRowOffset - 1].length;
+    const endCol = startCol + (endCollOffset > 1 ? endCollOffset + 1 : endCollOffset);
+    const range = new ace.Range(startRow, startCol, endRow, endCol);
+    aceEditor.session.selection.setRange(range);
+    aceEditor.scrollToLine(startRow, true, true, () => {});
 }
+
