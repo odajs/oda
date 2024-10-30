@@ -1196,7 +1196,7 @@ if (!Array.prototype.toTensorString) {
                         result += Array.from(d.slice(0, showing)).map(x=>{
                             return  num2text(x, float_type);
                         }).join(',') ;
-                        result +=  ` ...,`;
+                        result +=  `,  ...,`;
                         result +=  Array.from(d.slice(-showing)).map(x=>{
                             return num2text(x, float_type);
                         }).join(',');
