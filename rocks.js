@@ -835,10 +835,16 @@ in the <${host.localName}>`;
         Object.defineProperty(Array.prototype, 'mul', {
             enumerable: false, configurable: true,
             value: function () {
-                return this.reduce((r,v)=>r * (v || 0), 1);
+                return !this.length?0:this.reduce((r,v)=>r * (v || 0), 1);
             }
         });
         Object.defineProperty(Array.prototype, 'avg', {
+            enumerable: false, configurable: true,
+            value: function () {
+                return this.reduce((r,v)=>r + (v || 0), 0)/(this.length || 1);
+            }
+        });
+        Object.defineProperty(Array.prototype, 'mean', {
             enumerable: false, configurable: true,
             value: function () {
                 return this.reduce((r,v)=>r + (v || 0), 0)/(this.length || 1);

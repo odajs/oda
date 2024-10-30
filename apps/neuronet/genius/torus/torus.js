@@ -62,7 +62,7 @@ export class tensor/* extends Array*/{
                     this.#shape = []
                 else if (data?.length)
                     this.#shape = [data?.length]
-                else
+                else if (!data?.buffer)
                     data = new this.dType([data])
             }
             this.#data = data;
@@ -156,7 +156,7 @@ export class tensor/* extends Array*/{
         shape = torus.flat(...shape);
         if(Object.equal(shape[0]?.constructor, tensor))
             shape = shape[0].shape;
-        const size = shape.reduce((r, v)=>r * (v || 1), 1);
+        const size = shape.mul()
         if (size !== this.size)
             throw new Error(`_shape from (${this.shape}) to (${shape}) not allow.`);
         this.#shape_multipliers = undefined;
@@ -221,8 +221,8 @@ export class tensor/* extends Array*/{
         return this.#shape;
     }
     get size(){
-        // return this.shape.mul();
-        return this.data.length;
+        return this.shape.mul();
+        // return this.data.length;
     }
     get dim(){
         return this.shape.length;
@@ -1391,27 +1391,36 @@ torus.rand_n = (...shape)=>{
 torus.ones_like = (src) => {
     return torus.ones(src.shape);
 }
-torus.arange = (from_or_size = 0, to, ...shape)=>{
+torus.arange = (from_or_size = 0, to, step = 1, ...shape)=>{
     shape = torus.flat(shape);
+    let repeat = shape.mul();
+    let steps;
+    let label = 'arange';
+    if(from_or_size !== undefined)
+        label +=' '+from_or_size;
+    if(to !== undefined)
+        label +=' … '+to;
+    debugger
     if (to === undefined){
-        to = from_or_size;
+        to = from_or_size
         from_or_size = 0;
     }
-    if(!shape.length)
-        shape = [Math.round(to - from_or_size)]
-    let steps = shape.pop();
-    let repeat = shape.mul();
-    shape.push(steps);
-    let step = (to - from_or_size) / steps;
-    let data = [];
-    let idx = -1;
-    let v = from_or_size - step;
-    for (let i = 0; i < steps; i++){
-        data[++idx] = (v += step);
-
+    else
+        to -= from_or_size;
+    step *= Math.sign(to - from_or_size);
+    to = Math.abs(step>0?Math.ceil(to / step):Math.floor(to / step));
+    if(to){
+        let data = [];
+        let idx = -1;
+        let v = from_or_size - step;
+        for (let i = 0; i < to; i++){
+            data[++idx] = (v += step)
+        }
+        data = new Float32Array(Array(repeat).fill(data).flat());
+        shape.push(to)
+        return torus.tensor(data)._shape(shape)._label(label);
     }
-    data = new Float32Array(Array(repeat).fill(data).flat());
-    return tensor.from(data)._shape(shape)._label(`arange ${from_or_size}-${to}`);
+    return torus.tensor()._label(label)
 }
 torus.rand_int = (min_or_max = 0, max, ...shape)=>{
     shape = torus.flat(shape)
