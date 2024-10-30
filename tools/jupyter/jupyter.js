@@ -19,7 +19,7 @@ window.log = (...e) => {
                     }
                     return s
                 });
-                return as_json?((as_array && i<100)?JSON.stringify(i):JSON.stringify(i, 0, 2)):i.join('\n');
+                return as_json?((as_array && i.length<1000)?JSON.stringify(i):JSON.stringify(i, 0, 2)):i.join('\n');
             }
             return i.toString();
         }
@@ -335,6 +335,9 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             :host(:hover) .left-panel {
                 @apply --header;
             }
+            :host(:hover) oda-jupyter-toolbar, :host(:hover) oda-jupyter-outputs-toolbar{
+                display: flex !important;
+            }
             @media print {
                 .pe-preserve-print {
                     width: 100%!important;
@@ -352,7 +355,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             </div>
             <div class="pe-preserve-print vertical no-flex" style="width: calc(100% - 34px); position: relative;">
                 <div id="main" class="vertical">
-                    <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell :control></oda-jupyter-toolbar>
+                    <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell :control ~show="selected"></oda-jupyter-toolbar>
                     <div class="horizontal" >
                         <oda-icon ~if="cell.type!=='code' && cell.allowExpand" :icon="expanderIcon" @dblclick.stop @tap.stop="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
                         <div flex id="control" ~is="editor" :cell ::edit-mode ::value :read-only show-preview :_value :show-border="editMode"></div>
@@ -363,7 +366,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     </div>
                 </div>
                 <div ~if="cell?.outputs?.length || cell?.controls?.length" class="info border"  style="max-height: 100%;">
-                    <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell></oda-jupyter-outputs-toolbar>
+                    <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell ~show="selected"></oda-jupyter-outputs-toolbar>
                     <div class="vertical flex" style="overflow: hidden;">
                         <div flex vertical ~if="!cell?.metadata?.hideOutput" style="overflow: hidden;">
                             <div  ~for="cell.controls" style="font-family: monospace;" >
@@ -601,7 +604,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
                  border-radius: 4px;
             }
         </style>
-        <div class="pe-no-print top" ~if="!readOnly && selected" >
+        <div class="pe-no-print top" ~if="!readOnly" >
             <oda-button ~if="cell?.type === 'code'" :icon-size icon="bootstrap:eye-slash" title="Hide/Show code" allow-toggle ::toggled="hideCode"></oda-button>
             <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap.stop="move(-1)"></oda-button>
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="move(1)"></oda-button>
@@ -1143,7 +1146,7 @@ class JupyterCell extends ROCKS({
                 cnt = s.lastIndexOf('/*')
                 if (cnt > 0)
                     s = s.substring(0, cnt);
-                s = 'log(\"<label onclick=\'_onLogTap(this, jupyter)\' style=\'font-size: large; margin-bottom: 4px; cursor: pointer;\'>'+s.replaceAll('"', '\\\"')+':</label>\", '+s+')';
+                s = 'log(\"<label onclick=\'_onLogTap(this)\' style=\'font-size: large; margin-bottom: 4px; cursor: pointer;\'>'+s.replaceAll('"', '\\\"')+':</label>\", '+s+')';
             }
             return s;
         }).join('\n');
@@ -1155,14 +1158,15 @@ function getID() {
     return Math.floor(Math.random() * Date.now()).toString(16);
 }
 let last_marker = {}
-window._onLogTap = (e, j) => {
+window._onLogTap = (e) => {
+    const cellElement = e.parentElement.domHost
+
     last_marker.aceEditor?.clearSelection();
     last_marker.label?.removeAttribute('selected');
     last_marker.label = e;
     e.setAttribute('selected', true);
-    j.selectedMarker = e.innerText;
-    const text = e.innerText.replace(':', '');
-    const cellElement = e.parentElement.domHost
+    const text = '>'+e.innerText.replace(':', '');
+
     const codeEditor = cellElement.control?.$('oda-code-editor');
     const aceEditor = codeEditor.editor;
     const value = aceEditor.session.getValue();
