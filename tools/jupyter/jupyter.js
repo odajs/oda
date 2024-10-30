@@ -1120,17 +1120,17 @@ class JupyterCell extends ROCKS({
             if (res){
                 jupyter.output_data.push(res);
             }
-            this.outputs = jupyter.output_data.filter(i=>!(i instanceof HTMLElement)).map(i=>({data:{"text/plain": i}}));
-            this.controls = jupyter.output_data.filter(i=>i instanceof HTMLElement).map(i=>({data:{"text/plain": i}}));
         }
         catch (e){
             let error = e.stack;
             error = error.replaceAll('<', '&lt;')
             error = error.replaceAll('>', '&gt;')
-            this.outputs = [{data:{"text/plain": error}}];
+            jupyter.output_data.push(error);
             this.status = 'error';
         }
         finally {
+            this.outputs = jupyter.output_data.filter(i=>!(i instanceof HTMLElement)).map(i=>({data:{"text/plain": i}}));
+            this.controls = jupyter.output_data.filter(i=>i instanceof HTMLElement).map(i=>({data:{"text/plain": i}}));
             this.isRun = false;
             run_context.output_data = [];
         }

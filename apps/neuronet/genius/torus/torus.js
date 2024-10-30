@@ -459,16 +459,6 @@ export class tensor/* extends Array*/{
         }
         return out
     }
-    static fill(shape, value_or_handler, dType = Float32Array){
-        shape = torus.flat(shape);
-        let handler = typeof value_or_handler === 'function'?value_or_handler:i=>value_or_handler;
-        let size = shape.mul();
-        let data = new dType(size);
-        data = data.map(handler);
-        if (shape.sum() === 1)
-            shape = []
-        return tensor.from(data, dType)._shape(shape);
-    }
     static cross_entropy(tensor, target) {
         return tensor.crossEntropy(target);
     }
@@ -944,45 +934,7 @@ torus.prototype.allclose = function(other, rtol = 1e-05, atol = 1e-08, equal_nan
     const fn = equal_nan?(r, y, i)=>(r && (this.data[i] || 0) - (y || 0) <= atol + rtol * (y || 0)):((r, y, i)=>r && this.data[i] - y <= atol + rtol * y)
     return other.data.reduce(fn, true);
 }
-torus.prototype._element_wise_operator = function (other, forward = '', this_backward = '', other_backward = ''){
-    other = torus.from(other);
-    let max_d = Math.max(this.dim, other.dim);
-    const t_vars = torus.genVarsArray(this.dim);
-    const o_vars = torus.genVarsArray(other.dim, true);
-    const t_shape = this.shape.toReversed();
-    const o_shape = other.shape.toReversed();
-    const outs = [];
-    for(let i = 0; i<max_d; i++){
-        let t_axis = t_vars[i] || '';
-        let o_axis = o_vars[i] || '';
-        let t_dim = t_shape[i] || 0;
-        let o_dim = o_shape[i] || 0;
-        let axis = t_axis || o_axis;
-        if(t_dim === o_dim)
-            o_vars[i] = axis;
-        else if(t_dim > o_dim)
-            axis = t_axis;
-        else
-            axis = o_axis;
-        outs.push(axis);
-    }
-    let expr = (t_vars.reverse().join('') || '$') + ', ' + (o_vars.reverse().join('') || '$') + ' -> ' + outs.reverse().join('');
-    const out = torus.einsum(expr,  [this, other], eval(forward), eval(this_backward), eval(other_backward));
-    let label;
-    try{
-        throw new Error()
-    }
-    catch (e){
-        label = e.stack.split('\n');
-        const idx = label.findIndex(v=>v.includes('._element_wise')) + 1;
-        label = label[idx];
-        label = label.substr(label.indexOf('.') + 1);
-        label = label.substr(0, label.indexOf(' '));
 
-    }
-    out._label(label + ' ('+expr+')');
-    return out;
-}
 tensor.prototype.plus = function (other){
     return this._element_wise_operator(other, (x, y) => x + y, (g) => g, (_, g) => g);
 }
@@ -998,31 +950,7 @@ tensor.prototype.divide = function (other){
 tensor.prototype.pow = function (other){
     return this._element_wise_operator(other, (x, y) => x ** y, (g, y) => y * (g ** (y - 1)), (x, g) => x ** g * Math.log(x));
 }
-tensor.prototype._element_wise_function = function (forward_func, back_func){
-    const data = this.data.map(forward_func);
-    const out = tensor.from(data)._src(this)._shape(this);
-    let label;
-    try{
-        throw new Error()
-    }
-    catch (e){
-        label = e.stack.split('\n');
-        const idx = label.findIndex(v=>v.includes('._element_wise')) + 1;
-        label = label[idx];
-        label = label.substr(label.indexOf('.') + 1);
-        label = label.substr(0, label.indexOf(' '));
 
-    }
-    out._label(label+' ('+out.shape+')');
-    if (back_func && this.allowGrad){
-        out._back = ()=>{
-            for(let i = 0; i<this.grad.length; i++){
-                this.grad[i] += back_func(this.data[i], out.data[i]) * out.grad[i];
-            }
-        }
-    }
-    return out;
-}
 tensor.prototype.invert = function (){
     return this._element_wise_function(x=>x * -1, ()=>-1);
 }
@@ -1393,14 +1321,13 @@ torus.ones_like = (src) => {
 }
 torus.arange = (from_or_size = 0, to, step = 1, ...shape)=>{
     shape = torus.flat(shape);
-    let repeat = shape.mul();
+    let repeat = shape.mul() || 1;
     let steps;
     let label = 'arange';
     if(from_or_size !== undefined)
         label +=' '+from_or_size;
     if(to !== undefined)
         label +=' … '+to;
-    debugger
     if (to === undefined){
         to = from_or_size
         from_or_size = 0;
@@ -1455,7 +1382,7 @@ torus.ones = (...shape) => {
 }
 torus.eye = (...shape)=>{
     shape = torus.flat(shape);
-    const size = shape.reduce((r, v)=>r * (v || 1), 1);
+    const size = shape.mul();
     const data = new Int8Array(size);
     let dim = shape.last
     let step = Math.min(size/ dim, dim);
@@ -1465,6 +1392,82 @@ torus.eye = (...shape)=>{
     return torus.from(data)._shape(shape)._label('eye');
 }
 
+section_system:{
+    torus.fill = (shape, value_or_handler, dType = Float32Array) => {
+        shape = torus.flat(shape);
+        let handler = typeof value_or_handler === 'function' ? value_or_handler : i => value_or_handler;
+        let size = shape.mul();
+        let data = new dType(size);
+        data = data.map(handler);
+        if (shape.sum() < 2)
+            shape = []
+        return tensor.from(data, dType)._shape(shape);
+    }
+    torus.prototype._element_wise_operator = function (other, forward = '', this_backward = '', other_backward = ''){
+        other = torus.from(other);
+        let max_d = Math.max(this.dim, other.dim);
+        const t_vars = torus.genVarsArray(this.dim);
+        const o_vars = torus.genVarsArray(other.dim, true);
+        const t_shape = this.shape.toReversed();
+        const o_shape = other.shape.toReversed();
+        const outs = [];
+        for(let i = 0; i<max_d; i++){
+            let t_axis = t_vars[i] || '';
+            let o_axis = o_vars[i] || '';
+            let t_dim = t_shape[i] || 0;
+            let o_dim = o_shape[i] || 0;
+            let axis = t_axis || o_axis;
+            if(t_dim === o_dim)
+                o_vars[i] = axis;
+            else if(t_dim > o_dim)
+                axis = t_axis;
+            else
+                axis = o_axis;
+            outs.push(axis);
+        }
+        let expr = (t_vars.reverse().join('') || '$') + ', ' + (o_vars.reverse().join('') || '$') + ' -> ' + outs.reverse().join('');
+        const out = torus.einsum(expr,  [this, other], eval(forward), eval(this_backward), eval(other_backward));
+        let label;
+        try{
+            throw new Error()
+        }
+        catch (e){
+            label = e.stack.split('\n');
+            const idx = label.findIndex(v=>v.includes('._element_wise')) + 1;
+            label = label[idx];
+            label = label.substr(label.indexOf('.') + 1);
+            label = label.substr(0, label.indexOf(' '));
+
+        }
+        out._label(label + ' ('+expr+')');
+        return out;
+    }
+    tensor.prototype._element_wise_function = function (forward_func, back_func){
+        const data = this.data.map(forward_func);
+        const out = tensor.from(data)._src(this)._shape(this);
+        let label;
+        try{
+            throw new Error()
+        }
+        catch (e){
+            label = e.stack.split('\n');
+            const idx = label.findIndex(v=>v.includes('._element_wise')) + 1;
+            label = label[idx];
+            label = label.substr(label.indexOf('.') + 1);
+            label = label.substr(0, label.indexOf(' '));
+
+        }
+        out._label(label+' ('+out.shape+')');
+        if (back_func && this.allowGrad){
+            out._back = ()=>{
+                for(let i = 0; i<this.grad.length; i++){
+                    this.grad[i] += back_func(this.data[i], out.data[i]) * out.grad[i];
+                }
+            }
+        }
+        return out;
+    }
+}
 
 
 section_convertors:{
