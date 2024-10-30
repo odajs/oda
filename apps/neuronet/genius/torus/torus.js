@@ -59,7 +59,7 @@ export class tensor/* extends Array*/{
             }
             else{
                 if (data?.length === 1)
-                    this.#shape = []
+                    this.#shape = [1]
                 else if (data?.length)
                     this.#shape = [data?.length]
                 else if (!data?.buffer)
