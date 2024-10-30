@@ -1196,6 +1196,6 @@ window._onLogTap = (e) => {
     const range = new ace.Range(startRow, startCol, endRow, endCol);
     aceEditor.session.selection.setRange(range);
     last_marker.aceEditor = aceEditor;
-    cellElement.jupyter.scrollToCell(cellElement.cell)
+    cellElement.jupyter.scrollToCell(cellElement.cell);// todo надос делать "мягкий" скролл, если источник не виден
 }
 
