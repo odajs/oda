@@ -127,8 +127,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         levelStep: {
             $def: 8,
             $save: true
-        },
-        marker: 'yellow'
+        }
     },
     $pdp: {
         showLoader: false,
@@ -248,6 +247,13 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
                 user-select: text;
                 overflow-x: auto;
             }
+            label:hover{
+                text-decoration: underline;
+                cursor: pointer !important;
+            }
+            label[selected]{
+                text-decoration: underline;
+            }
         </style>
         <div id="out-src" :src="outSrc" ~is="outIs" vertical  ~html="outHtml" ~style="{overflowWrap: (textWrap ? 'break-word': ''), whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning :error></div>
         <div ~if="curRowsLength<maxRowsLength && !showAll" class="horizontal left header flex" style="font-size: small; align-items: center;">
@@ -346,7 +352,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             </div>
             <div class="pe-preserve-print vertical no-flex" style="width: calc(100% - 34px); position: relative;">
                 <div id="main" class="vertical">
-                    <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell :control="control()"></oda-jupyter-toolbar>
+                    <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell :control></oda-jupyter-toolbar>
                     <div class="horizontal" >
                         <oda-icon ~if="cell.type!=='code' && cell.allowExpand" :icon="expanderIcon" @dblclick.stop @tap.stop="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
                         <div flex id="control" ~is="editor" :cell ::edit-mode ::value :read-only show-preview :_value :show-border="editMode"></div>
@@ -361,10 +367,10 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <div class="vertical flex" style="overflow: hidden;">
                         <div flex vertical ~if="!cell?.metadata?.hideOutput" style="overflow: hidden;">
                             <div  ~for="cell.controls" style="font-family: monospace;" >
-                                <oda-jupyter-cell-out  ~for="$for.item.data" :row="$$for" :max="control().maxRow"></oda-jupyter-cell-out>
+                                <oda-jupyter-cell-out  ~for="$for.item.data" :row="$$for" :max="control?.maxRow"></oda-jupyter-cell-out>
                             </div>
                             <div  ~for="outputFor" style="font-family: monospace;" >
-                                <oda-jupyter-cell-out ~for="$for.item.data" :row="$$for" :max="control().maxRow"></oda-jupyter-cell-out>
+                                <oda-jupyter-cell-out ~for="$for.item.data" :row="$$for" :max="control?.maxRow"></oda-jupyter-cell-out>
                             </div>
                         </div>
                     </div>
@@ -388,7 +394,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     },
     _value: '<b style="margin: 4px; cursor: pointer; align-self: center;"><u>Empty text</u></b> <gray>(double click for edit...)</gray>',
     get maxOutputsRow() {
-        return this.control().maxRow;
+        return this.control?.maxRow;
     },
     get outInfo() {
         return `Blocks: ${this.showAllOutputsRow ? this.cell.outputs.length.toLocaleString() : Math.round(this.maxOutputsRow * (this.outputsStep + 1)).toLocaleString()} of ${this.cell?.outputs?.length.toLocaleString()}`;
@@ -494,8 +500,8 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 return !this.readOnly &&  (this.selectedCell === this.cell/* || this.selectedCell?.id === this.cell?.id*/);
             }
         },
-        control() {
-            return this.$('#control');
+        get control() {
+            return this.$('#control') || undefined;
         },
         showAllOutputsRow: false,
         outputsStep: 0
@@ -744,7 +750,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             }
         </style>
         <div  class="horizontal" :border="!hideCode" style="min-height: 32px;">
-            <oda-code-editor :marker :wrap ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>
+            <oda-code-editor :wrap ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>
             <div ~if="hideCode" class="horizontal left content flex" style="cursor: pointer; padding: 8px 4px; text-decoration: underline;" @tap="hideCode=false">
                 <oda-icon icon="bootstrap:eye-slash"></oda-icon>
                 <span bold style="margin: 4px; font-size: large; cursor: pointer;" >{{cell.name}}...</span>
@@ -1137,7 +1143,7 @@ class JupyterCell extends ROCKS({
                 cnt = s.lastIndexOf('/*')
                 if (cnt > 0)
                     s = s.substring(0, cnt);
-                s = 'log(\"<u onclick=\'_onLogTap(this, jupyter)\' style=\'font-size: large; margin-bottom: 4px; cursor: pointer;\'>'+s.replaceAll('"', '\\\"')+':</u>\", '+s+')';
+                s = 'log(\"<label onclick=\'_onLogTap(this, jupyter)\' style=\'font-size: large; margin-bottom: 4px; cursor: pointer;\'>'+s.replaceAll('"', '\\\"')+':</label>\", '+s+')';
             }
             return s;
         }).join('\n');
@@ -1148,12 +1154,16 @@ class JupyterCell extends ROCKS({
 function getID() {
     return Math.floor(Math.random() * Date.now()).toString(16);
 }
-
+let last_marker = {}
 window._onLogTap = (e, j) => {
-    const text = '>' + e.innerText.replace(':', '');
-    const cellElements = j.$$('oda-jupyter-cell');
-    const cellElement = cellElements.find(el => el.cell.id === j.selectedCell.id);
-    const codeEditor = cellElement.control().$('oda-code-editor');
+    last_marker.aceEditor?.clearSelection();
+    last_marker.label?.removeAttribute('selected');
+    last_marker.label = e;
+    e.setAttribute('selected', true);
+    j.selectedMarker = e.innerText;
+    const text = e.innerText.replace(':', '');
+    const cellElement = e.parentElement.domHost
+    const codeEditor = cellElement.control?.$('oda-code-editor');
     const aceEditor = codeEditor.editor;
     const value = aceEditor.session.getValue();
     const startRow = value.substr(0, value.indexOf(text)).split(/\r\n|\r|\n/).length - 1;
@@ -1164,6 +1174,6 @@ window._onLogTap = (e, j) => {
     const endCol = startCol + (endCollOffset > 1 ? endCollOffset + 1 : endCollOffset);
     const range = new ace.Range(startRow, startCol, endRow, endCol);
     aceEditor.session.selection.setRange(range);
-    aceEditor.scrollToLine(startRow, true, true, () => {});
+    last_marker.aceEditor = aceEditor;
 }
 
