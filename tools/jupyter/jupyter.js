@@ -396,6 +396,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     `,
     outputFor: {
         get() {
+            this.control = undefined;
             return this.cell?.outputs.slice(0, this.maxOutputsRow * (this.outputsStep + 1));
         }
     },
