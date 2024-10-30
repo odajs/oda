@@ -8,14 +8,18 @@ window.log = (...e) => {
         if (i && typeof i === 'object'){
             if (Array.isArray(i)){
                 let as_json = true
+                let as_array = true
                 i = i.map(s=>{
-                    if (s && typeof s === 'object' && s.constructor !== Object){
-                        as_json = false
-                        return s.toString()+'\n';
+                    if (s && typeof s === 'object'){
+                        as_array = false
+                        if (s.constructor !== Object) {
+                            as_json = false
+                            return s.toString() + '\n';
+                        }
                     }
                     return s
-                }).join('\n');
-                return as_json?JSON.stringify(i, 0, 2):i;
+                });
+                return as_json?((as_array && i<100)?JSON.stringify(i):JSON.stringify(i, 0, 2)):i.join('\n');
             }
             return i.toString();
         }
