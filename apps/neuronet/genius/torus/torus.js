@@ -1354,10 +1354,12 @@ torus.rand_int = (min_or_max = 0, max, ...shape)=>{
     if(max === undefined){
         max = min_or_max;
         min_or_max = 0;
-        if (shape.length === 0)
-            shape = [Math.round(max - min_or_max)];
-    }
 
+    }
+    if(max <= min_or_max)
+        throw new Error('max <= min');
+    if (shape.length === 0)
+        shape = [Math.round(max - min_or_max)];
     const data = new Int32Array(shape.mul() || 1).map(i=>{
         const r = torus.generator();
         return Math.round(r * (max - min_or_max) + min_or_max);
