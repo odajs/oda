@@ -1393,6 +1393,36 @@ torus.eye = (...shape)=>{
 }
 
 section_system:{
+    Object.defineProperty(torus.prototype, 'shape_info', {
+        configurable: true,
+        get(){
+            return this['#shape_info'] ??= (()=>{
+                let step, c, m = 1;
+                return this.shape.toReversed().map((dim, i)=>{
+                    step = m;
+                    m *= dim;
+                    let char = String.fromCharCode(i + 97);
+                    i = this.dim - i - 1;
+                    return {step, dim, char, i};
+                }).toReversed();
+            })()
+        }
+    })
+
+    torus.prototype.dims_info = function(...dims){
+        dims = torus.flat(dims);
+        let shape_info = this.shape_info;
+        return dims.reduce((r, d, i)=>{
+            i = (d<0)?d + this.dim: d;
+            let v = shape_info[i];
+            if(v === undefined)
+                throw new Error(`Index ${i} out of range for shape [${this.shape}]`)
+            r.add(v)
+            return r
+        }, []).sort((a,b)=>{
+            return a.i<b.i?-1:1
+        })
+    }
     torus.fill = (shape, value_or_handler, dType = Float32Array) => {
         shape = torus.flat(shape);
         let handler = typeof value_or_handler === 'function' ? value_or_handler : i => value_or_handler;
