@@ -344,6 +344,9 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     width: 100%!important;
                 }
             }
+            #control {
+                margin-left: {{cell?.type==='text'?'-8px':0}};
+            }
         </style>
 
         <div class="horizontal">
@@ -396,7 +399,9 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             return this.cell?.outputs.slice(0, this.maxOutputsRow * (this.outputsStep + 1));
         }
     },
-    _value: '<b style="margin: 4px; cursor: pointer; align-self: center;"><u>Empty text</u></b> <gray>(double click for edit...)</gray>',
+    get _value() {
+        return `<b style="margin: 4px; cursor: pointer; align-self: center;"><u>Empty ${this.cell?.type}</u></b> <gray>(click for edit...)</gray>`
+    },
     get maxOutputsRow() {
         return this.control?.maxRow;
     },
@@ -432,6 +437,12 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     $listeners:{
         dblclick(e){
             if (!this.readOnly) {
+                this.editMode = true;
+                this.$render();
+            }
+        },
+        click(e){
+            if (!this.readOnly && !this.value) {
                 this.editMode = true;
                 this.$render();
             }
