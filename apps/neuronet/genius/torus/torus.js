@@ -312,11 +312,10 @@ export class tensor/* extends Array*/{
             //     this.data[i] += change;
             // }
 
-
+            let gamma = torus.generator();
+            lr = 1 - gamma;
             for(let i = 0; i<this.data.length; i++){
-                let gamma = torus.generator();
                 let prev = this.prev[i] * gamma;
-                lr = 1 - gamma;
                 let change = prev + this.grad[i] * lr;
                 this.data[i] += change;
                 this.prev[i] = change
