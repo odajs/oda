@@ -1476,11 +1476,10 @@ section_convertors:{
 
 
 tensor.einsum = (in_expr, sources = [], ...functions)=>{
-
     sources = tensor.flat(sources);
     const tensors = sources.map(t => tensor.from(t));
     let key = in_expr + ':' + tensors.map(i=> i.shape.toString()+'('+ i.dType.name +')' ).join('-') + functions.filter(Boolean).map(i=>i.toString()).join(',');
-    console.time(key)
+    // console.time(key)
     let fn = fn_cache.einsum?.[key];
     let inputs, outs;
     if (!fn){         // Выделение из выражения оператора
@@ -1744,7 +1743,7 @@ tensor.einsum = (in_expr, sources = [], ...functions)=>{
     }
     fn(tensors, out.data);
     out._label(`einsum (${out.shape}): '${in_expr}'`);
-    console.timeEnd(key)
+    // console.timeEnd(key)
     return out;
 }
 tensor.prototype.transpose = function(dim0= -1, dim1 = -2) {

@@ -7,15 +7,15 @@ window.log = (...e) => {
     e = e.map(i=>{
         if (i && typeof i === 'object'){
             if (Array.isArray(i)){
-                let as_array = true
+                let as_json = true
                 i = i.map(s=>{
-                    if (s && typeof s === 'object'){
-                        as_array = false
+                    if (s && typeof s === 'object' && s.constructor !== Object){
+                        as_json = false
                         return s.toString()+'\n';
                     }
-                    return s.toString();
-                }).join(as_array?',':'\n');
-                return as_array?'['+i+']':i;
+                    return s
+                }).join('\n');
+                return as_json?JSON.stringify(i, 0, 2):i;
             }
             return i.toString();
         }
