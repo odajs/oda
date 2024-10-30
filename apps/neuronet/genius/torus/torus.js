@@ -1751,7 +1751,10 @@ tensor.einsum = (in_expr, sources = [], ...functions)=>{
 
     const data = outs.length?new Float32Array(outs.reduce((r,a)=> r * a.d, 1)):new Float32Array(1);
     let out = tensor.from(data);
-    out._shape(outs.map(i=>i.d));
+    let shape = outs.map(i=>i.d);
+    if(!shape.length)
+        shape = [1];
+    out._shape(shape);
     out._src(tensors);
     out._back = function (){
         const grad = tensor.from(out.grad)._shape(out);
