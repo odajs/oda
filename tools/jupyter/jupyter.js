@@ -252,6 +252,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
                 cursor: pointer !important;
             }
             label[selected]{
+                @apply --content;
                 text-decoration: underline;
             }
         </style>
@@ -754,7 +755,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         </style>
         <div  class="horizontal" :border="!hideCode" style="min-height: 32px;">
             <oda-code-editor :wrap ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>
-            <div ~if="hideCode" class="horizontal left content flex" style="cursor: pointer; padding: 8px 4px; text-decoration: underline;" @tap="hideCode=false">
+            <div ~if="hideCode" class="horizontal left content flex" style="opacity: .3; cursor: pointer; padding: 8px 4px; text-decoration: underline;" @tap="hideCode=false">
                 <oda-icon icon="bootstrap:eye-slash"></oda-icon>
                 <span bold style="margin: 4px; font-size: large; cursor: pointer;" >{{cell.name}}...</span>
             </div>
@@ -1146,7 +1147,7 @@ class JupyterCell extends ROCKS({
                 cnt = s.lastIndexOf('/*')
                 if (cnt > 0)
                     s = s.substring(0, cnt);
-                s = 'log(\"<label onclick=\'_onLogTap(this)\' style=\'font-size: large; margin-bottom: 4px; cursor: pointer;\'>'+s.replaceAll('"', '\\\"')+':</label>\", '+s+')';
+                s = 'log(\"<label onclick=\'_onLogTap(this)\' style=\'text-decoration: underline; padding: 2px; font-size: large; margin-bottom: 4px; cursor: pointer;\'>'+s.replaceAll('"', '\\\"')+':</label>\", '+s+')';
             }
             return s;
         }).join('\n');
@@ -1160,9 +1161,13 @@ function getID() {
 let last_marker = {}
 window._onLogTap = (e) => {
     const cellElement = e.parentElement.domHost
-
     last_marker.aceEditor?.clearSelection();
     last_marker.label?.removeAttribute('selected');
+    if (last_marker.label === e){
+        last_marker = {}
+        return;
+    }
+
     last_marker.label = e;
     e.setAttribute('selected', true);
     const text = '>'+e.innerText.replace(':', '');
