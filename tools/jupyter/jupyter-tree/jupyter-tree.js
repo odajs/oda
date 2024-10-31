@@ -10,8 +10,7 @@ ODA({ is: 'oda-jupyter-tree', imports: '@oda/tree', extends: 'oda-tree',
     },
     hideRoot: true
  });
-ODA({
-    is: 'oda-jupyter-tree-cell', extends: 'this, oda-table-cell',
+ODA({is: 'oda-jupyter-tree-cell', extends: 'this, oda-table-cell',
     template: /*html*/`
         <style>
             span{
@@ -26,7 +25,7 @@ ODA({
     bold:{
         $attr: true,
         get(){
-            return !!this.item?.h
+            return !!this.item?.h || this.item?.constructor.name === 'JupyterNotebook';
         }
     },
     error:{
@@ -36,18 +35,22 @@ ODA({
         }
     },
     get icon(){
-        switch (this.item.type){
-            case 'code': {
-                if (this.item.autoRun)
-                    return 'carbon:executable-program';
-                return 'carbon:cics-program';
-             }
-                
-            case 'html':
-                return 'box:i-code-alt';
+        let icon = this.item.icon;
+        if (!icon){
+            switch (this.item.type){
+                case 'code': {
+                    if (this.item.autoRun)
+                        return 'carbon:executable-program';
+                    return 'carbon:cics-program';
+                }
+
+                case 'html':
+                    return 'box:i-code-alt';
+            }
+            if (this.item.h)
+                return 'bootstrap:type-h'+this.item.h
+            return 'bootstrap:text-left';
         }
-        if (this.item.h)
-            return 'bootstrap:type-h'+this.item.h
-        return 'bootstrap:text-left';
+        return icon;
     }
 })

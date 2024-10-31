@@ -369,10 +369,10 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         <div style="margin: 8px;">Hidden {{cell.childrenCount}} cells</div>
                     </div>
                 </div>
-                <div ~if="!cell.hideCode && (cell?.outputs?.length || cell?.controls?.length)" class="info border"  style="max-height: 100%;">
+                <div ~if="cell?.outputs?.length || cell?.controls?.length" class="info border"  style="max-height: 100%;">
                     <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell ~show="selected"></oda-jupyter-outputs-toolbar>
                     <div class="vertical flex" style="overflow: hidden;">
-                        <div flex vertical ~if="!cell?.metadata?.hideOutput" style="overflow: hidden;">
+                        <div flex vertical ~if="!cell?.hideOutput" style="overflow: hidden;">
                             <div  ~for="cell.controls" style="font-family: monospace;" >
                                 <oda-jupyter-cell-out  ~for="$for.item.data" :row="$$for" :max="control?.maxRow"></oda-jupyter-cell-out>
                             </div>
@@ -381,11 +381,11 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                             </div>
                         </div>
                     </div>
-                    <div ~if="cell?.metadata?.hideOutput" class="horizontal left header" style="padding: 0 4px; font-size: small;">
+                    <div ~if="cell?.hideOutput" class="horizontal left header" style="padding: 0 4px; font-size: small;">
                         <oda-button :icon-size class="dark header no-flex" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="showOutput">Show hidden outputs data</oda-button>
                     </div>
                 </div>
-                <div class="pe-no-print horizontal left header flex" ~if="!cell?.metadata?.hideOutput && showOutInfo" style="padding: 0 4px; font-size: small; align-items: center; font-family: monospace;">
+                <div class="pe-no-print horizontal left header flex" ~if="!cell?.hideOutput && showOutInfo" style="padding: 0 4px; font-size: small; align-items: center; font-family: monospace;">
                     <span style="padding: 9px;">{{outInfo}}</span>
                     <oda-button ~if="!showAllOutputsRow" :icon-size class="dark" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 1)">Show next {{maxOutputsRow.toLocaleString()}}</oda-button>
                     <oda-button ~if="!showAllOutputsRow" :icon-size class="dark" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 0)">Show all</oda-button>
@@ -536,7 +536,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         return this.cell.collapsed ? 'icons:chevron-right' : 'icons:expand-more';
     },
     showOutput() {
-        this.cell.metadata.hideOutput = false;
+        this.cell.hideOutput = false;
         this.jupyter.$render();
         this.notebook.change();
     }
@@ -647,7 +647,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         else{
 
         }
-        this.cell.hideCode =  n;
+        this.cell.hideCode = this.cell.hideOutput = n;
     },
     move(direction){
         let top = this.jupyter.scrollTop;
@@ -713,15 +713,15 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
         this.cell?.writeMetadata('textWrap', this.cell.metadata.textWrap);
     },
     get toggleOutput(){
-        return this.cell.metadata.hideOutput;
+        return this.cell.hideOutput;
     },
     set toggleOutput(n){
-        this.cell.metadata.hideOutput = n;
+        this.cell.hideOutput = n;
         this.jupyter.$render();
         this.notebook.change();
     },
     clearOutputs() {
-        this.cell.metadata.hideOutput = false;
+        this.cell.hideOutput = false;
         this.cell.outputs = [];
         this.jupyter.scrollToCell(this.cell);
     }
@@ -812,7 +812,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 return this.cell?.hideCode
             },
             set(n){
-                this.cell.hideCode = n;
+                this.cell.hideCode = this.cell.hideOutput = n;   
             }
         },
         maxRow:{
@@ -894,7 +894,8 @@ class JupyterNotebook extends ROCKS({
     name: 'NOTEBOOK',
     get label(){
         return this.name;
-    }
+    },
+    icon: 'fontawesome:s-book'
 }) {
     url = '';
     constructor(url) {
@@ -902,7 +903,7 @@ class JupyterNotebook extends ROCKS({
         if (url){
 
             this.load(url);
-            this.name = this.url.split('/').pop();
+            this.name = url.split('/').pop();
         }
 
     }
@@ -1081,6 +1082,14 @@ class JupyterCell extends ROCKS({
             this.writeMetadata('hideCode', n);
         }
     },
+    hideOutput: {
+        get() {
+            return this.readMetadata('hideOutput') || false;
+        },
+        set(n){
+            this.writeMetadata('hideOutput', n);
+        }
+    },
     hidden: {
         get() {
             let prev = this.prev;
@@ -1111,7 +1120,7 @@ class JupyterCell extends ROCKS({
         this.data = data;
     }
     async run(jupyter){
-        this.metadata.hideOutput = false;
+        this.cell.hideOutput = false;
         this.time = '';
         this.status = '';
         this.isRun = true;
@@ -1199,6 +1208,8 @@ window._onLogTap = (e) => {
     const text = '>'+e.innerText.replace(':', '');
 
     const codeEditor = cellElement.control?.$('oda-code-editor');
+    if (!codeEditor)
+        return;
     const aceEditor = codeEditor.editor;
     const value = aceEditor.session.getValue();
     const startRow = value.substr(0, value.indexOf(text)).split(/\r\n|\r|\n/).length - 1;
