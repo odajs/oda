@@ -200,12 +200,12 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             }
         }
     },
-    scrollToCell(cell = this.selectedCell) {
+    scrollToCell(cell = this.selectedCell, behavior = 'auto', block = 'start') {
         if (!cell) return;
         const cellElements = this.jupyter.$$('oda-jupyter-cell');
         const cellElement = cellElements.find(el => el.cell.id === cell.id);
         if (!cellElement) return;
-        cellElement.scrollIntoView();
+        cellElement.scrollIntoView({ behavior, block });
     },
     async attached() {
         await getLoader();
@@ -1196,6 +1196,6 @@ window._onLogTap = (e) => {
     const range = new ace.Range(startRow, startCol, endRow, endCol);
     aceEditor.session.selection.setRange(range);
     last_marker.aceEditor = aceEditor;
-    cellElement.jupyter.scrollToCell(cellElement.cell);// todo надос делать "мягкий" скролл, если источник не виден
+    cellElement.jupyter.scrollToCell(cellElement.cell, 'smooth');// todo надос делать "мягкий" скролл, если источник не виден
 }
 
