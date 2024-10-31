@@ -1724,7 +1724,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
                         ~class="{'group' : $for.item.__group__}"
                         ~style="{'min-height': iconSize + 'px'}"
                         class="flex cell-content"
-                        :dark="raisedRows.includes($for.item)"
+                        :header="raisedRows.includes($for.item)"
                         :column="$$for.item"
                         :item="$for.item"
                         @pointerdown="table.focusCell($for.item, $$for.item)"

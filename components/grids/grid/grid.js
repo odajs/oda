@@ -10,6 +10,7 @@ ODA({
             top: 0px;
             position: sticky;
         }
+        }
         :host > oda-grid-foot{
             bottom: 0px;
             position: sticky;

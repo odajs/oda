@@ -8,6 +8,7 @@ ODA({ is: 'oda-jupyter-tree', imports: '@oda/tree', extends: 'oda-tree',
         this.$super('oda-table', 'onTapRows', e);
         this.scrollToCell?.(e.target.item);
     },
+    autoFixRows : true,
     hideRoot: true
  });
 ODA({is: 'oda-jupyter-tree-cell', extends: 'this, oda-table-cell',

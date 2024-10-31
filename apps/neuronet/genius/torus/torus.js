@@ -701,40 +701,7 @@ torus.prototype.check_dims = function(...dims){
         return r;
     })
 }
-torus.prototype.max = function(dim, keepdim = false){
-    if(dim === undefined){
-        const data = this.data.reduce((r, v)=>r>v?r:v,this.data[0]);
-        return torus.tensor(data)._label('max');
-    }
-    else{
-        // const dims = this.check_dims([dim]);
-        throw new Error('not ready!')
-    }
-}
-torus.prototype.min = function(dim, keepdim = false){
-    if(dim === undefined){
-        const data = this.data.reduce((r, v)=>r<v?r:v,this.data[0]);
-        return  torus.tensor(data)._label('min');
-    }
-    else{
-        // const dims = this.check_dims([dim]);
-        throw new Error('not ready!')
-    }
-}
-torus.prototype.sum = function (dims = [], keepdim = false){
-    dims = torus.flat(dims);
-    dims = this.check_dims(dims);
-    const vars = torus.genVarsArray(this.dim).reverse();
-    let out = (dims.length && vars.filter((v, i)=>(!dims.includes(i))).join('')) || '';
-    let expr = vars.join('') + ' -> ' + out;
-    out = torus.einsum(expr, this, (x,y) => x + y, (g) => g)
-    out._label('sum d = [' + dims + '] ('+expr+')');
-    if(keepdim){
-        const shape = this.shape.map((v, i)=>(!dims.length || dims.includes(i)?1:v));
-        out._shape(shape);
-    }
-    return out;
-}
+
 torus.prototype.findIndex = function(...indexes){
     indexes = torus.flat(indexes);
     return indexes.reduce((r, v, i)=> (r + v * this.shape_multipliers[i]), 0)
@@ -751,12 +718,7 @@ torus.prototype.set = function(value, ...indexes){
     const idx = indexes.reduce((r, v, i)=>(r + v * this.shape_multipliers[i]), 0)
     this.data.set(value.data || torus.flat(value), idx);
 }
-torus.prototype.mean = function(dims = [], keepdim = false){
-    let out = this.sum(...arguments);
-    out = out.divide(this.size / out.size);
-    out._label('mean')
-    return out;
-}
+
 tensor.prototype.tril = function (diagonal = 0){
     if (this.dim < 2)
         throw new Error('torus.tril: input tensor must have at least 2 dimensions');
@@ -1374,7 +1336,7 @@ torus.eye = (...shape)=>{
     return torus.from(data)._shape(shape)._label('eye');
 }
 
-section_system:{
+system_section:{
     torus.async = (handler)=>{
         return new Promise(resolve=>{
             setTimeout(()=>{
@@ -1488,9 +1450,54 @@ section_system:{
         return out;
     }
 }
+aggregate_section:{
+    torus.prototype.max = function(dim, keepdim = false){
+        if(dim === undefined){
+            const data = this.data.reduce((r, v)=>r>v?r:v,this.data[0]);
+            return torus.tensor(data)._label('max');
+        }
+        else{
+            // const dims = this.check_dims([dim]);
+            throw new Error('not ready!')
+        }
+    }
+    torus.prototype.min = function(dim, keepdim = false){
+        if(dim === undefined){
+            const data = this.data.reduce((r, v)=>r<v?r:v,this.data[0]);
+            return  torus.tensor(data)._label('min');
+        }
+        else{
+            // const dims = this.check_dims([dim]);
+            throw new Error('not ready!')
+        }
+    }
+    torus.prototype.mean = function(dims = [], keepdim = false){
+        let sum = this.sum(...arguments);
+        let out = sum.divide(this.size / sum.size);
+        out._label(sum.label.replace('sum', 'mean'))
+        return out;
+    }
+    torus.prototype.sum = function (dims = [], keepdim = false){
+        let shape_info = this.shape_info;
+        const from = shape_info.map(i=>i.char);
+        let dims_info = this.dims_info(dims)
+        let to = dims_info.map(i=>i.char);
+        to = !to.length?to:from.filter(a=>!to.includes(a))
 
+        let expr = from.join('') + '->' + to.join('');
+        let out = torus.einsum(expr, this, (x,y) => x + y, (g) => g)
 
-section_convertors:{
+        if(keepdim){
+            const shape = this.shape_info.map((v, i)=>{
+                return !dims_info.length || dims_info.includes(v)?1:v.dim;
+            })
+            out._shape(shape);
+        }
+        out._label(`sum(d=[${dims}], keepdim=${keepdim}):\'${expr}\'`);
+        return out;
+    }
+}
+convertors_section:{
     torus.prototype.float = function (){
         if (this.dtype !== Float32Array){
             let data = new Float32Array(this.size);
