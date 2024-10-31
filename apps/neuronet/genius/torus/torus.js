@@ -719,37 +719,6 @@ torus.prototype.set = function(value, ...indexes){
     this.data.set(value.data || torus.flat(value), idx);
 }
 
-tensor.prototype.tril = function (diagonal = 0){
-    if (this.dim < 2)
-        throw new Error('torus.tril: input tensor must have at least 2 dimensions');
-
-    const _x = this.shape[this.dim - 1];
-    const _y = this.shape[this.dim - 2];
-    let step = _x * _y;
-    let _z = this.size/step;
-    const data = new this.dType(this.size)
-    let idx = 0;
-    for (let z = 0; z < _z; z ++){
-        for (let y = 0; y < _y; y++){
-            for (let x = 0; x < _x; x++){
-                data[idx] = (x - y > diagonal)?0:this.data[idx];
-                idx++;
-            }
-        }
-    }
-    const out = tensor.from(data)._shape(this)._label('tril');
-    out._back = () => {
-        this.grad = this.grad.map((g, i)=>{
-            return g + out.grad[i];
-        })
-    }
-    return out;
-
-}
-torus.tril = function (tensor, diagonal = 0){
-    return tensor.tril(diagonal);
-}
-
 tensor.prototype.slice = function (...slicers){
     if (slicers.length>this.dim)
         throw new Error(`IndexError: too many indices for tensor of dimension ${this.dim}`);
@@ -872,13 +841,15 @@ tensor.prototype.log_ = function (){
     }
     return this;
 }
-torus.prototype.masked_fill = function(other, value = 0, mask = 0){
-    const h = `(x,y) => y === ${mask}?${value}:x`;
-    return this._element_wise_operator(other, h);
-}
+
 torus.prototype.allclose = function(other, rtol = 1e-05, atol = 1e-08, equal_nan = false ){
     const fn = equal_nan?(r, y, i)=>(r && (this.data[i] || 0) - (y || 0) <= atol + rtol * (y || 0)):((r, y, i)=>r && this.data[i] - y <= atol + rtol * y)
     return other.data.reduce(fn, true);
+}
+
+torus.prototype.masked_fill = function(other, value = 0, mask = 0){
+    const h = `(x,y) => y === ${mask}?${value}:x`;
+    return this._element_wise_operator(other, h);
 }
 
 tensor.prototype.plus = function (other){
@@ -897,43 +868,6 @@ tensor.prototype.pow = function (other){
     return this._element_wise_operator(other, {forward:  '(x, y) => x ** y', backward_0: '(g, y) => y * (g ** (y - 1))', backward_1: '(x, g) => x ** g * Math.log(x)'});
 }
 
-tensor.prototype.invert = function (){
-    return this._element_wise_function({forward: 'x=>x * -1', backward_0: '()=>-1'});
-}
-tensor.prototype.exp = function (){
-    return this._element_wise_function({forward: 'Math.exp',  backward_0: 'x=>x'});
-}
-tensor.prototype.log = function (){
-    return this._element_wise_function({forward: 'Math.log', backward_0: '(x, y)=>1/x*y'});
-}
-tensor.prototype.tanh = function (){
-    return this._element_wise_function({forward: 'Math.tanh', backward_0: 'x=>(1 - x ** 2)'});
-}
-tensor.prototype.sigmoid = function (params){
-    return this._element_wise_function({forward: 'x=>(1 / (1 + Math.exp(-x)))', backward_0: '(x, y)=>y * (1 - y)'});
-}
-tensor.prototype.sigm = function (params){
-    return this.sigmoid(params);
-}
-tensor.prototype.relu = function (params) {
-    return this._element_wise_function({forward: '(x)=>(x>0?x:0)', backward_0: '(x, y)=>(y>0?1:0)'});
-}
-tensor.prototype.mandelbrot = function (params){
-    return this._element_wise_function({forward: 'x=>(Math.pow(x,  2) + 1)', backward_0: '(x, y)=>(2 * y)'});
-}
-tensor.prototype.softplus = function (params) {
-    return this._element_wise_function({forward: 'x=>(Math.log(1 + Math.exp(x)))', backward_0: `(x, y)=> { 
-        let exp = Math.exp(y); 
-        return exp / (1 + exp); 
-    }`});
-}
-tensor.prototype.silu = function (params) {
-    return this._element_wise_function({forward: 'x=>(x  / (1 + Math.exp(-x)))', backward_0: `(x, y)=> {
-        let ex = Math.exp(-y);
-        let onePlusEx = 1 + ex;
-        return (onePlusEx + ex * y) / (onePlusEx ** 2);
-    }`})
-}
 tensor.prototype.softmax = function (dim = -1){
     const step = this.shape[this.shape.length-1];
     const size = this.size/step;
@@ -1245,98 +1179,7 @@ tensor.unpack = (expr, inputs)=>{
 }
 
 
-// ФУНКЦИИ ГЕНЕРАТОРЫ
-
-torus.empty = (...shape)=>{
-    const handle = ()=>(torus.generator() - .5) / 2
-    return torus.fill(shape, handle, Float32Array)._label(`empty`);
-}
-
-torus.rand_n = (...shape)=>{
-    const handle = ()=>{
-        return Math.sqrt(-2 * Math.log(torus.generator())) * Math.cos((2 * Math.PI) * torus.generator())
-    }
-    return torus.fill(shape, handle, Float32Array)._label(`rand_n`);
-}
-torus.ones_like = (src) => {
-    return torus.ones(src.shape);
-}
-torus.arange = (from_or_size = 0, to, step = 1, ...shape)=>{
-    shape = torus.flat(shape);
-    let repeat = shape.mul() || 1;
-    let steps;
-    let label = 'arange';
-    if(from_or_size !== undefined)
-        label +=' '+from_or_size;
-    if(to !== undefined)
-        label +=' … '+to;
-    if (to === undefined){
-        to = from_or_size
-        from_or_size = 0;
-    }
-    else
-        to -= from_or_size;
-    step *= Math.sign(to - from_or_size);
-    to = Math.abs(step>0?Math.ceil(to / step):Math.floor(to / step));
-    if(to){
-        let data = [];
-        let idx = -1;
-        let v = from_or_size - step;
-        for (let i = 0; i < to; i++){
-            data[++idx] = (v += step)
-        }
-        data = new Float32Array(Array(repeat).fill(data).flat());
-        shape.push(to)
-        return torus.tensor(data)._shape(shape)._label(label);
-    }
-    return torus.tensor()._label(label)
-}
-torus.rand_int = (min_or_max = 0, max, ...shape)=>{
-    shape = torus.flat(shape)
-    if(max === undefined){
-        max = min_or_max;
-        min_or_max = 0;
-
-    }
-    if(max <= min_or_max)
-        throw new Error('max <= min');
-    if (shape.length === 0)
-        shape = [Math.round(max - min_or_max)];
-    const data = new Int32Array(shape.mul() || 1).map(i=>{
-        const r = torus.generator();
-        return Math.round(r * (max - min_or_max) + min_or_max);
-    });
-    return new torus(data, Int32Array)._shape(shape)._label(`rand_int ${min_or_max}-${max}`);
-}
-torus.rand = (...shape) => {
-    return torus.fill(shape, torus.generator, Float32Array)._label('rand');
-}
-torus.rand_bin = (...shape) => {
-    const handler = ()=>{
-        let value = torus.generator().toString(2).substring(2);
-        return BigInt('0b' + value.padEnd(64, value))
-    }
-    return torus.fill(...shape, handler, BinaryArray)._label('rand_bin');
-}
-torus.zeros = (...shape) => {
-    return torus.fill(shape, 0, Int8Array)._label('zeros');
-}
-torus.ones = (...shape) => {
-    return torus.fill(shape, 1, Int8Array)._label('ones');
-}
-torus.eye = (...shape)=>{
-    shape = torus.flat(shape);
-    const size = shape.mul();
-    const data = new Int8Array(size);
-    let dim = shape.last
-    let step = Math.min(size/ dim, dim);
-    for (let i = 0; i<step; i++){
-        data[i * dim + i] = 1;
-    }
-    return torus.from(data)._shape(shape)._label('eye');
-}
-
-system_section:{
+systems:{
     torus.async = (handler)=>{
         return new Promise(resolve=>{
             setTimeout(()=>{
@@ -1452,7 +1295,144 @@ system_section:{
         return out;
     }
 }
-aggregate_section:{
+generators:{
+
+// ФУНКЦИИ ГЕНЕРАТОРЫ
+
+    torus.empty = (...shape)=>{
+        const handle = ()=>(torus.generator() - .5) / 2
+        return torus.fill(shape, handle, Float32Array)._label(`empty`);
+    }
+
+    torus.rand_n = (...shape)=>{
+        const handle = ()=>{
+            return Math.sqrt(-2 * Math.log(torus.generator())) * Math.cos((2 * Math.PI) * torus.generator())
+        }
+        return torus.fill(shape, handle, Float32Array)._label(`rand_n`);
+    }
+    torus.ones_like = (src) => {
+        return torus.ones(src.shape);
+    }
+    torus.arange = (from_or_size = 0, to, step = 1, ...shape)=>{
+        shape = torus.flat(shape);
+        let repeat = shape.mul() || 1;
+        let steps;
+        let label = 'arange';
+        if(from_or_size !== undefined)
+            label +=' '+from_or_size;
+        if(to !== undefined)
+            label +=' … '+to;
+        if (to === undefined){
+            to = from_or_size
+            from_or_size = 0;
+        }
+        else
+            to -= from_or_size;
+        step *= Math.sign(to - from_or_size);
+        to = Math.abs(step>0?Math.ceil(to / step):Math.floor(to / step));
+        if(to){
+            let data = [];
+            let idx = -1;
+            let v = from_or_size - step;
+            for (let i = 0; i < to; i++){
+                data[++idx] = (v += step)
+            }
+            data = new Float32Array(Array(repeat).fill(data).flat());
+            shape.push(to)
+            return torus.tensor(data)._shape(shape)._label(label);
+        }
+        return torus.tensor()._label(label)
+    }
+    torus.rand_int = (min_or_max = 0, max, ...shape)=>{
+        shape = torus.flat(shape)
+        if(max === undefined){
+            max = min_or_max;
+            min_or_max = 0;
+
+        }
+        if(max <= min_or_max)
+            throw new Error('max <= min');
+        if (shape.length === 0)
+            shape = [Math.round(max - min_or_max)];
+        const data = new Int32Array(shape.mul() || 1).map(i=>{
+            const r = torus.generator();
+            return Math.round(r * (max - min_or_max) + min_or_max);
+        });
+        return new torus(data, Int32Array)._shape(shape)._label(`rand_int ${min_or_max}-${max}`);
+    }
+    torus.rand = (...shape) => {
+        return torus.fill(shape, torus.generator, Float32Array)._label('rand');
+    }
+    torus.rand_bin = (...shape) => {
+        const handler = ()=>{
+            let value = torus.generator().toString(2).substring(2);
+            return BigInt('0b' + value.padEnd(64, value))
+        }
+        return torus.fill(...shape, handler, BinaryArray)._label('rand_bin');
+    }
+    torus.zeros = (...shape) => {
+        return torus.fill(shape, 0, Int8Array)._label('zeros');
+    }
+    torus.ones = (...shape) => {
+        return torus.fill(shape, 1, Int8Array)._label('ones');
+    }
+    torus.eye = (...shape)=>{
+        shape = torus.flat(shape);
+        const size = shape.mul();
+        const data = new Int8Array(size);
+        let dim = shape.last
+        let step = Math.min(size/ dim, dim);
+        for (let i = 0; i<step; i++){
+            data[i * dim + i] = 1;
+        }
+        return torus.from(data)._shape(shape)._label('eye');
+    }
+
+}
+functions:{
+
+    torus.prototype.sqrt = function(){
+        return this._element_wise_function({forward: 'x => Math.sqrt(x)', backward_0: 'x => 1 / (2 * Math.sqrt(x))'})
+    }
+    tensor.prototype.invert = function (){
+        return this._element_wise_function({forward: 'x=>x * -1', backward_0: '()=>-1'});
+    }
+    tensor.prototype.exp = function (){
+        return this._element_wise_function({forward: 'Math.exp',  backward_0: 'x=>x'});
+    }
+    tensor.prototype.log = function (){
+        return this._element_wise_function({forward: 'Math.log', backward_0: '(x, y)=>1/x*y'});
+    }
+    tensor.prototype.tanh = function (){
+        return this._element_wise_function({forward: 'Math.tanh', backward_0: 'x=>(1 - x ** 2)'});
+    }
+    tensor.prototype.sigmoid = function (params){
+        return this._element_wise_function({forward: 'x=>(1 / (1 + Math.exp(-x)))', backward_0: '(x, y)=>y * (1 - y)'});
+    }
+    tensor.prototype.sigm = function (params){
+        return this.sigmoid(params);
+    }
+    tensor.prototype.relu = function (params) {
+        return this._element_wise_function({forward: '(x)=>(x>0?x:0)', backward_0: '(x, y)=>(y>0?1:0)'});
+    }
+    tensor.prototype.mandelbrot = function (params){
+        return this._element_wise_function({forward: 'x=>(Math.pow(x,  2) + 1)', backward_0: '(x, y)=>(2 * y)'});
+    }
+    tensor.prototype.softplus = function (params) {
+        return this._element_wise_function({forward: 'x=>(Math.log(1 + Math.exp(x)))', backward_0: `(x, y)=> { 
+            let exp = Math.exp(y); 
+            return exp / (1 + exp); 
+        }`});
+    }
+    tensor.prototype.silu = function (params) {
+        return this._element_wise_function({forward: 'x=>(x  / (1 + Math.exp(-x)))', backward_0: `(x, y)=> {
+            let ex = Math.exp(-y);
+            let onePlusEx = 1 + ex;
+            return (onePlusEx + ex * y) / (onePlusEx ** 2);
+        }`})
+    }
+}
+aggregates:{
     torus.prototype.max = function(dim, keepdim = false){
         if(dim === undefined){
             const data = this.data.reduce((r, v)=>r>v?r:v,this.data[0]);
@@ -1512,7 +1492,7 @@ aggregate_section:{
         return out;
     }
 }
-convertors_section:{
+convertors:{
     torus.prototype.float = function (){
         if (this.dtype !== Float32Array){
             let data = new Float32Array(this.size);
@@ -1523,6 +1503,33 @@ convertors_section:{
             this.data = data;
         }
         return this;
+    }
+    torus.prototype.tril = function (diagonal = 0){
+        if (this.dim < 2)
+            throw new Error('input tensor must have at least 2 dimensions');
+
+        const _x = this.shape[this.dim - 1];
+        const _y = this.shape[this.dim - 2];
+        let step = _x * _y;
+        let _z = this.size/step;
+        const data = new this.dType(this.size)
+        let idx = 0;
+        for (let z = 0; z < _z; z ++){
+            for (let y = 0; y < _y; y++){
+                for (let x = 0; x < _x; x++){
+                    data[idx] = (x - y > diagonal)?0:this.data[idx];
+                    idx++;
+                }
+            }
+        }
+        const out = tensor.from(data)._shape(this)._label('tril');
+        out._back = () => {
+            this.grad = this.grad.map((g, i)=>{
+                return g + out.grad[i];
+            })
+        }
+        return out;
+
     }
 }
 
