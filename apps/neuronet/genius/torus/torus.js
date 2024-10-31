@@ -1479,6 +1479,7 @@ aggregates:{
     }
     torus.prototype.mean = function(dims = [], attributes = {},
                                     $ = Object.assign({keepdim: false, dType: Float32Array, out: null}, attributes)){
+
         let sum = this.sum(...arguments);
         let out = sum.divide(this.size / sum.size);
         out._label(sum.label.replace('sum', 'mean'))
@@ -1486,10 +1487,26 @@ aggregates:{
     }
     torus.prototype.var = function(dims = [], attributes = {},
                                    $ = Object.assign({correction: 1, keepdim: false, dType: Float32Array, out: null}, attributes)){
-        const avg = this.data.reduce((r, v)=>r + v, 0)/this.size;
-        const sum = this.data.reduce((r, x)=>r + (x - avg) ** 2, 0);
-        const data = 1/Math.max(this.size - $.correction) * sum;
-        const out = torus.tensor([data])._label('var')
+
+        const avg = this.mean(dims, $);
+        let s1 = this.shape_info;
+        let s2 = avg.shape_info;
+        s1 = s1.map((v1, i)=>{
+            let v2 = s2[i];
+            if(v2 === undefined || v2.dim === v1.dim)
+                return v1.char;
+            return v1.char.toUpperCase();
+        }).join('')
+        s2 = s2.map(v2=>v2.char).join('');
+        let expr = s1+','+s2+'->'+ s2;
+        $.forward = '(x, y)=>(x - y) ** 2';
+        const sum = torus.einsum(expr, [this, avg], $);
+        const multiplier = 1/Math.max(0, this.size / avg.size - $.correction);
+        const out = sum.multiply(multiplier);
+        out._label(`var(dims=[${dims}], ${JSON.stringify($)}):\'${expr}\'`);
+        // const sum = this.data.reduce((r, x)=>r + (x - avg) ** 2, 0);
+        // const data =  * sum;
+        // const out = torus.tensor([data])._label('var')
         return out;
     }
 }
