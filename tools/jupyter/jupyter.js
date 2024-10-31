@@ -812,7 +812,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 return this.cell?.hideCode
             },
             set(n){
-                this.cell.hideCode = this.cell.hideOutput = n;   
+                this.cell.hideCode = n;
             }
         },
         maxRow:{
@@ -1080,6 +1080,7 @@ class JupyterCell extends ROCKS({
         },
         set(n){
             this.writeMetadata('hideCode', n);
+            this.hideOutput = n
         }
     },
     hideOutput: {
@@ -1120,7 +1121,7 @@ class JupyterCell extends ROCKS({
         this.data = data;
     }
     async run(jupyter){
-        this.cell.hideOutput = false;
+        this.hideOutput = false;
         this.time = '';
         this.status = '';
         this.isRun = true;
@@ -1145,9 +1146,13 @@ class JupyterCell extends ROCKS({
             }
         }
         catch (e){
-            let error = e.stack;
+            jupyter.output_data.push('<label onclick=\'_onLogTap(this)\' style=\'text-decoration: underline; padding: 2px; font-size: large; margin-bottom: 4px; cursor: pointer;\'>'+e.message.replaceAll('"', '\\\"')+':</label>')
+            let error = e.stack
             error = error.replaceAll('<', '&lt;')
             error = error.replaceAll('>', '&gt;')
+
+
+
             jupyter.output_data.push(error);
             this.status = 'error';
         }
@@ -1202,14 +1207,10 @@ window._onLogTap = (e) => {
         last_marker = {}
         return;
     }
-
     last_marker.label = e;
     e.setAttribute('selected', true);
     const text = '>'+e.innerText.replace(':', '');
-
     const codeEditor = cellElement.control?.$('oda-code-editor');
-    if (!codeEditor)
-        return;
     const aceEditor = codeEditor.editor;
     const value = aceEditor.session.getValue();
     const startRow = value.substr(0, value.indexOf(text)).split(/\r\n|\r|\n/).length - 1;
