@@ -369,7 +369,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         <div style="margin: 8px;">Hidden {{cell.childrenCount}} cells</div>
                     </div>
                 </div>
-                <div ~if="cell?.outputs?.length || cell?.controls?.length" class="info border"  style="max-height: 100%;">
+                <div ~if="!cell.hideCode && (cell?.outputs?.length || cell?.controls?.length)" class="info border"  style="max-height: 100%;">
                     <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell ~show="selected"></oda-jupyter-outputs-toolbar>
                     <div class="vertical flex" style="overflow: hidden;">
                         <div flex vertical ~if="!cell?.metadata?.hideOutput" style="overflow: hidden;">
@@ -890,13 +890,21 @@ class JupyterNotebook extends ROCKS({
     change(add_new) {
         this.isChanged = true;
         this.fire('changed', add_new);
+    },
+    name: 'NOTEBOOK',
+    get label(){
+        return this.name;
     }
 }) {
     url = '';
     constructor(url) {
         super();
-        if (url)
+        if (url){
+
             this.load(url);
+            this.name = this.url.split('/').pop();
+        }
+
     }
 }
 
@@ -1202,6 +1210,9 @@ window._onLogTap = (e) => {
     const range = new ace.Range(startRow, startCol, endRow, endCol);
     aceEditor.session.selection.setRange(range);
     last_marker.aceEditor = aceEditor;
-    // cellElement.jupyter.scrollToCell(cellElement.cell, 'smooth');// todo надос делать "мягкий" скролл, если источник не виден
+    cellElement.jupyter.scrollToCell(cellElement.cell);// todo надос делать "мягкий" скролл, если источник не виден
+    const length = aceEditor.session.doc.getAllLines().length;
+    const height = codeEditor.offsetHeight;
+    cellElement.jupyter.scrollTop += (height / length) * startRow;
 }
 

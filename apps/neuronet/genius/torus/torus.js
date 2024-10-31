@@ -1122,9 +1122,7 @@ tensor.prototype.view = function (...shape) {
         shape = shape[0].shape;
     const out =  tensor.from(this.data).reshape(shape)._src(this)._label('view');
     out._back = ()=>{
-        let i = this.size;
-        while(--i)
-            this.grad[i] += out.grad[i];
+        this.grad = out.grad;
     }
     return out;
 }
@@ -2004,4 +2002,17 @@ const fn_cache = Object.create(null);
 
 globalThis.range ??= (count = 0)=>{
     return Array(count).fill().map((_, i)=>i);
+}
+
+const descr = Object.getOwnPropertyDescriptors(torus.prototype);
+for (let n in descr){
+    if (n.startsWith('_') || n.endsWith('_')) continue;
+    const d = descr[n];
+    if (!d.enumerable)
+        continue;
+    if (d.value?.constructor !== Function)
+        continue;
+    torus[n] ??= (tensor, ...params)=>{
+        return d.value.call(tensor, params);
+    }
 }
