@@ -589,14 +589,14 @@ export class tensor/* extends Array*/{
         let data = this.array.toTensorString(step, max, this.shape, this.dType).split('\n');
         data = data.join('\n');
         let tab = ('  ').repeat(step)
-        let result  = tab + this.type + `: ${this.label?this.label+', ':''}`;
+        let result  = tab + this.type + ` ${this.label}: `;
         if (this.dim)
             result += `shape(${this.shape}), size(${this.size.toLocaleString()}), ${this.dType.name}, ${this.backs.join(',')}\n${tab}(${data})`;
         else
             result += `${this.dType.name}, ${this.backs.join(',')}\n${tab}(${data.replaceAll('[', '').replaceAll(']', '')})`;
         if (this.isParam)
             result = tab + 'Parameter containing:\n'+result;
-        return result+'\n';
+        return result + '\n';
     }
     get array() {
         if(this.shape.length<2)
@@ -1385,7 +1385,7 @@ system_section:{
             shape = [1]
         return tensor.from(data, dType)._shape(shape);
     }
-    torus.prototype._element_wise_operator = function (other, forward = '', this_backward = '', other_backward = ''){
+    torus.prototype._element_wise_operator = function (other, attributes = {}, $ = Object.assign({forward: '', backward_0: '', backward_1: ''}, attributes)){
         other = torus.from(other);
         let max_d = Math.max(this.dim, other.dim);
         const t_vars = torus.genVarsArray(this.dim);
@@ -1511,13 +1511,11 @@ convertors_section:{
     }
 }
 
-
-
-
-tensor.einsum = (in_expr, sources = [], ...functions)=>{
+tensor.einsum = (in_expr, sources = [], attributes = {},
+    $ = Object.assign({dType: Float32Array, forward: ''}, attributes))=>{
     sources = tensor.flat(sources);
     const tensors = sources.map(t => tensor.from(t));
-    let key = in_expr + ':' + tensors.map(i=> i.shape.toString()+'('+ i.dType.name +')' ).join('-') + functions.filter(Boolean).map(i=>i.toString()).join(',');
+    let key = in_expr + ':' + tensors.map(i=> i.shape.toString()+'('+ i.dType.name +')' ).join('-') + JSON.stringify($);
     // console.time(key)
     let fn = fn_cache.einsum?.[key];
     let inputs, outs;
@@ -1633,8 +1631,8 @@ tensor.einsum = (in_expr, sources = [], ...functions)=>{
             }).join('\n');
             if (prev_v.length>1){
                 let v = prev_v.pop();
-                if (functions[0])
-                    res += `\n\t${tabs + v} = (${functions[0].toString()})(${prev_v.join(' * ')}, ${v});`
+                if ($.forward)
+                    res += `\n\t${tabs + v} = (${$.forward.toString()})(${prev_v.join(' * ')}, ${v});`
                 else
                     res += `\n\t${tabs + v} = ${prev_v.join(' * ')} * ${v};`;
                 prev_v = [v]
@@ -1685,8 +1683,8 @@ tensor.einsum = (in_expr, sources = [], ...functions)=>{
                     }).join('\n');
                     if (prev_v.length>1){
                         let v = prev_v.pop();
-                        if (functions[0])
-                            result += `\n\t${tabs + v} = (${functions[0].toString()})(${prev_v.join(' * ')}, ${v});`
+                        if ($.forward)
+                            result += `\n\t${tabs + v} = (${$.forward.toString()})(${prev_v.join(' * ')}, ${v});`
                         else
                             result += `\n\t${tabs + v} = ${prev_v.join(' * ')} * ${v};`;
                         prev_v = [v]
@@ -1745,7 +1743,7 @@ tensor.einsum = (in_expr, sources = [], ...functions)=>{
         fn = fn.fn
     }
 
-    const data = outs.length?new Float32Array(outs.reduce((r,a)=> r * a.d, 1)):new Float32Array(1);
+    const data = outs.length?new $.dType(outs.reduce((r,a)=> r * a.d, 1)):new $.dType(1);
     let out = tensor.from(data);
     let shape = outs.map(i=>i.d);
     if(!shape.length)
@@ -1775,7 +1773,7 @@ tensor.einsum = (in_expr, sources = [], ...functions)=>{
                     return grad;
                 return tt;
             })
-            let out_back = tensor.einsum(expr, sources, functions[i+1]);
+            let out_back = tensor.einsum(expr, sources, {forward: $['backward_'+ i]?.toString()});
             out_res.push(out_back);
             t.grad = t.grad.map((g,i)=>{
                 return g + out_back.data[i];
