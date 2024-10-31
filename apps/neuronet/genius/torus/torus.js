@@ -3,7 +3,7 @@ export class tensor/* extends Array*/{
     #shape = [];
     #data = null;
     #dType = Float32Array;
-    #label = '';
+    // ['#label'] = '';
     #src = undefined;
     #grad = undefined;
     #prev = undefined;
@@ -13,7 +13,6 @@ export class tensor/* extends Array*/{
     #shape_multipliers = undefined;
     backs = [];
     constructor(data, dType) {
-        // super();
         if(data === undefined)
             this.#data = new (dType || this.#dType)(0);
         else if (data?.$ === this.constructor.name){
@@ -50,8 +49,6 @@ export class tensor/* extends Array*/{
 
 
                 this.#shape = shape;
-
-
             }
             else if(this.dType === BinaryArray) {
                 if (data?.length)
@@ -69,18 +66,6 @@ export class tensor/* extends Array*/{
         }
         this.#dType = dType || this.#data.constructor || this.#dType;
         this.id = genId();
-        // return new Proxy(this, {
-        //     get(target, p, receiver) {
-        //         const value = target[p];
-        //         if (value?.constructor === Function)
-        //             return value.bind(target);
-        //         return value;
-        //     },
-        //     set(target, p, value, receiver) {
-        //         target[p] = value;
-        //         return true;
-        //     }
-        // })
     }
     _resize_data(data, ...shape){
         while (shape.some(i=>Array.isArray(i)))
@@ -120,7 +105,7 @@ export class tensor/* extends Array*/{
         return result;
     }
     _label(label){
-        this.#label = label;
+        this['#label'] = label;
         return this;
     }
     _src(...src){
@@ -228,7 +213,7 @@ export class tensor/* extends Array*/{
         return this.shape.length;
     }
     get label(){
-        return this.#label
+        return this['#label']
     }
     get type(){
         return this.#type ?? (()=>{
@@ -791,11 +776,11 @@ tensor.prototype.tril = function (diagonal = 0){
         }
     }
     const out = tensor.from(data)._shape(this)._label('tril');
-    out._back = function tril_back() {
+    out._back = () => {
         this.grad = this.grad.map((g, i)=>{
             return g + out.grad[i];
         })
-    }.bind(this);
+    }
     return out;
 
 }
@@ -1136,11 +1121,11 @@ tensor.prototype.view = function (...shape) {
     if(Object.equal(shape[0]?.constructor, tensor))
         shape = shape[0].shape;
     const out =  tensor.from(this.data).reshape(shape)._src(this)._label('view');
-    out._back = function ViewBackward(){
-        for (let i = 0; i < this.grad.length; i++){
+    out._back = ()=>{
+        let i = this.size;
+        while(--i)
             this.grad[i] += out.grad[i];
-        }
-    }.bind(this);
+    }
     return out;
 }
 
@@ -1167,11 +1152,9 @@ tensor.prototype.crossEntropy = function (target) {
     })
     loss = -loss.avg();
     const out = tensor.from([loss])._src(this)._label('crossEntropy');
-    this._back = function CrossEntropyBackward(){
-        this.src.forEach(src=>{
-            src.grad = this.grad.map(i=>i);
-        })
-    }.bind(this);
+    this._back = ()=>{
+        this.src.forEach(src=>src.grad = this.grad)
+    }
     return out;
 }
 
@@ -1394,6 +1377,14 @@ torus.eye = (...shape)=>{
 }
 
 section_system:{
+    torus.async = (handler)=>{
+        return new Promise(resolve=>{
+            setTimeout(()=>{
+                handler();
+                resolve()
+            })
+        })
+    }
     Object.defineProperty(torus.prototype, 'shape_info', {
         configurable: true,
         get(){
