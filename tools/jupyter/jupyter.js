@@ -21,6 +21,14 @@ window.log = (...e) => {
                 });
                 return as_json?((as_array && i.length<1000)?JSON.stringify(i):JSON.stringify(i, 0, 2)):i.join('\n');
             }
+            if (i?.constructor !== Object) {
+                return i?.toString();
+            }
+            try{
+                return JSON.stringify(i)
+            }catch (e){
+
+            }
             return i.toString();
         }
         return i
