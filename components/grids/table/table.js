@@ -1725,6 +1725,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
                         ~style="{'min-height': iconSize + 'px'}"
                         class="flex cell-content"
                         :header="raisedRows.includes($for.item)"
+                        :border-bottom="raisedRows.last === $for.item"
                         :column="$$for.item"
                         :item="$for.item"
                         @pointerdown="table.focusCell($for.item, $$for.item)"

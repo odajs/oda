@@ -74,7 +74,7 @@ ODA({is: 'oda-hexagon-layout', imports: '@oda/button',
         },
         background: {
             $public: true,
-            $def: 'var(--border-color)',
+            $def: 'var(--dark-background)',
             $save: true,
             $editor: '@oda/color-picker[oda-color-picker]'
         },

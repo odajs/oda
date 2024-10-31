@@ -10,7 +10,7 @@ let style = /*css*/`
     --content-color: light-dark(black, rgb(200 200 200));
     --header-background: light-dark(silver, rgb(50 50 50));
     --header-color: var(--content-color);
-    --border-color: light-dark(darkgray, darkgray);
+    --border-color: light-dark(black, white);
 
     --accent-color: light-dark(blue, oklch(0.72 0.16 259.27));
     --success-color: light-dark(green, green);
