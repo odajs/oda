@@ -2020,6 +2020,6 @@ for (let n in descr){
     if (d.value?.constructor !== Function)
         continue;
     torus[n] ??= (tensor, ...params)=>{
-        return d.value.call(tensor, params);
+        return d.value.call(tensor, ...params);
     }
 }
