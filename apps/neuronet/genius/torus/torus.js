@@ -882,57 +882,57 @@ torus.prototype.allclose = function(other, rtol = 1e-05, atol = 1e-08, equal_nan
 }
 
 tensor.prototype.plus = function (other){
-    return this._element_wise_operator(other, (x, y) => x + y, (g) => g, (_, g) => g);
+    return this._element_wise_operator(other, {forward: '(x, y) => x + y', backward_0: '(g) => g',  backward_1:'(_, g) => g)'});
 }
 tensor.prototype.minus = function (other){
-    return this._element_wise_operator( other, (x, y) => x - y, (g) => g, (_, g) => -g);
+    return this._element_wise_operator( other, {forward: '(x, y) => x - y', backward_0: '(g) => g', backward_1: '(_, g) => -g'});
 }
 tensor.prototype.multiply = function (other){
-    return this._element_wise_operator(other, (x, y) => x * y, (g, y) => g * y, (x, g) => x * g);
+    return this._element_wise_operator(other, {forward:  '(x, y) => x * y', backward_0: '(g, y) => g * y', backward_1: '(x, g) => x * g'});
 }
 tensor.prototype.divide = function (other){
-    return this._element_wise_operator(other, (x, y) => x / y, (g, y) => g / y, (x, g) => -x / (g ** 2));
+    return this._element_wise_operator(other, {forward: '(x, y) => x / y', backward_0: '(g, y) => g / y', backward_1: '(x, g) => -x / (g ** 2)'});
 }
 tensor.prototype.pow = function (other){
-    return this._element_wise_operator(other, (x, y) => x ** y, (g, y) => y * (g ** (y - 1)), (x, g) => x ** g * Math.log(x));
+    return this._element_wise_operator(other, {forward:  '(x, y) => x ** y', backward_0: '(g, y) => y * (g ** (y - 1))', backward_1: '(x, g) => x ** g * Math.log(x)'});
 }
 
 tensor.prototype.invert = function (){
-    return this._element_wise_function(x=>x * -1, ()=>-1);
+    return this._element_wise_function({forward: 'x=>x * -1', backward_0: '()=>-1'});
 }
 tensor.prototype.exp = function (){
-    return this._element_wise_function(Math.exp, x=>x);
+    return this._element_wise_function({forward: 'Math.exp',  backward_0: 'x=>x'});
 }
 tensor.prototype.log = function (){
-    return this._element_wise_function(Math.log, (x, y)=>1/x*y);
+    return this._element_wise_function({forward: 'Math.log', backward_0: '(x, y)=>1/x*y'});
 }
 tensor.prototype.tanh = function (){
-    return this._element_wise_function(Math.tanh, x=>(1 - x ** 2));
+    return this._element_wise_function({forward: 'Math.tanh', backward_0: 'x=>(1 - x ** 2)'});
 }
 tensor.prototype.sigmoid = function (params){
-    return this._element_wise_function(x=>(1 / (1 + Math.exp(-x))), (x, y)=>y * (1 - y));
+    return this._element_wise_function({forward: 'x=>(1 / (1 + Math.exp(-x)))', backward_0: '(x, y)=>y * (1 - y)'});
 }
 tensor.prototype.sigm = function (params){
     return this.sigmoid(params);
 }
 tensor.prototype.relu = function (params) {
-    return this._element_wise_function((x)=>(x>0?x:0), (x, y)=>(y>0?1:0));
+    return this._element_wise_function({forward: '(x)=>(x>0?x:0)', backward_0: '(x, y)=>(y>0?1:0)'});
 }
 tensor.prototype.mandelbrot = function (params){
-    return this._element_wise_function(x=>(Math.pow(x,  2) + 1), (x, y)=>(2 * y));
+    return this._element_wise_function({forward: 'x=>(Math.pow(x,  2) + 1)', backward_0: '(x, y)=>(2 * y)'});
 }
 tensor.prototype.softplus = function (params) {
-    return this._element_wise_function(x=>(Math.log(1 + Math.exp(x))), (x, y)=> {
-        let exp = Math.exp(y);
-        return exp / (1 + exp);
-    });
+    return this._element_wise_function({forward: 'x=>(Math.log(1 + Math.exp(x)))', backward_0: `(x, y)=> { 
+        let exp = Math.exp(y); 
+        return exp / (1 + exp); 
+    }`});
 }
 tensor.prototype.silu = function (params) {
-    return this._element_wise_function(x=>(x  / (1 + Math.exp(-x))), (x, y)=> {
+    return this._element_wise_function({forward: 'x=>(x  / (1 + Math.exp(-x)))', backward_0: `(x, y)=> {
         let ex = Math.exp(-y);
         let onePlusEx = 1 + ex;
         return (onePlusEx + ex * y) / (onePlusEx ** 2);
-    })
+    }`})
 }
 tensor.prototype.softmax = function (dim = -1){
     const step = this.shape[this.shape.length-1];
@@ -1385,7 +1385,8 @@ system_section:{
             shape = [1]
         return tensor.from(data, dType)._shape(shape);
     }
-    torus.prototype._element_wise_operator = function (other, attributes = {}, $ = Object.assign({forward: '', backward_0: '', backward_1: ''}, attributes)){
+    torus.prototype._element_wise_operator = function (other, attributes = {},
+                                                       $ = Object.assign({forward: '', backward_0: '', backward_1: ''}, attributes)){
         other = torus.from(other);
         let max_d = Math.max(this.dim, other.dim);
         const t_vars = torus.genVarsArray(this.dim);
@@ -1408,7 +1409,7 @@ system_section:{
             outs.push(axis);
         }
         let expr = (t_vars.reverse().join('') || '$') + ', ' + (o_vars.reverse().join('') || '$') + ' -> ' + outs.reverse().join('');
-        const out = torus.einsum(expr,  [this, other], eval(forward), eval(this_backward), eval(other_backward));
+        const out = torus.einsum(expr,  [this, other], $);
         let label;
         try{
             throw new Error()
@@ -1424,8 +1425,9 @@ system_section:{
         out._label(label + ' ('+expr+')');
         return out;
     }
-    tensor.prototype._element_wise_function = function (forward_func, back_func){
-        const data = this.data.map(forward_func);
+    tensor.prototype._element_wise_function = function (attributes = {},
+                                                        $ = Object.assign({forward: '', backward_0: ''}, attributes)){
+        const data = this.data.map(eval($.forward));
         const out = tensor.from(data)._src(this)._shape(this);
         let label;
         try{
@@ -1440,10 +1442,10 @@ system_section:{
 
         }
         out._label(label+' ('+out.shape+')');
-        if (back_func && this.allowGrad){
+        if ($.backward_0 && this.allowGrad){
             out._back = ()=>{
                 for(let i = 0; i<this.grad.length; i++){
-                    this.grad[i] += back_func(this.data[i], out.data[i]) * out.grad[i];
+                    this.grad[i] += eval($.backward_0)(this.data[i], out.data[i]) * out.grad[i];
                 }
             }
         }
@@ -1471,13 +1473,8 @@ aggregate_section:{
             throw new Error('not ready!')
         }
     }
-    torus.prototype.mean = function(dims = [], keepdim = false){
-        let sum = this.sum(...arguments);
-        let out = sum.divide(this.size / sum.size);
-        out._label(sum.label.replace('sum', 'mean'))
-        return out;
-    }
-    torus.prototype.sum = function (dims = [], keepdim = false){
+    torus.prototype.sum = function (dims = [], attributes = {},
+                                    $ = Object.assign({keepdim: false, dType: Float32Array, out: null}, attributes)){
         let shape_info = this.shape_info;
         const from = shape_info.map(i=>i.char);
         let dims_info = this.dims_info(dims)
@@ -1485,15 +1482,33 @@ aggregate_section:{
         to = !to.length?to:from.filter(a=>!to.includes(a))
 
         let expr = from.join('') + '->' + to.join('');
-        let out = torus.einsum(expr, this, (x,y) => x + y, (g) => g)
 
-        if(keepdim){
+        $.forward = (x,y) => x + y;
+        $.back0 = g => g;
+        let out = torus.einsum(expr, this, $)
+
+        if($.keepdim){
             const shape = this.shape_info.map((v, i)=>{
                 return !dims_info.length || dims_info.includes(v)?1:v.dim;
             })
             out._shape(shape);
         }
-        out._label(`sum(d=[${dims}], keepdim=${keepdim}):\'${expr}\'`);
+        out._label(`sum(dims=[${dims}], ${JSON.stringify($)}):\'${expr}\'`);
+        return out;
+    }
+    torus.prototype.mean = function(dims = [], attributes = {},
+                                    $ = Object.assign({keepdim: false, dType: Float32Array, out: null}, attributes)){
+        let sum = this.sum(...arguments);
+        let out = sum.divide(this.size / sum.size);
+        out._label(sum.label.replace('sum', 'mean'))
+        return out;
+    }
+    torus.prototype.var = function(dims = [], attributes = {},
+                                   $ = Object.assign({correction: 1, keepdim: false, dType: Float32Array, out: null}, attributes)){
+        const avg = this.data.reduce((r, v)=>r + v, 0)/this.size;
+        const sum = this.data.reduce((r, x)=>r + (x - avg) ** 2, 0);
+        const data = 1/Math.max(this.size - $.correction) * sum;
+        const out = torus.tensor([data])._label('var')
         return out;
     }
 }
