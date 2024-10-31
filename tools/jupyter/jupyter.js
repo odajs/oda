@@ -471,6 +471,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 try {
                     for (let code of this.notebook.codes){
                         if (code === this.cell) break;
+                        if (code.hideCode && !autorun) continue;
                         if (code.time) continue;
                         await new Promise(async (resolve)=>{
                             await code.run(this.jupyter);
@@ -628,7 +629,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         </div>
     `,
     get hideCode(){
-        return this.cell?.metadata?.hideCode || false;
+        return this.cell?.hideCode;
     },
     set hideCode(n){
         let top = this.jupyter.scrollTop;
@@ -646,8 +647,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         else{
 
         }
-        this.cell.writeMetadata('hideCode', n);
-       // this.jupyter.scrollTop = top;
+        this.cell.hideCode =  n;
     },
     move(direction){
         let top = this.jupyter.scrollTop;
@@ -767,9 +767,9 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         </style>
         <div  class="horizontal" :border="!hideCode" style="min-height: 32px;">
             <oda-code-editor :wrap ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>
-            <div ~if="hideCode" class="horizontal left content flex" style="opacity: .3; cursor: pointer; padding: 8px 4px; text-decoration: underline;" @tap="hideCode=false">
+            <div ~if="hideCode" class="horizontal left content flex" style="opacity: .3; cursor: pointer; padding: 8px 4px; text-decoration: underline;" @dblclick="hideCode=false">
                 <oda-icon icon="bootstrap:eye-slash"></oda-icon>
-                <span bold style="margin: 4px; font-size: large; cursor: pointer;" >{{cell.name}}...</span>
+                <span bold style="margin: 4px; font-size: large; cursor: pointer;" >{{cell.name}} (Double click to show...)</span>
             </div>
         </div>
 
@@ -809,10 +809,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         hideCode: {
             $def: false,
             get(){
-                return this.cell?.readMetadata('hideCode', false)
+                return this.cell?.hideCode
             },
             set(n){
-                this.cell?.writeMetadata('hideCode', n)
+                this.cell.hideCode = n;
             }
         },
         maxRow:{
@@ -1040,7 +1040,6 @@ class JupyterCell extends ROCKS({
         return 0;
     },
     level: {
-        $def: 0,
         get() {
             let prev = this.prev;
             while (prev) {
@@ -1066,8 +1065,15 @@ class JupyterCell extends ROCKS({
         }
         return codes;
     },
+    hideCode: {
+        get() {
+            return this.readMetadata('hideCode') || false;
+        },
+        set(n){
+            this.writeMetadata('hideCode', n);
+        }
+    },
     hidden: {
-        $def: false,
         get() {
             let prev = this.prev;
             while (prev && prev.level >= this.level) {
