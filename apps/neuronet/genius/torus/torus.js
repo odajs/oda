@@ -206,8 +206,9 @@ export class tensor/* extends Array*/{
         return this.#shape;
     }
     get size(){
-        return this.shape.mul();
-        // return this.data.length;
+        // return this.shape.mul();
+        // // return this.data.length;
+        return this.shape.mul() || this.data.length; //У скаляров размерность 0, а количество элементов 1
     }
     get dim(){
         return this.shape.length;
