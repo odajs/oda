@@ -1421,8 +1421,8 @@ section_system:{
         let size = shape.mul();
         let data = new dType(size);
         data = data.map(handler);
-        if (shape.sum() < 2)
-            shape = []
+        if (!shape.mul())
+            shape = [1]
         return tensor.from(data, dType)._shape(shape);
     }
     torus.prototype._element_wise_operator = function (other, forward = '', this_backward = '', other_backward = ''){
