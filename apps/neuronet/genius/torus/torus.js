@@ -1117,24 +1117,24 @@ function genId(){
     return ++_id;
 }
 let _id = 0;
-tensor.parse_shape = (expr, src)=>{
-    const shape = src.shape;
-    const vars = expr.split('');
-    if(vars.length !== shape.length)
-        throw new Error(`Shape size [${shape.length}] does not match variable count [${vars.length}]`);
-    vars.reduce((r, d, i)=>{
-        d = d.trim();
-        switch (d){
-            case '_':{
-
-            } break;
-            default:{
-                r[d] = shape[i];
-            }
-        }
-        return r
-    },{})
-}
+// tensor.parse_shape = (expr, src)=>{
+//     const shape = src.shape;
+//     const vars = expr.split('');
+//     if(vars.length !== shape.length)
+//         throw new Error(`Shape size [${shape.length}] does not match variable count [${vars.length}]`);
+//     vars.reduce((r, d, i)=>{
+//         d = d.trim();
+//         switch (d){
+//             case '_':{
+//
+//             } break;
+//             default:{
+//                 r[d] = shape[i];
+//             }
+//         }
+//         return r
+//     },{})
+// }
 tensor.cosSimilar = (A, B) => {
     if (A && B) {
         A = A.emb || A
@@ -1463,8 +1463,8 @@ aggregates:{
 
         let expr = from.join('') + '->' + to.join('');
 
-        $.forward = (x,y) => x + y;
-        $.back0 = g => g;
+        $.forward ??= (x,y) => x + y;
+        $.backward_0 ??= g => g;
         let out = torus.einsum(expr, this, $)
 
         if($.keepdim){

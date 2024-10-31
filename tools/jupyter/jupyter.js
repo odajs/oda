@@ -27,7 +27,11 @@ window.log = (...e) => {
             try{
                 return JSON.stringify(i)
             }catch (e){
-                ////console.warn(e)
+                ////console.warn(e)//
+
+
+
+
             }
             return i.toString();
         }
