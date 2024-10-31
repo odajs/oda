@@ -256,7 +256,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
                 text-decoration: underline;
             }
         </style>
-        <div id="out-src" :src="outSrc" ~is="outIs" vertical  ~html="outHtml" ~style="{overflowWrap: (textWrap ? 'break-word': ''), whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning :error></div>
+        <div id="out-src" :src="outSrc" ~is="outIs" vertical  ~html="outHtml" ~style="{overflowWrap: (textWrap ? 'break-word': ''), whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning></div>
         <div ~if="curRowsLength<maxRowsLength && !showAll" class="horizontal left header flex" style="font-size: small; align-items: center;">
             <span style="padding: 9px;">Rows: {{curRowsLength.toLocaleString()}} of {{maxRowsLength.toLocaleString()}}</span>
             <oda-button ~if="!showAll" :icon-size class="dark border" style="margin: 4px; border-radius: 2px;" @tap="setStep($event, 1)">Show next {{max.toLocaleString()}}</oda-button>
@@ -1146,14 +1146,14 @@ class JupyterCell extends ROCKS({
             }
         }
         catch (e){
-            jupyter.output_data.push('<label onclick=\'_onLogTap(this)\' style=\'text-decoration: underline; padding: 2px; font-size: large; margin-bottom: 4px; cursor: pointer;\'>'+e.message.replaceAll('"', '\\\"')+':</label>')
-            let error = e.stack
-            error = error.replaceAll('<', '&lt;')
-            error = error.replaceAll('>', '&gt;')
-
-
-
-            jupyter.output_data.push(error);
+            // jupyter.output_data.push('<label onclick=\'_onLogTap(this)\' style=\'text-decoration: underline; padding: 2px; font-size: large; margin-bottom: 4px; cursor: pointer;\'>'+e.message.replaceAll('"', '\\\"')+':</label>')
+            let error = '<span style=\'padding: 2px; font-size: large; margin-bottom: 4px;\'>'+e.toString()+':</span>';
+            let stack = e.stack;
+            stack = stack.replaceAll('<', '&lt;')
+            stack = stack.replaceAll('>', '&gt;')
+            stack = stack.replace(e.toString()+'\n', '')
+            error += '\n'+ stack;
+            jupyter.output_data.push('<div style="padding: 4px;" border error>'+error+'</div>');
             this.status = 'error';
         }
         finally {
