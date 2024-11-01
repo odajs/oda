@@ -1,4 +1,4 @@
-import {tensor} from "../../torus/torus.js";
+import {torus} from "../../torus/torus.js";
 import {nn} from "../neuro-module.js";
 export class Tokenizer  extends nn.NeuroModule{
     _size = undefined;
@@ -16,21 +16,21 @@ export class Tokenizer  extends nn.NeuroModule{
             const _bins =  Array(this.win_size).fill().map((v, i)=>(2. ** - (i + 1) + .5));
             while (_bins.length<this.targetSize)
                 _bins.push(0)
-            return tensor.from(_bins)
+            return torus.from(_bins)
         })();
     }
     __init__(){
         this.vocabulary = {"[end]":{
                 id: 0,
                 w: "[end]",
-                emb: tensor.param(tensor.zeros(this.dim))._label('emb: [end]'),
-                cnt: tensor.param(tensor.empty(this.dim))._label('cnt: [end]')
+                emb: torus.param(torus.zeros(this.dim))._label('emb: [end]'),
+                cnt: torus.param(torus.empty(this.dim))._label('cnt: [end]')
             }}
     }
     forward(x){
         if(typeof x === 'string')
             x = this._text2emb(x);
-        x = tensor.from(x);
+        x = torus.from(x);
         return x;
     }
     restore(x){
@@ -54,13 +54,13 @@ export class Tokenizer  extends nn.NeuroModule{
         tokens = tokens.map(t=>{
             if(typeof(t) === 'string')
                 return this._plus(...this.tokenize(t));
-            return tensor.from(t.emb || t);
+            return torus.from(t.emb || t);
         });
         tokens = tokens.reduce((res, v)=>{
             v = v.data;
             return res.map((x,i) => x + v[i])
         }, new Float32Array(this.dim))
-        return tensor.from(tokens);
+        return torus.from(tokens);
     }
     sample(t1, t2){
         // if(typeof(t1) === 'string')
@@ -71,15 +71,15 @@ export class Tokenizer  extends nn.NeuroModule{
         //     t2 = this.tokenize(t2);
         t2 = this._plus(t2);
 
-        return tensor.cosSimilar(t1, t2);
+        return torus.cosSimilar(t1, t2);
     }
     near(token){
         if(typeof(token) === 'string')
             token = this._plus(...this.tokenize(token));
-        token = tensor.from(token.emb || token);
+        token = torus.from(token.emb || token);
         const res = this.tokens.map(t=>{
             if (t !== token){
-                const v = tensor.cosSimilar(t, token);
+                const v = torus.cosSimilar(t, token);
                 return {w:t.w, v};
             }
         }).filter(i=>i).sort((a,b)=>{
@@ -140,12 +140,12 @@ export class Tokenizer  extends nn.NeuroModule{
                                     window.push(t);
                                 }
                             }
-                            return tensor.stack(window.map(i=>i.cnt));
+                            return torus.stack(window.map(i=>i.cnt));
                         })
-                        let tokens_emb = tensor.stack(tokens.map(i=>i.emb));
-                        let windows_cnt = tensor.stack(windows);
+                        let tokens_emb = torus.stack(tokens.map(i=>i.emb));
+                        let windows_cnt = torus.stack(windows);
 
-                        let res = tensor.einsum(`ld,lod->lo`, [tokens_emb, windows_cnt]);
+                        let res = torus.einsum(`ld,lod->lo`, [tokens_emb, windows_cnt]);
                         res = res.sigm();
                         res = res.MSE(this.BINS);
                         tokens.forEach((v,i)=>{
@@ -205,7 +205,7 @@ export class Tokenizer  extends nn.NeuroModule{
     _text2emb(text){
         let t = this.tokenize(text);
         t = t.map(i=>i.emb);
-        t = tensor.from(t);
+        t = torus.from(t);
         return t;
     }
     _addToken(word, type){
@@ -218,8 +218,8 @@ export class Tokenizer  extends nn.NeuroModule{
                 if (type)
                     res.t = type;
                 // res.id = Object.keys(this.vocabulary).length;
-                res.emb = tensor.param(tensor.empty(this.dim))._label('emb: ' + w);
-                res.cnt = tensor.param(tensor.empty(this.dim))._label('cnt: ' + w);
+                res.emb = torus.param(torus.empty(this.dim))._label('emb: ' + w);
+                res.cnt = torus.param(torus.empty(this.dim))._label('cnt: ' + w);
                 this._tokens = undefined
                 this._size = (this._size || 1) + 1;
                 return res;

@@ -19,7 +19,7 @@ window.log = (...e) => {
                             }
                         }
                         else{
-                            return s;
+                            s = Object.assign({},s);
                         }
                     }
                     return s
@@ -159,6 +159,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             const nb = new JupyterNotebook(this.url);
             nb.listen('ready', async (e) => {
                 await this.$render();
+                this.style.scrollBehavior = 'auto';
+                this.scrollTop = this.scrollHeight;
                 this.async(async () => {
                     const auto_run = this.$$('oda-jupyter-cell').filter(i=>i.cell.autoRun).last
                     if(auto_run)
@@ -166,11 +168,12 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                     await this.$render();
                     if (!this.selectedCell && this.cells?.[this.savedIndex]) {
                         this.selectedCell = this.cells[this.savedIndex];
-                        this.scrollToCell();
+                        await this.scrollToCell();
                     }
                     this.style.visibility = 'visible';
                     this.style.opacity = 1;
-                }, 1000);
+                    this.style.scrollBehavior = 'smooth';
+                });
             })
             nb.listen('changed', async (e) => {
                 if(this.selectedCell) {
