@@ -168,6 +168,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter', extends: 
         buttonsChanged(leftButtons, rightButtons) {
             this.panels[0].buttons = this.leftButtons;
             this.panels[1].buttons = this.rightButtons;
+            this.panels = [...this.panels]; //👀
         }
     },
     $listeners: {
