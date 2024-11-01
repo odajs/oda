@@ -76,6 +76,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 opacity: 0;
                 transition: opacity 1s;
                 background-color: var(--content-background);
+                scroll-behavior: smooth;
+                position: relative;
             }
             @media print {
                 .pe-preserve-print::-webkit-scrollbar { width: 0px; height: 0px; }
@@ -212,24 +214,27 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             }
         }
     },
-    scrollToCell(cell = this.selectedCell, behavior = 'smooth', block = 'start') {
+    async scrollToCell(cell = this.selectedCell, delta = 0) {
         if (!cell) return;
         const cellElements = this.jupyter.$$('oda-jupyter-cell');
         const cellElement = cellElements.find(el => el.cell.id === cell.id);
         if (!cellElement) return;
-        cellElement.scrollIntoView({ behavior, block });
+        this.jupyter.scrollTop = cellElement.offsetTop + delta
+        await new Promise(resolve => this.async(resolve, 100));
+
     },
     async attached() {
         await getLoader();
     },
     async printValue() {
         const cellElements = this.jupyter.$$('oda-jupyter-cell');
+        this.style.scrollBehavior = 'auto';
         this.scrollTop = this.scrollHeight;
-        cellElements[0].scrollIntoView({ behavior: "smooth" });
-        while (this.scrollTop > 100) {
+        this.style.scrollBehavior = 'smooth';
+        this.scrollTop = 0;
+        while (this.scrollTop>0){
             await new Promise(resolve => this.async(resolve, 100));
         }
-        this.scrollTop = 0;
         this.ownerDocument.body.classList.add("pe-preserve-ancestor");
         PrintElements.print([this]);
         // this.ownerDocument.defaultView.print();
@@ -345,8 +350,11 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 border-radius: 50%;
                 @apply --success-invert;
             }
-            :host(:hover) .left-panel {
+            :host([raised]) .left-panel {
                 @apply --header;
+            }
+            :host(:hover) {
+                outline: 1px dashed gray;
             }
             :host(:hover) oda-jupyter-toolbar, :host(:hover) oda-jupyter-outputs-toolbar{
                 display: flex !important;
@@ -1176,10 +1184,10 @@ class JupyterCell extends ROCKS({
         }
     }
     get code(){
-        let code = this.src.replace(/import\s+([\"|\'])(\S+)([\"|\'])/gm, 'await import($1$2$3)');
-        code = code.replace(/import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, '__v__ =  $1 = await import($2$3$4); for(let i in __v__) run_context.i = __v__[i]');
-        code = code.replace(/\s(import\s*\()/gm, ' ODA.$1');
-        code = code.replace(/print\s*\((.*)\)/gm, ' log($1)');
+        let code = this.src.replace(/^\s*import\s+([\"|\'])(\S+)([\"|\'])/gm, 'await import($1$2$3)');
+        code = code.replace(/^\s*import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, '__v__ =  $1 = await import($2$3$4); for(let i in __v__) run_context.i = __v__[i]');
+        code = code.replace(/^\s*(import\s*\()/gm, ' ODA.$1');
+        code = code.replace(/^\s*print\s*\((.*)\)/gm, ' log($1)');
         code = code.split('\n').map(s=>{
             s = s.trim();
             if (s[0] === '[' || s[0] === '{')
@@ -1211,7 +1219,7 @@ function getID() {
     return Math.floor(Math.random() * Date.now()).toString(16);
 }
 let last_marker = {}
-window._onLogTap = (e) => {
+window._onLogTap = async (e) => {
     const cellElement = e.parentElement.domHost
     last_marker.aceEditor?.clearSelection();
     last_marker.label?.removeAttribute('selected');
@@ -1234,9 +1242,11 @@ window._onLogTap = (e) => {
     const range = new ace.Range(startRow, startCol, endRow, endCol);
     aceEditor.session.selection.setRange(range);
     last_marker.aceEditor = aceEditor;
-    cellElement.jupyter.scrollToCell(cellElement.cell);// todo надос делать "мягкий" скролл, если источник не виден
     const length = aceEditor.session.doc.getAllLines().length;
     const height = codeEditor.offsetHeight;
-    cellElement.jupyter.scrollTop += (height / length) * startRow;
+    const delta = (height / length) * startRow;
+    if (cellElement.jupyter.scrollTop>codeEditor.domHost.domHost.offsetTop + delta)
+        cellElement.jupyter.scrollToCell(cellElement.cell, delta);
+
 }
 
