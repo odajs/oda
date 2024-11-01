@@ -1611,6 +1611,8 @@ tensor.einsum = (in_expr, sources = [], attributes = {},
             }).join('\n'),
         ].join('\n');
         vars += `\nlet idx = -1;\n`;
+        if ($.forward)
+            vars += `let forward = enum(${$.forward.toString()});\n`;
 
 
         const out_tabs = '\t'.repeat(outs.length);
@@ -1672,7 +1674,7 @@ tensor.einsum = (in_expr, sources = [], attributes = {},
             if (prev_v.length>1){
                 let v = prev_v.pop();
                 if ($.forward)
-                    res += `\n\t${tabs + v} = (${$.forward.toString()})(${prev_v.join(' * ')}, ${v});`
+                    res += `\n\t${tabs + v} = forward(${prev_v.join(' * ')}, ${v});`
                 else
                     res += `\n\t${tabs + v} = ${prev_v.join(' * ')} * ${v};`;
                 prev_v = [v]
@@ -1724,7 +1726,7 @@ tensor.einsum = (in_expr, sources = [], attributes = {},
                     if (prev_v.length>1){
                         let v = prev_v.pop();
                         if ($.forward)
-                            result += `\n\t${tabs + v} = (${$.forward.toString()})(${prev_v.join(' * ')}, ${v});`
+                            result += `\n\t${tabs + v} = forward(${prev_v.join(' * ')}, ${v});`
                         else
                             result += `\n\t${tabs + v} = ${prev_v.join(' * ')} * ${v};`;
                         prev_v = [v]
