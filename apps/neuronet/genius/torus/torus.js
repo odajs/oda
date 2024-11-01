@@ -371,7 +371,7 @@ export class tensor/* extends Array*/{
         })
         setTimeout(()=>{
             topo[0]?.destroy();
-        }, 100)
+        },0)
     }
 
 
