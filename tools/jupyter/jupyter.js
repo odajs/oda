@@ -212,7 +212,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             }
         }
     },
-    scrollToCell(cell = this.selectedCell, behavior = 'auto', block = 'start') {
+    scrollToCell(cell = this.selectedCell, behavior = 'smooth', block = 'start') {
         if (!cell) return;
         const cellElements = this.jupyter.$$('oda-jupyter-cell');
         const cellElement = cellElements.find(el => el.cell.id === cell.id);

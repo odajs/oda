@@ -1612,7 +1612,7 @@ tensor.einsum = (in_expr, sources = [], attributes = {},
         ].join('\n');
         vars += `\nlet idx = -1;\n`;
         if ($.forward)
-            vars += `let forward = enum(${$.forward.toString()});\n`;
+            vars += `let forward = eval(${$.forward.toString()});\n`;
 
 
         const out_tabs = '\t'.repeat(outs.length);

@@ -344,14 +344,13 @@ ODA({
                 @apply --horizontal;
                 align-items: center;
                 gap: 2px;
-                padding: 8px;
             }
             :host oda-icon{
                 margin: 2px;
             }
         </style>
         <oda-icon ~if="item.icon" :icon="item.icon + (direction === 'vertical' && item.label ? ':90' : '')" :sub-icon="item.subIcon" :icon-size></oda-icon>
-        <div ~text="item.label"></div>
+        <div ~text="item.label" style="padding-bottom: 6px;"></div>
     `,
     item: null,
     iconSize: 24,
