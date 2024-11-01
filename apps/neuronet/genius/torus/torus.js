@@ -88,7 +88,7 @@ export class tensor/* extends Array*/{
         return this.getPath().join('\n');
     }
     get shape_multipliers(){
-        return this['#shape']._multipliers ??= this.shape.map((_,i)=> this.shape.slice(i+1).mul());
+        return this.#shape_multipliers ??= this.shape.map((_,i)=> this.shape.slice(i+1).mul());
     }
 
     toJSON(){
@@ -146,7 +146,7 @@ export class tensor/* extends Array*/{
         const size = shape.mul()
         if (size !== this.size)
             throw new Error(`_shape from (${this.shape}) to (${shape}) not allow.`);
-        this['#shape']._multipliers = undefined;
+        this.#shape_multipliers = undefined;
         this['#shape'] = shape
         return this;
     }
@@ -1228,9 +1228,11 @@ systems:{
         let size = shape.mul();
         let data = new dType(size);
         data = data.map(handler);
-        if (!shape.mul())
+        if(!data.length)
+            shape = []
+        else if (!shape.mul())
             shape = [1]
-        return tensor.from(data, dType)._shape(shape);
+        return torus.from(data, dType)._shape(shape);
     }
     torus.prototype._element_wise_operator = function (other, attributes = {},
                                                        $ = Object.assign({forward: '', backward_0: '', backward_1: ''}, attributes)){
