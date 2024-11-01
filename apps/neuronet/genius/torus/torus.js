@@ -1459,8 +1459,8 @@ aggregates:{
             throw new Error('not ready!')
         }
     }
-    torus.prototype.sum = function (dims = [], attributes = {},
-                                    $ = Object.assign({keepdim: false, dType: Float32Array, out: null}, attributes)){
+    torus.prototype.sum = function (dims = [], $ = {}){
+        $ = Object.assign({keepdim: false, dType: Float32Array, out: null}, $);
         let shape_info = this.shape_info;
         const from = shape_info.map(i=>i.char);
         let dims_info = this.dims_info(dims)
@@ -1482,17 +1482,15 @@ aggregates:{
         out._label(`sum(dims=[${dims}], ${JSON.stringify($)}):\'${expr}\'`);
         return out;
     }
-    torus.prototype.mean = function(dims = [], attributes = {},
-                                    $ = Object.assign({keepdim: false, dType: Float32Array, out: null}, attributes)){
-
+    torus.prototype.mean = function(dims = [], $ = {}){
+        $ = Object.assign({keepdim: false, dType: Float32Array, out: null}, $);
         let sum = this.sum(...arguments);
         let out = sum.divide(this.size / sum.size);
         out._label(sum.label.replace('sum', 'mean'))
         return out;
     }
-    torus.prototype.var = function(dims = [], attributes = {},
-                                   $ = Object.assign({correction: 1, keepdim: false, dType: Float32Array, out: null}, attributes)){
-
+    torus.prototype.var = function(dims = [], $ = {}){
+        $ = Object.assign({correction: 1, keepdim: false, dType: Float32Array, out: null}, $);
         const avg = this.mean(dims, $);
         let s1 = this.shape_info;
         let s2 = avg.shape_info;
@@ -1509,10 +1507,14 @@ aggregates:{
         const multiplier = 1/Math.max(0, this.size / avg.size - $.correction);
         const out = sum.multiply(multiplier);
         out._label(`var(dims=[${dims}], ${JSON.stringify($)}):\'${expr}\'`);
-        // const sum = this.data.reduce((r, x)=>r + (x - avg) ** 2, 0);
-        // const data =  * sum;
-        // const out = torus.tensor([data])._label('var')
         return out;
+    }
+    torus.prototype.std = function(dim = [], $ = {}){
+        $ = Object.assign({correction: 1, keepdim: false, dType: Float32Array, out: null}, $);
+        let out = this.var(...arguments);
+        out = out.sqrt();
+        out._label(`std(dim = [${dim}], ${JSON.stringify($)})`);
+        return out
     }
 }
 convertors:{
@@ -1556,8 +1558,8 @@ convertors:{
     }
 }
 
-tensor.einsum = (in_expr, sources = [], attributes = {},
-    $ = Object.assign({dType: Float32Array, forward: ''}, attributes))=>{
+tensor.einsum = (in_expr, sources = [], $ = {})=>{
+    $ = Object.assign({dType: Float32Array, forward: ''}, $);
     sources = tensor.flat(sources);
     const tensors = sources.map(t => tensor.from(t));
     let key = in_expr + ':' + tensors.map(i=> i.shape.toString()+'('+ i.dType.name +')' ).join('-') + JSON.stringify($);

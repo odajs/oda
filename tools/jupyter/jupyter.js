@@ -366,7 +366,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             }
         </style>
 
-        <div class="horizontal" style="min-height: 100%;">
+        <div class="horizontal">
             <div class="pe-no-print left-panel vertical" :error-invert="status === 'error'">
                 <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: 2px; min-height: 50px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run()" :success-invert="cell?.autoRun" style="margin: 4px; border-radius: 50%;"></oda-button>
@@ -386,7 +386,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         <div style="margin: 8px;">Hidden {{cell.childrenCount}} cells</div>
                     </div>
                 </div>
-                <div ~if="cell?.outputs?.length || cell?.controls?.length" class="info border"  style="max-height: 100%;">
+                <div ~if="cell?.outputs?.length || cell?.controls?.length" class="info border" flex>
                     <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell ~show="selected"></oda-jupyter-outputs-toolbar>
                     <div class="vertical flex" style="overflow: hidden;">
                         <div flex vertical ~if="!cell?.hideOutput" style="overflow: hidden;">
@@ -782,7 +782,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 z-index: 1;
             }
         </style>
-        <div  class="horizontal" :border="!hideCode" >
+        <div  class="horizontal" :border="!hideCode"  style="min-height: 64px;">
             <oda-code-editor :wrap ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>
             <div dimmed ~if="hideCode" class="horizontal left content flex" style="cursor: pointer; padding: 8px 4px;" @dblclick="hideCode=false">
                 <oda-icon icon="bootstrap:eye-slash"></oda-icon>
