@@ -4,15 +4,15 @@ ODA({is: 'oda-matrix',
                 :host {
                     width: 100vw;
                     height: 100vh;
-                    background: radial-gradient(#1c52c9,#1f1013);
+                    background: radial-gradient(darkblue, blue);
                     animation: fadeIn 1 1s ease-out;
                 }
                 .light {
                     position: absolute;
                     width: 0px;
-                    opacity: .75;
+                    opacity: 1;
                     background-color: white;
-                    box-shadow: #8beeee 0px 0px 30px 2px;
+                    box-shadow: white 0px 0px 10px 2px;
                     top: 100vh;
                     bottom: 0px;
                     left: 0px;

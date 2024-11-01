@@ -198,6 +198,17 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter', extends: 
     },
     closeDrawers() {
         [this.leftPanelElement, this.rightPanelElement].forEach(i => i?.close?.());
+    },
+    $keyBindings: {
+        async "ctrl+p"(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            const el = this.$('slot[name=main]').assignedElements()[0];
+            if (el?.print)
+                el.print();
+            else
+                print();
+        }
     }
 });
 
