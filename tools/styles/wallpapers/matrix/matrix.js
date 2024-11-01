@@ -1,92 +1,51 @@
 ODA({is: 'oda-matrix',
     template:`
-            <style>
-                :host {
-                    width: 100vw;
-                    height: 100vh;
-                    background: radial-gradient(darkblue, blue);
-                    animation: fadeIn 1 1s ease-out;
-                }
-                .light {
-                    position: absolute;
-                    width: 0px;
-                    opacity: 1;
-                    background-color: white;
-                    box-shadow: white 0px 0px 10px 2px;
-                    top: 100vh;
-                    bottom: 0px;
-                    left: 0px;
-                    right: 0px;
-                    margin: auto;
-                }
-                .x1{
-                    animation: floatUp 4s infinite linear;
-                    transform: scale(1.0);
-                }
-                .x2{
-                    animation: floatUp 7s infinite linear;
-                    transform: scale(1.6);
-                    left: 15%;
-                }
+        <style>
+            :host {
+                width: 100vw;
+                height: 100vh;
+                background-color: black;
+                /*background: radial-gradient(black, #3300aa);*/
+                animation: fadeIn 1 1s ease-out;
+                overflow: hidden;
+            }
+            .light {
+                position: absolute;
+                width: 0px;
+                opacity: 1;
+                background-color: white;
+                top: 100vh;
+                bottom: 0px;
+                left: 0px;
+                right: 0px;
+                margin: auto;
+            }
+            @keyframes floatUp{
+                0%{top: -100vh; opacity: 0;}
+                25%{opacity: .5;}
+                50%{top: 0vh; opacity: .8;}
+                75%{opacity: 1;}
+                100%{top: 100vh; opacity: 0;}
+            }
 
-                .x3{
-                    animation: floatUp 2.5s infinite linear;
-                    transform: scale(.5);
-                    left: -15%;
-                }
-
-                .x4{
-                    animation: floatUp 4.5s infinite linear;
-                    transform: scale(1.2);
-                    left: -34%;
-                }
-
-                .x5{
-                    animation: floatUp 8s infinite linear;
-                    transform: scale(2.2);
-                    left: -57%;
-                }
-
-                .x6{
-                    animation: floatUp 3s infinite linear;
-                    transform: scale(.8);
-                    left: -81%;
-                }
-
-                .x7{
-                    animation: floatUp 5.3s infinite linear;
-                    transform: scale(3.2);
-                    left: 37%;
-                }
-
-                .x8{
-                    animation: floatUp 4.7s infinite linear;
-                    transform: scale(1.7);
-                    left: 62%;
-                }
-
-                .x9{
-                    animation: floatUp 4.1s infinite linear;
-                    transform: scale(0.9);
-                    left: 85%;
-                }
-                @keyframes floatUp{
-                    0%{top: -100vh; opacity: 0;}
-                    25%{opacity: 1;}
-                    50%{top: 0vh; opacity: .8;}
-                    75%{opacity: 1;}
-                    100%{top: 100vh; opacity: 0;}
-                }
-
-            </style>
-            <div class='light x1'></div>
-            <div class='light x2'></div>
-            <div class='light x3'></div>
-            <div class='light x4'></div>
-            <div class='light x5'></div>
-            <div class='light x6'></div>
-            <div class='light x7'></div>
-            <div class='light x8'></div>
-            <div class='light x9'></div>
-            `
+        </style>
+        <div ~for="count" class='light' ~style="st($for.i)"></div>
+    `,
+    count: 50,
+    st(i){
+        return {
+            animation: 'floatUp ' + (Math.random() * 4 + 1) + 's infinite linear',
+            transform: 'scale(' + (Math.random()-.5) * 4 + ')',
+            left: Math.round((Math.random() - .5) * 200) + '%',
+            "box-shadow": getColor() + ' 0px 0px 20px 4px'
+        }
+    },
+    attached(){
+        // setInterval(()=>{
+        //     this.count ++;
+        // }, 5000)
+    }
 })
+const getColor = ()=>{
+    return `hsl(${Math.round(Math.random() * 1000)}, 100%, 70%)`;
+}
