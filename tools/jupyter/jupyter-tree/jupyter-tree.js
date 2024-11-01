@@ -41,8 +41,8 @@ ODA({is: 'oda-jupyter-tree-cell', extends: 'this, oda-table-cell',
             switch (this.item.type){
                 case 'code': {
                     if (this.item.autoRun)
-                        return 'carbon:executable-program';
-                    return 'carbon:cics-program';
+                        return 'av:play-circle-filled';
+                    return 'av:play-circle-outline';
                 }
 
                 case 'html':

@@ -12,9 +12,14 @@ window.log = (...e) => {
                 i = i.map(s=>{
                     if (s && typeof s === 'object'){
                         as_array = false
-                        if (s.constructor !== Object) {
-                            as_json = false
-                            return s.toString() + '\n';
+                        if (s.constructor){
+                            if(s.constructor !== Object) {
+                                as_json = false
+                                return s.toString() + '\n';
+                            }
+                        }
+                        else{
+                            return s;
                         }
                     }
                     return s
@@ -334,7 +339,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 @apply --no-flex;
                 position: relative;
                 padding-right: 4px;
-                padding-top: 4px;
+                margin-top: 4px;
                 min-height: 24px;
             }
             .sticky{
@@ -372,7 +377,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         <div class="horizontal">
             <div class="pe-no-print left-panel vertical" :error-invert="status === 'error'">
                 <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: 2px; min-height: 50px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
-                    <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run()" style="margin: 4px;"></oda-button>
+                    <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run()" :success-invert="cell?.autoRun" style="margin: 4px; border-radius: 50%;"></oda-button>
                     <div>{{time}}</div>
                     <div>{{status}}</div>
                 </div>
@@ -1184,9 +1189,9 @@ class JupyterCell extends ROCKS({
         }
     }
     get code(){
-        let code = this.src.replace(/^\s*import\s+([\"|\'])(\S+)([\"|\'])/gm, 'await import($1$2$3)');
-        code = code.replace(/^\s*import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, '__v__ =  $1 = await import($2$3$4); for(let i in __v__) run_context.i = __v__[i]');
-        code = code.replace(/^\s*(import\s*\()/gm, ' ODA.$1');
+        let code = this.src.replace(/import\s+([\"|\'])(\S+)([\"|\'])/gm, 'await import($1$2$3)');
+        code = code.replace(/import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, '__v__ =  $1 = await import($2$3$4); for(let i in __v__) run_context.i = __v__[i]');
+        code = code.replace(/(import\s*\()/gm, ' ODA.$1');
         code = code.replace(/^\s*print\s*\((.*)\)/gm, ' log($1)');
         code = code.split('\n').map(s=>{
             s = s.trim();
