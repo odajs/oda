@@ -1,23 +1,21 @@
 globalThis.LEARNING_RATE = 0.1;
 export class tensor/* extends Array*/{
-    #shape = [];
     #data = null;
     #dType = Float32Array;
-    // ['#label'] = '';
     #src = undefined;
     #grad = undefined;
     #prev = undefined;
     #bins = undefined;
-    #path = undefined;
     #type = undefined;
     #shape_multipliers = undefined;
+    isParam = false;
     backs = [];
     constructor(data, dType) {
         if(data === undefined)
             this.#data = new (dType || this.#dType)(0);
         else if (data?.$ === this.constructor.name){
             this.#dType = globalThis[data.dType];
-            this.#shape = data.shape;
+            this['#shape'] = data.shape;
             data = data.data.split(' ');
             this.#data = new this.dType(data);
         }
@@ -48,17 +46,17 @@ export class tensor/* extends Array*/{
                 }
 
 
-                this.#shape = shape;
+                this['#shape'] = shape;
             }
             else if(this.dType === BinaryArray) {
                 if (data?.length)
-                    this.#shape = [data?.binLength];
+                    this['#shape'] = [data?.binLength];
             }
             else{
                 if (data?.length === 1)
-                    this.#shape = [1]
+                    this['#shape'] = [1]
                 else if (data?.length)
-                    this.#shape = [data?.length]
+                    this['#shape'] = [data?.length]
                 else if (!data?.buffer)
                     data = new this.dType([data])
             }
@@ -74,7 +72,7 @@ export class tensor/* extends Array*/{
         if (size !== data.length)
             throw new Error(`_shape from (${this.shape}) to (${shape}) not allow.`);
         this.#data = data;
-        this.#shape = shape
+        this['#shape'] = shape
         return this;
     }
     getPath(level = 0){
@@ -90,8 +88,9 @@ export class tensor/* extends Array*/{
         return this.getPath().join('\n');
     }
     get shape_multipliers(){
-        return this.#shape_multipliers ??= this.shape.map((_,i)=> this.shape.slice(i+1).mul());
+        return this['#shape']._multipliers ??= this.shape.map((_,i)=> this.shape.slice(i+1).mul());
     }
+
     toJSON(){
         const result =  {
             $: this.constructor.name,
@@ -147,8 +146,8 @@ export class tensor/* extends Array*/{
         const size = shape.mul()
         if (size !== this.size)
             throw new Error(`_shape from (${this.shape}) to (${shape}) not allow.`);
-        this.#shape_multipliers = undefined;
-        this.#shape = shape
+        this['#shape']._multipliers = undefined;
+        this['#shape'] = shape
         return this;
     }
     //inplace functions
@@ -206,7 +205,7 @@ export class tensor/* extends Array*/{
         return tensor.from(this.grad)._shape(this);
     }
     get shape(){
-        return this.#shape;
+        return this['#shape'] || [];
     }
     get size(){
         // return this.shape.mul();

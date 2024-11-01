@@ -3,50 +3,32 @@ const path = window.location.href.split('/').slice(0, -1).join('/');
 
 window.run_context = Object.create(null);
 run_context.output_data = undefined;
-window.log = (...e) => {
-    e = e.map(i=>{
-        if (i && typeof i === 'object'){
-            if (Array.isArray(i)){
-                let as_json = true
-                let as_array = true
-                i = i.map(s=>{
-                    if (s && typeof s === 'object'){
-                        as_array = false
-                        if (s.constructor){
-                            if(s.constructor !== Object) {
-                                as_json = false
-                                return s.toString() + '\n';
-                            }
-                        }
-                        else{
-                            s = Object.assign({},s);
-                            as_json = false
-                            return s.toString() + '\n';
-                        }
-                    }
-                    return s
-                });
-                return as_json?((as_array && i.length<1000)?JSON.stringify(i):JSON.stringify(i, 0, 2)):i.join('\n');
-            }
-            if (i && typeof i === 'object'){
-                if (i.constructor){
-                    if(i.constructor !== Object) {
-                        return i.toString() + '\n';
-                    }
-                }
-                else{
-                    i = Object.assign({},i);
-                    // return i.toString() + '\n';
-                }
-            }
-            try{
-                return JSON.stringify(i, 0, 2)
-            }catch (e){
-            }
-            return i.toString();
+function log_recurse (obj){
+    switch (obj.constructor){
+        case undefined:{
+            obj = Object.assign({}, obj);
         }
-        return i
-    })
+        case Function:
+        case Object:{
+            try{
+                return JSON.stringify(obj, 0, 2)
+            }
+            catch (e){
+                return obj.toString()
+            }
+        } break;
+        case Array:{
+            return obj.map(log_recurse);
+        } break;
+        default:{
+            if (typeof obj === 'object' || typeof obj === 'function')
+                return obj.toString()
+        }
+    }
+    return obj
+}
+window.log = (...e) => {
+    e = e.map(log_recurse);
     run_context.output_data?.push([...e].join(''));
 }
 const console_warn = console.warn;
