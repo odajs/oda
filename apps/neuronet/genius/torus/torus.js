@@ -857,7 +857,7 @@ torus.prototype.masked_fill = function(other, value = 0, mask = 0){
 }
 
 tensor.prototype.plus = function (other){
-    return this._element_wise_operator(other, {forward: '(x, y) => x + y', backward_0: '(g) => g',  backward_1:'(_, g) => g)'});
+    return this._element_wise_operator(other, {forward: '(x, y) => x + y', backward_0: '(g) => g',  backward_1:'(_, g) => g'});
 }
 tensor.prototype.minus = function (other){
     return this._element_wise_operator( other, {forward: '(x, y) => x - y', backward_0: '(g) => g', backward_1: '(_, g) => -g'});

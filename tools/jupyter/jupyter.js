@@ -18,7 +18,7 @@ function log_recurse (obj){
             }
         } break;
         case Array:{
-            return obj.map(log_recurse);
+            return '['+obj.map(log_recurse)+']';
         } break;
         default:{
             if (typeof obj === 'object' || typeof obj === 'function')
