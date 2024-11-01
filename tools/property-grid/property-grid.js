@@ -609,6 +609,10 @@ editors: {
                 @apply --horizontal;
                 @apply --flex
                 align-items: center;
+                min-height: 100%;
+            }
+            input{
+                min-height: 100%;
             }
         </style>
         <input class="flex content" type="checkbox" ::checked="item.value">

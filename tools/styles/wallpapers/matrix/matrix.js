@@ -1,5 +1,4 @@
-import '../../../oda.js'
-export default ODA({is: 'oda-matrix',
+ODA({is: 'oda-matrix',
     template:`
             <style>
                 :host {

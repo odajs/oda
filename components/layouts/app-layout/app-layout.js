@@ -399,7 +399,7 @@ ODA({is: 'app-layout-drawer', imports: '@oda/tabs',
         width: Number,
         hidden: {
             get() {
-                return !this.controls?.length;
+                return !this.controls?.length && !this.buttons?.length;
             },
             $def: true,
             $attr: true
@@ -590,7 +590,7 @@ ODA({is: 'app-layout-drawer', imports: '@oda/tabs',
                 this.listen(c.getAttribute('close-event'), e => this.smartClose(), { target: c });
             }
         });
-        this.hidden = this.controls.length === 0;
+        this.hidden = !this.controls?.length && !this.buttons?.length;
         // if (this.opened && !this.controls.some(c => c === this.opened))
         //     this.opened = undefined; // т.к. e.target.assignedNodes() возвращает новые узлы
         this.controls.forEach(el => {

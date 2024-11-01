@@ -706,20 +706,20 @@ torus.prototype.check_dims = function(...dims){
     })
 }
 
-torus.prototype.findIndex = function(...indexes){
-    indexes = torus.flat(indexes);
-    return indexes.reduce((r, v, i)=> (r + v * this.shape_multipliers[i]), 0)
+torus.prototype.findIndex = function(...indeces){
+    indeces = torus.flat(indeces);
+    return indeces.reduce((r, v, i)=> (r + v * this.shape_multipliers[i]), 0)
 }
-torus.prototype.get = function(...indexes){
-    indexes = torus.flat(indexes);
-    const idx = indexes.reduce((r, v, i)=> (r + v * this.shape_multipliers[i]), 0)
-    if(indexes.length === this.shape_multipliers.length)
+torus.prototype.get = function(...indeces){
+    indeces = torus.flat(indeces);
+    const idx = indeces.reduce((r, v, i)=> (r + v * this.shape_multipliers[i]), 0)
+    if(!indeces.length  || indeces.length === this.shape_multipliers.length)
         return this.data[idx];
-    return this.data.slice(idx, idx + this.shape_multipliers.slice(indexes.length-1).mul())
+    return this.data.slice(idx, idx + this.shape_multipliers.slice(indeces.length-1).mul())
 }
-torus.prototype.set = function(value, ...indexes){
-    indexes = torus.flat(indexes);
-    const idx = indexes.reduce((r, v, i)=>(r + v * this.shape_multipliers[i]), 0)
+torus.prototype.set = function(value, ...indeces){
+    indeces = torus.flat(indeces);
+    const idx = indeces.reduce((r, v, i)=>(r + v * this.shape_multipliers[i]), 0)
     this.data.set(value.data || torus.flat(value), idx);
 }
 
