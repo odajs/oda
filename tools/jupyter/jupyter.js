@@ -162,7 +162,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                     this.style.visibility = 'visible';
                     this.style.opacity = 1;
                     this.style.scrollBehavior = 'smooth';
-                });
+                }, 1000);
             })
             nb.listen('changed', async (e) => {
                 if(this.selectedCell) {
@@ -366,7 +366,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             }
         </style>
 
-        <div class="horizontal">
+        <div class="horizontal" style="min-height: 100%;">
             <div class="pe-no-print left-panel vertical" :error-invert="status === 'error'">
                 <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: 2px; min-height: 50px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run()" :success-invert="cell?.autoRun" style="margin: 4px; border-radius: 50%;"></oda-button>
@@ -375,9 +375,9 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 </div>
             </div>
             <div class="pe-preserve-print vertical no-flex" style="width: calc(100% - 34px); position: relative;">
-                <div id="main" class="vertical">
+                <div id="main" class="vertical" style="min-height: 100%;">
                     <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell :control ~show="selected"></oda-jupyter-toolbar>
-                    <div class="horizontal" >
+                    <div class="horizontal" style="min-height: 100%;">
                         <oda-icon ~if="cell.type!=='code' && cell.allowExpand" :icon="expanderIcon" @dblclick.stop @tap.stop="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
                         <div flex id="control" ~is="editor" :cell ::edit-mode ::value :read-only show-preview :_value :show-border="editMode"></div>
                     </div>
@@ -782,7 +782,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 z-index: 1;
             }
         </style>
-        <div  class="horizontal" :border="!hideCode" style="min-height: 32px;">
+        <div  class="horizontal" :border="!hideCode" style="min-height: 100%;">
             <oda-code-editor :wrap ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>
             <div dimmed ~if="hideCode" class="horizontal left content flex" style="cursor: pointer; padding: 8px 4px;" @dblclick="hideCode=false">
                 <oda-icon icon="bootstrap:eye-slash"></oda-icon>
