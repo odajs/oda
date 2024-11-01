@@ -8,7 +8,8 @@ class NeuroModule extends Function{
     constructor(argumetns) {
         super();
         if (argumetns.length === 1 && argumetns[0].constructor === Object){
-            this.setModel(Object.assign(this.#params, argumetns[0]));
+            // const p = Object.assign(this.#params, argumetns[0])
+            this.setModel(argumetns[0]);
         }
         else{
             let expr = this.constructor.toString();

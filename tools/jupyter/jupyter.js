@@ -20,23 +20,28 @@ window.log = (...e) => {
                         }
                         else{
                             s = Object.assign({},s);
+                            as_json = false
+                            return s.toString() + '\n';
                         }
                     }
                     return s
                 });
                 return as_json?((as_array && i.length<1000)?JSON.stringify(i):JSON.stringify(i, 0, 2)):i.join('\n');
             }
-            if (i?.constructor !== Object) {
-                return i?.toString();
+            if (i && typeof i === 'object'){
+                if (i.constructor){
+                    if(i.constructor !== Object) {
+                        return i.toString() + '\n';
+                    }
+                }
+                else{
+                    i = Object.assign({},i);
+                    // return i.toString() + '\n';
+                }
             }
             try{
-                return JSON.stringify(i)
+                return JSON.stringify(i, 0, 2)
             }catch (e){
-                ////console.warn(e)//
-
-
-
-
             }
             return i.toString();
         }

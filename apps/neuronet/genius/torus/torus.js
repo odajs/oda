@@ -100,8 +100,11 @@ export class tensor/* extends Array*/{
             isSerializable: this.isSerializable,
             isParam: this.isParam,
             dType: this.dType.name,
-            data: this.data?.join(' ')
         }
+        if (this.isDestroyed)
+            result.data = 'DESTROYED';
+        else
+            result.data = this.data?.join(' ')
         return result;
     }
     _label(label){
@@ -244,6 +247,7 @@ export class tensor/* extends Array*/{
         if(this.isParam) return;
         if (!this.data.length) return;
         this.data.buffer.transfer(0);
+        this.isDestroyed = true;
         if (!recurce) return;
         if (!this.src?.length) return
         this.src.forEach(s=>s.destroy(recurce))
