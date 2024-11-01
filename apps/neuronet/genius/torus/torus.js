@@ -597,7 +597,7 @@ export class tensor/* extends Array*/{
         if (this.dim)
             result += `shape(${this.shape}), size(${this.size.toLocaleString()}), ${this.dType.name}, ${this.backs.join(',')}\n${tab}(${data})`;
         else
-            result += `${this.dType.name}, ${this.backs.join(',')}\n${tab}(${data.replaceAll('[', '').replaceAll(']', '')})`;
+            result += `${this.dType.name}, ${this.backs.join(',')}\n${tab}(${data.replaceAll('[', '').replaceAll(']', '').trim()})`;
         if (this.isParam)
             result = tab + 'Parameter containing:\n'+result;
         return result + '\n';

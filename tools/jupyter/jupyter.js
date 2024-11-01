@@ -4,6 +4,8 @@ const path = window.location.href.split('/').slice(0, -1).join('/');
 window.run_context = Object.create(null);
 run_context.output_data = undefined;
 function log_recurse (obj){
+    if (obj === null) return 'null'
+    if (obj === undefined) return 'undefined'
     switch (obj.constructor){
         case undefined:{
             obj = Object.assign({}, obj);

@@ -1,12 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<meta charset="UTF-8">
-<body>
-    <oda-matrix></oda-matrix>
-    <script type="module">
-        import '../../../oda.js'
-        ODA({is: 'oda-matrix',
-            template:`
+import '../../../oda.js'
+export default ODA({is: 'oda-matrix',
+    template:`
             <style>
                 :host {
                     width: 100vw;
@@ -96,6 +90,4 @@
             <div class='light x8'></div>
             <div class='light x9'></div>
             `
-        })
-    </script>
-</body>
+})
