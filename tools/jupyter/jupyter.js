@@ -1145,7 +1145,8 @@ class JupyterCell extends ROCKS({
         try{
             let time = Date.now();
             run_context.output_data = jupyter.output_data = [];
-            await import(`data:text/javascript, ${this.code}`);
+
+            // let code = 'with (context) {\n\t' + this.code + '\n\n}';
             const fn = new AsyncFunction('context', this.code);
             let res =  await fn.call(jupyter, run_context);
             time = new Date(Date.now() - time);
@@ -1182,6 +1183,13 @@ class JupyterCell extends ROCKS({
         }
     }
     get code(){
+        try{
+            import(`data:text/javascript,${this.src}`);
+        }
+        catch (e){
+            console.error(e)
+        }
+
         let code = this.src.replace(/import\s+([\"|\'])(\S+)([\"|\'])/gm, 'await import($1$2$3)');
         code = code.replace(/import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, '__v__ =  $1 = await import($2$3$4); for(let i in __v__) run_context.i = __v__[i]');
         code = code.replace(/(import\s*\()/gm, ' ODA.$1');
