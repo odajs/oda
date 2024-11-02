@@ -789,10 +789,17 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 <span flex  vertical style="margin: 0px 16px; font-size: large; cursor: pointer; text-overflow: ellipsis;" ~html="cell.name +' <u disabled style=\\\'font-size: x-small; right: 0px;\\\'>(Double click to show...)</u>'" ></span>
             </div>
         </div>
+        <div style="white-space: pre-wrap">{{JSON.stringify(errors, 0, 2)}}</div>
 
     `,
+    get errors(){
+        return this.editor.editor.session.getAnnotations().filter((e)=>e.type === 'error')
+    },
+    get editor(){
+        return this.$('oda-code-editor');
+    },
     focus() {
-        this.$('oda-code-editor')?.focus();
+        this.editor?.focus();
     },
     _keypress(e){
         if (e.ctrlKey && e.keyCode === 10){
