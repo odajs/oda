@@ -789,11 +789,16 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 <span flex  vertical style="margin: 0px 16px; font-size: large; cursor: pointer; text-overflow: ellipsis;" ~html="cell.name +' <u disabled style=\\\'font-size: x-small; right: 0px;\\\'>(Double click to show...)</u>'" ></span>
             </div>
         </div>
-        <div style="white-space: pre-wrap">{{JSON.stringify(errors, 0, 2)}}</div>
+        <div border ~if="errors" style="padding: 4px; margin: 4px; font-family: monospace; white-space: pre" border error style="white-space: pre-wrap" ~html="errors"></div>
 
     `,
     get errors(){
-        return this.editor.editor.session.getAnnotations().filter((e)=>e.type === 'error')
+        let error =  this.editor?.editor?.session?.getAnnotations().filter((e)=>e.type === 'error').map(err =>{
+            return '    '+err.text + ` <a href="_">(${err.row+1}:${err.column})</a>`
+        }).join('\n') || undefined;
+        if(error)
+            error = '<span style="padding: 2px; font-size: large; margin-bottom: 4px;">Syntax Error:</span><br>'+error;
+        return error;
     },
     get editor(){
         return this.$('oda-code-editor');
@@ -808,6 +813,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     },
     value: '',
     editorValueChanged(e) {
+        this.errors = undefined;
         this.value = e.detail.value;
     },
 
