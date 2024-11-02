@@ -10,6 +10,7 @@ export class tensor/* extends Array*/{
     #shape_multipliers = undefined;
     isParam = false;
     backs = [];
+    queue = new torus.Queue();
     constructor(data, dType) {
         if(data === undefined)
             this.#data = new (dType || this.#dType)(0);
@@ -1192,30 +1193,12 @@ systems:{
             })
         })
     }
-    torus.Queue  = class Queue {
+    torus.Queue  = class Queue  extends Array{
         constructor() {
-            this.elements = {};
-            this.head = 0;
-            this.tail = 0;
+            super(...arguments)
         }
-        enqueue(element) {
-            this.elements[this.tail] = element;
-            this.tail++;
-        }
-        dequeue() {
-            const item = this.elements[this.head];
-            delete this.elements[this.head];
-            this.head++;
-            return item;
-        }
-        peek() {
-            return this.elements[this.head];
-        }
-        get length() {
-            return this.tail - this.head;
-        }
-        get isEmpty() {
-            return this.length === 0;
+        push(element) {
+            return this.unshift(element);
         }
     }
     Object.defineProperty(torus.prototype, 'shape_info', {
@@ -1300,30 +1283,42 @@ systems:{
         out._label(label + ' ('+expr+')');
         return out;
     }
-    torus.prototype._element_wise_function = function (attributes = {},
-                                                        $ = Object.assign({forward: '', backward_0: ''}, attributes)){
-        const data = this.data.map(eval($.forward));
-        const out = torus.from(data)._src(this)._shape(this);
-        let label;
-        try{
-            throw new Error()
+    torus.prototype._element_wise_function = function ($ = {}){
+        $ = Object.assign({forward: '', backward_0: ''}, $);
+        const forward = eval($.forward);
+        let out = this.queue.pop();
+        if(out){
+            let i = this.size;
+            while(i--){
+                out.data[i] = forward(this.data[i])
+            }
         }
-        catch (e){
-            label = e.stack.split('\n');
-            const idx = label.findIndex(v=>v.includes('._element_wise')) + 1;
-            label = label[idx];
-            label = label.substr(label.indexOf('.') + 1);
-            label = label.substr(0, label.indexOf(' '));
-
+        else{
+            const data = this.data.map(forward);
+            out = torus.from(data)._src(this)._shape(this);
+            let label;
+            try{
+                throw new Error()
+            }
+            catch (e){
+                label = e.stack.split('\n');
+                const idx = label.findIndex(v=>v.includes('._element_wise')) + 1;
+                label = label[idx];
+                label = label.substr(label.indexOf('.') + 1);
+                label = label.substr(0, label.indexOf(' '));
+            }
+            out._label(label+' ('+out.shape+')');
         }
-        out._label(label+' ('+out.shape+')');
-        if ($.backward_0 && this.allowGrad){
+        if (this.allowGrad && $.backward_0){
             out._back = ()=>{
-                for(let i = 0; i<this.grad.length; i++){
-                    this.grad[i] += eval($.backward_0)(this.data[i], out.data[i]) * out.grad[i];
+                const backward = eval($.backward_0);
+                let i = this.size;
+                while(i--){
+                    this.grad[i] += backward(this.data[i], out.data[i]) * out.grad[i];
                 }
             }
         }
+        this.queue.push(out);
         return out;
     }
 }

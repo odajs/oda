@@ -800,7 +800,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             if(e.type !== 'error') return false;
             if(e.text.startsWith('Expected an identifier and instead saw \'>')) return false;
             if(e.text.startsWith('Unexpected early end of program.')) return false;
-
+            if(e.text.startsWith('Missing ";" before statement')) return false;
             return true;
         }).map(err =>{
             return '    '+err.text + ` <a href="_">(${err.row+1}:${err.column})</a>`
