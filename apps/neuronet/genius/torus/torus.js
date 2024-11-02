@@ -1192,6 +1192,32 @@ systems:{
             })
         })
     }
+    torus.Queue  = class Queue {
+        constructor() {
+            this.elements = {};
+            this.head = 0;
+            this.tail = 0;
+        }
+        enqueue(element) {
+            this.elements[this.tail] = element;
+            this.tail++;
+        }
+        dequeue() {
+            const item = this.elements[this.head];
+            delete this.elements[this.head];
+            this.head++;
+            return item;
+        }
+        peek() {
+            return this.elements[this.head];
+        }
+        get length() {
+            return this.tail - this.head;
+        }
+        get isEmpty() {
+            return this.length === 0;
+        }
+    }
     Object.defineProperty(torus.prototype, 'shape_info', {
         configurable: true,
         get(){
@@ -1274,10 +1300,10 @@ systems:{
         out._label(label + ' ('+expr+')');
         return out;
     }
-    tensor.prototype._element_wise_function = function (attributes = {},
+    torus.prototype._element_wise_function = function (attributes = {},
                                                         $ = Object.assign({forward: '', backward_0: ''}, attributes)){
         const data = this.data.map(eval($.forward));
-        const out = tensor.from(data)._src(this)._shape(this);
+        const out = torus.from(data)._src(this)._shape(this);
         let label;
         try{
             throw new Error()
@@ -1400,37 +1426,37 @@ functions:{
     torus.prototype.sqrt = function(){
         return this._element_wise_function({forward: 'x => Math.sqrt(x)', backward_0: 'x => 1 / (2 * Math.sqrt(x))'})
     }
-    tensor.prototype.invert = function (){
+    torus.prototype.invert = function (){
         return this._element_wise_function({forward: 'x=>x * -1', backward_0: '()=>-1'});
     }
-    tensor.prototype.exp = function (){
+    torus.prototype.exp = function (){
         return this._element_wise_function({forward: 'Math.exp',  backward_0: 'x=>x'});
     }
-    tensor.prototype.log = function (){
+    torus.prototype.log = function (){
         return this._element_wise_function({forward: 'Math.log', backward_0: '(x, y)=>1/x*y'});
     }
-    tensor.prototype.tanh = function (){
+    torus.prototype.tanh = function (){
         return this._element_wise_function({forward: 'Math.tanh', backward_0: 'x=>(1 - x ** 2)'});
     }
-    tensor.prototype.sigmoid = function (params){
+    torus.prototype.sigmoid = function (params){
         return this._element_wise_function({forward: 'x=>(1 / (1 + Math.exp(-x)))', backward_0: '(x, y)=>y * (1 - y)'});
     }
-    tensor.prototype.sigm = function (params){
+    torus.prototype.sigm = function (params){
         return this.sigmoid(params);
     }
-    tensor.prototype.relu = function (params) {
+    torus.prototype.relu = function (params) {
         return this._element_wise_function({forward: '(x)=>(x>0?x:0)', backward_0: '(x, y)=>(y>0?1:0)'});
     }
-    tensor.prototype.mandelbrot = function (params){
+    torus.prototype.mandelbrot = function (params){
         return this._element_wise_function({forward: 'x=>(Math.pow(x,  2) + 1)', backward_0: '(x, y)=>(2 * y)'});
     }
-    tensor.prototype.softplus = function (params) {
+    torus.prototype.softplus = function (params) {
         return this._element_wise_function({forward: 'x=>(Math.log(1 + Math.exp(x)))', backward_0: `(x, y)=> { 
             let exp = Math.exp(y); 
             return exp / (1 + exp); 
         }`});
     }
-    tensor.prototype.silu = function (params) {
+    torus.prototype.silu = function (params) {
         return this._element_wise_function({forward: 'x=>(x  / (1 + Math.exp(-x)))', backward_0: `(x, y)=> {
             let ex = Math.exp(-y);
             let onePlusEx = 1 + ex;
@@ -1547,7 +1573,7 @@ convertors:{
                 }
             }
         }
-        const out = tensor.from(data)._shape(this)._label('tril');
+        const out = torus.from(data)._shape(this)._label('tril');
         out._back = () => {
             this.grad = this.grad.map((g, i)=>{
                 return g + out.grad[i];
@@ -1558,10 +1584,10 @@ convertors:{
     }
 }
 
-tensor.einsum = (in_expr, sources = [], $ = {})=>{
+torus.einsum = (in_expr, sources = [], $ = {})=>{
     $ = Object.assign({dType: Float32Array, forward: ''}, $);
-    sources = tensor.flat(sources);
-    const tensors = sources.map(t => tensor.from(t));
+    sources = torus.flat(sources);
+    const tensors = sources.map(t => torus.from(t));
     let key = in_expr + ':' + tensors.map(i=> i.shape.toString()+'('+ i.dType.name +')' ).join('-') + JSON.stringify($);
     // console.time(key)
     let fn = fn_cache.einsum?.[key];
@@ -1793,14 +1819,14 @@ tensor.einsum = (in_expr, sources = [], $ = {})=>{
     }
 
     const data = outs.length?new $.dType(outs.reduce((r,a)=> r * a.d, 1)):new $.dType(1);
-    let out = tensor.from(data);
+    let out = torus.from(data);
     let shape = outs.map(i=>i.d);
     if(!shape.length)
         shape = [1];
     out._shape(shape);
     out._src(tensors);
     out._back = function (){
-        const grad = tensor.from(out.grad)._shape(out);
+        const grad = torus.from(out.grad)._shape(out);
         const out_res = []
         tensors.forEach((t, i)=>{
             if(!t.allowGrad) return;
@@ -1822,7 +1848,7 @@ tensor.einsum = (in_expr, sources = [], $ = {})=>{
                     return grad;
                 return tt;
             })
-            let out_back = tensor.einsum(expr, sources, {forward: $['backward_'+ i]?.toString()});
+            let out_back = torus.einsum(expr, sources, {forward: $['backward_'+ i]?.toString()});
             out_res.push(out_back);
             t.grad = t.grad.map((g,i)=>{
                 return g + out_back.data[i];
@@ -1835,7 +1861,7 @@ tensor.einsum = (in_expr, sources = [], $ = {})=>{
     // console.timeEnd(key)
     return out;
 }
-tensor.prototype.transpose = function(dim0= -1, dim1 = -2) {
+torus.prototype.transpose = function(dim0= -1, dim1 = -2) {
     if (this.dim < 2)
         throw new Error(`Dimension out of range (expected more 2 or more, but got ${this.dim})`);
 
@@ -1863,9 +1889,9 @@ tensor.prototype.transpose = function(dim0= -1, dim1 = -2) {
         return v;
     })
     const expression = var_in.join('')+'->'+var_out.join('');
-    return tensor.einsum(expression, this)._label(`transpose ${dim0}->${dim1}`);
+    return torus.einsum(expression, this)._label(`transpose ${dim0}->${dim1}`);
 }
-tensor.prototype.pad = function(paddings, mode = 'constant', constant_value = 0) {
+torus.prototype.pad = function(paddings, mode = 'constant', constant_value = 0) {
     let new_shape = this.shape.slice();
     for (let i = 0; i < paddings.length; i++) {
         new_shape[i] += paddings[i] * 2;

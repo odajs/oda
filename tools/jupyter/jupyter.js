@@ -796,7 +796,13 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
 
     `,
     get syntaxError(){
-        let error =  this.editor?.editor?.session?.getAnnotations().filter((e)=>e.type === 'error').map(err =>{
+        let error =  this.editor?.editor?.session?.getAnnotations().filter((e)=>{
+            if(e.type !== 'error') return false;
+            if(e.text.startsWith('Expected an identifier and instead saw \'>')) return false;
+            if(e.text.startsWith('Unexpected early end of program.')) return false;
+
+            return true;
+        }).map(err =>{
             return '    '+err.text + ` <a href="_">(${err.row+1}:${err.column})</a>`
         }).join('\n') || undefined;
         if(error)
