@@ -509,6 +509,7 @@ function Conv1dBackward(input, grad_output, weight, bias = null, stride = 1, pad
 
 export const nn = {
     NeuroModule,
+    Module: NeuroModule,
     Linear(...args){
         return new Linear(...args);
     },
