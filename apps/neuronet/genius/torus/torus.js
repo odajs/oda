@@ -376,13 +376,7 @@ export class tensor/* extends Array*/{
     }
 
 
-    getDim(dim){
-        if (-this.dim > dim || this.dim - 1 < dim)
-            throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`);
-        if (dim < 0)
-            dim += this.dim;
-        return  this.shape[dim];
-    }
+
     static get generator(){
         return torus.__random_generator__;
     }
@@ -451,8 +445,9 @@ export class tensor/* extends Array*/{
     static cross_entropy(tensor, target) {
         return tensor.crossEntropy(target);
     }
-    split(split_size_or_sections, dim = 0){
-        let max = this.getDim(dim);
+    split(split_size_or_sections = 1, dim = 0){
+        split_size_or_sections = torus.flat(split_size_or_sections)
+        let max = this.check_dim(dim);
         if (Number.isInteger(split_size_or_sections)){
             let arr = [];
             let i;
@@ -473,22 +468,29 @@ export class tensor/* extends Array*/{
         let shape = [...this.shape];
         if (dim < 0)
             dim += this.dim;
-        const result = split_size_or_sections.map((v, i)=>{
-            shape[dim] = v;
-            const size = shape.mul();
-            let start = idx;
-            const d = new this.dType(size).map(x=>src[++idx]);
-            let out = tensor.from(d)._shape(...shape)._src(this)._label(`split ${i+1} of ${split_size_or_sections.length} -> ${v}`);
-            if (this.allowGrad){
-                out._back = ()=>{
-                    out.grad.forEach((g, i)=>{
-                        this.grad[i + start] += g;
-                    })
+        let outs = this.out;
+        outs = split_size_or_sections.map((v, i)=>{
+            if(outs){
+
+            }
+            else{
+                shape[dim] = v;
+                const size = shape.mul();
+                let start = idx;
+                const d = new this.dType(size).map(x=>src[++idx]);
+                let out = torus.from(d)._shape(...shape)._src(this)._label(`split ${i+1} of ${split_size_or_sections.length} -> ${v}`);
+                if (this.allowGrad){
+                    out._back = ()=>{
+                        out.grad.forEach((g, i)=>{
+                            this.grad[i + start] += g;
+                        })
+                    }
                 }
             }
-            return out
+            return out;
         });
-        return result;
+        this.out = outs;
+        return outs;
 
     }
     static concat (tensors = [], dim=-1){
@@ -695,21 +697,13 @@ torus.prototype.dot = function (other){
     return out;
 }
 
-torus.prototype.check_dims = function(...dims){
-    dims = torus.flat(dims);
-    return dims.map(d=>{
-        let r = d
-        if(r < 0)
-            r = d + this.dim;
-        if(r >= this.dim)
-            throw new Error(`dim ${d} out of range ${this.dim}`);
-        return r;
-    })
-}
 
 torus.prototype.findIndex = function(...indeces){
     indeces = torus.flat(indeces);
     return indeces.reduce((r, v, i)=> (r + v * this.shape_multipliers[i]), 0)
+}
+torus.prototype.item = function(...indeces) {
+    return this.get(...indeces)
 }
 torus.prototype.get = function(...indeces){
     indeces = torus.flat(indeces);
@@ -1216,12 +1210,18 @@ systems:{
             })()
         }
     })
-
+    torus.prototype.check_dim = function (dim){
+        if (-this.dim > dim || this.dim - 1 < dim)
+            throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`);
+        if (dim < 0)
+            dim += this.dim;
+        return dim;
+    }
     torus.prototype.dims_info = function(...dims){
         dims = torus.flat(dims);
         let shape_info = this.shape_info;
         return dims.reduce((r, d, i)=>{
-            i = (d<0)?d + this.dim: d;
+            i = this.check_dim(d);
             let v = shape_info[i];
             if(v === undefined)
                 throw new Error(`Index ${i} out of range for shape [${this.shape}]`)
