@@ -1240,52 +1240,32 @@ class JupyterCell extends ROCKS({
 function getID() {
     return Math.floor(Math.random() * Date.now()).toString(16);
 }
-let last_marker = {}
 window._findCodeEntry = async (e) => {
-    const cellElement = e.parentElement.domHost
-    last_marker.aceEditor?.clearSelection();
-    last_marker.label?.removeAttribute('selected');
-    if (last_marker.label === e){
-        last_marker = {}
-        return;
-    }
-    last_marker.label = e;
     const text = '>'+e.innerText.replace(':', '');
+
+    const cellElement = e.parentElement.domHost
     const codeEditor = cellElement.control?.$('oda-code-editor');
     const aceEditor = codeEditor.editor;
     const value = aceEditor.session.getValue();
-    const startRow = value.substr(0, value.indexOf(text)).split(/\r\n|\r|\n/).length - 1;
-    const startCol = aceEditor.session.getLine(startRow).indexOf(text);
-    const endRowOffset = text.split(/\r\n|\r|\n/).length;
-    const endRow = startRow + endRowOffset - 1;
-    const endCollOffset = text.split(/\r\n|\r|\n/)[endRowOffset - 1].length;
-    const endCol = startCol + (endCollOffset > 1 ? endCollOffset + 1 : endCollOffset);
-    const range = new ace.Range(endRow, endCol, startRow, startCol);
-    last_marker.aceEditor = aceEditor;
+    const row = value.substr(0, value.indexOf(text)).split(/\r\n|\r|\n/).length - 1;
+    const range = new ace.Range(row, 1000, row, 0);
     const length = aceEditor.session.doc.getAllLines().length;
     const height = codeEditor.offsetHeight;
-    const delta = (height / length) * startRow;
+    const delta = (height / length) * row;
     if (cellElement.jupyter.scrollTop>codeEditor.domHost.domHost.offsetTop + delta)
         cellElement.jupyter.scrollToCell(cellElement.cell, delta);
-    aceEditor.moveCursorTo(startRow, startCol);
+    aceEditor.moveCursorTo(row, 0);
     aceEditor.focus();
     aceEditor.session.selection.setRange(range);
 }
 window._findCodePos = async (e) => {
-    const cellElement = e.parentElement.domHost
-    last_marker.aceEditor?.clearSelection();
-    last_marker.label?.removeAttribute('selected');
-    if (last_marker.label === e){
-        last_marker = {}
-        return;
-    }
-    last_marker.label = e;
     const row = +e.getAttribute('row');
     const column = +e.getAttribute('column');
+
+    const cellElement = e.parentElement.domHost
     const codeEditor = cellElement.control?.$('oda-code-editor');
     const aceEditor = codeEditor.editor;
     const range = new ace.Range(row, column + 1, row, column);
-    last_marker.aceEditor = aceEditor;
     const length = aceEditor.session.doc.getAllLines().length;
     const height = codeEditor.offsetHeight;
     const delta = (height / length) * row;
