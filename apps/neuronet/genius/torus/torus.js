@@ -1,7 +1,7 @@
 globalThis.LEARNING_RATE = 0.1;
 export class tensor/* extends Array*/{
     #data = null;
-    #dType = Float32Array;
+    dType = Float32Array;
     #src = undefined;
     #grad = undefined;
     #prev = undefined;
@@ -10,12 +10,13 @@ export class tensor/* extends Array*/{
     #shape_multipliers = undefined;
     isParam = false;
     backs = [];
-    queue = new torus.Queue();
-    constructor(data, dType) {
+    step = 0;
+    constructor(data, $ = {}) {
+        $ = torus.$($)
         if(data === undefined)
-            this.#data = new (dType || this.#dType)(0);
+            this.#data = new ($.dType)(0);
         else if (data?.$ === this.constructor.name){
-            this.#dType = globalThis[data.dType];
+            this.dType = globalThis[data.dType];
             this['#shape'] = data.shape;
             data = data.data.split(' ');
             this.#data = new this.dType(data);
@@ -30,7 +31,7 @@ export class tensor/* extends Array*/{
                     data = data.flat();
                 }
                 if (next instanceof tensor){
-                    dType = next.dType
+                    $.dType = next.dType
                     shape.push(...next.shape);
                     let size = next.size;
                     next = new dType(shape.mul());
@@ -40,13 +41,9 @@ export class tensor/* extends Array*/{
                     }, next);
                 }
                 else {
-                    if(!dType)
-                        dType = Float32Array
                     if(!(data instanceof dType))
-                        data = new dType(data);
+                        data = new $dType(data);
                 }
-
-
                 this['#shape'] = shape;
             }
             else if(this.dType === BinaryArray) {
@@ -63,7 +60,7 @@ export class tensor/* extends Array*/{
             }
             this.#data = data;
         }
-        this.#dType = dType || this.#data.constructor || this.#dType;
+        this.dType = this.data.constructor
         this.id = genId();
     }
     _resize_data(data, ...shape){
@@ -75,6 +72,12 @@ export class tensor/* extends Array*/{
         this.#data = data;
         this['#shape'] = shape
         return this;
+    }
+    get out(){
+        return this._outs?.[++this.step]
+    }
+    set out(n){
+        (this._outs ??= new Object(null))[this.step] = n;
     }
     getPath(level = 0){
         let tab = '|'.repeat(level) + '|- '
@@ -118,13 +121,13 @@ export class tensor/* extends Array*/{
     get src(){
         return this.#src;
     }
-    _dType(type){
-        if (this.#dType !== type){
-            this.#dType = type;
-            const data = new type(this.data.length);
-            for(let i = 0; i<data.length; i++){
+    _dType(dType){
+        if (this.dType !== dType){
+            this.dType = dType;
+            const data = new dType(this.data.length);
+            let i = this.size;
+            while(i--)
                 data[i] = this.data[i];
-            }
             this.#data = data;
         }
         return this;
@@ -168,9 +171,6 @@ export class tensor/* extends Array*/{
         this.#data = this.data.map(d=>d - factor);
         return this;
     }
-    get dType(){
-        return this.#dType;
-    }
     get allowGrad(){
         return (this._back && !!this.src?.some(i=>i.allowGrad)) || this.isParam;
     }
@@ -185,7 +185,7 @@ export class tensor/* extends Array*/{
         if (n.length !== this.size)
             throw new Error(`Dimension out of range (expected ${this.#data.length}, but got ${n.length})`);
         this.#data = n
-        this.#dType = this.#data.constructor;
+        this.dType = this.#data.constructor;
     }
     set grad(n){
         this.#grad = n;
@@ -536,12 +536,12 @@ export class tensor/* extends Array*/{
         })
         return tensor.from(data)._label('hippo');
     }
-    static from(data, dType){
+    static from(data, $){
         if (Object.equal(data?.constructor, tensor))
             return data;
-        return new tensor(data, dType);
+        return new tensor(data, $);
     }
-    static tensor(data, dType){
+    static tensor(data, $){
         return torus.from(...arguments);
     }
     static param(src){
@@ -869,15 +869,19 @@ tensor.prototype.multiply = function (other){
 tensor.prototype.divide = function (other){
     return this._element_wise_operator(other, {forward: '(x, y) => x / y', backward_0: '(g, y) => g / y', backward_1: '(x, g) => -x / (g ** 2)'});
 }
-tensor.prototype.pow = function (other){
+torus.prototype.pow = function (other){
     return this._element_wise_operator(other, {forward:  '(x, y) => x ** y', backward_0: '(g, y) => y * (g ** (y - 1))', backward_1: '(x, g) => x ** g * Math.log(x)'});
 }
-
-tensor.prototype.softmax = function (dim = -1){
+torus.$ = function (...$){
+    return Object.assign({keepdim: false, dType: Float32Array, out: null}, ...$)
+}
+torus.prototype.softmax = function (dim = -1, $ = {}){
+    $ = torus.$($);
     const step = this.shape[this.shape.length-1];
     const size = this.size/step;
     const exps = this.data.map(Math.exp);
-    const data = new Float32Array(this.size);
+    let out = this.queue.pop();
+    const data = out?.data || new Float32Array(this.size);
     for (let x = 0; x<size; x++){
         let sum = 0;
         for (let y = 0; y<step; y++){
@@ -888,20 +892,24 @@ tensor.prototype.softmax = function (dim = -1){
             data[idx] = exps[idx]/sum;
         }
     }
-    const out =  tensor.from(data)._src(this)._label('softmax')._shape(this);
-    out._back = ()=>{
-        for (let x = 0; x<size; x++) {
-            for (let y = 0; y < step; y++) {
-                let idx = y + step * x;
-                let d = data[idx];
-                let sum = data.reduce((r, sj, j) => {
-                    let v = (y === j) ? d * (1 - d) : -d * sj;
-                    return r + v
-                })
-                this.grad[idx] += sum * out.grad[idx];
+    if(!out){
+        out =  tensor.from(data)._src(this)._label('softmax')._shape(this);
+        out._back = ()=>{
+            for (let x = 0; x<size; x++) {
+                for (let y = 0; y < step; y++) {
+                    let idx = y + step * x;
+                    let d = data[idx];
+                    let sum = data.reduce((r, sj, j) => {
+                        let v = (y === j) ? d * (1 - d) : -d * sj;
+                        return r + v
+                    })
+                    this.grad[idx] += sum * out.grad[idx];
+                }
             }
         }
     }
+    this.queue.push(out);
+
     return out;
 }
 tensor.prototype.maxIndex = function () {
@@ -1193,14 +1201,6 @@ systems:{
             })
         })
     }
-    torus.Queue  = class Queue  extends Array{
-        constructor() {
-            super(...arguments)
-        }
-        push(element) {
-            return this.unshift(element);
-        }
-    }
     Object.defineProperty(torus.prototype, 'shape_info', {
         configurable: true,
         get(){
@@ -1231,20 +1231,21 @@ systems:{
             return a.i<b.i?-1:1
         })
     }
-    torus.fill = (shape, value_or_handler, dType = Float32Array) => {
+    torus.fill = (shape, value_or_handler, $ = {}) => {
+        $ = torus.$($)
         shape = torus.flat(shape);
         let handler = typeof value_or_handler === 'function' ? value_or_handler : i => value_or_handler;
         let size = shape.mul();
-        let data = new dType(size);
+        let data = new $.dType(size);
         data = data.map(handler);
         if(!data.length)
             shape = []
         else if (!shape.mul())
             shape = [1]
-        return torus.from(data, dType)._shape(shape);
+        return torus.from(data, $)._shape(shape);
     }
-    torus.prototype._element_wise_operator = function (other, attributes = {},
-                                                       $ = Object.assign({forward: '', backward_0: '', backward_1: ''}, attributes)){
+    torus.prototype._element_wise_operator = function (other, $ = {forward: '', backward_0: '', backward_1: ''}){
+        $ = torus.$($);
         other = torus.from(other);
         let max_d = Math.max(this.dim, other.dim);
         const t_vars = torus.genVarsArray(this.dim);
@@ -1269,24 +1270,21 @@ systems:{
         let expr = (t_vars.reverse().join('') || '$') + ', ' + (o_vars.reverse().join('') || '$') + ' -> ' + outs.reverse().join('');
         const out = torus.einsum(expr,  [this, other], $);
         let label;
-        try{
-            throw new Error()
-        }
+        try{throw new Error()}
         catch (e){
             label = e.stack.split('\n');
             const idx = label.findIndex(v=>v.includes('._element_wise')) + 1;
             label = label[idx];
             label = label.substr(label.indexOf('.') + 1);
             label = label.substr(0, label.indexOf(' '));
-
+            out._label(label + ' ('+expr+')');
         }
-        out._label(label + ' ('+expr+')');
         return out;
     }
-    torus.prototype._element_wise_function = function ($ = {}){
-        $ = Object.assign({forward: '', backward_0: ''}, $);
-        const forward = eval($.forward);
-        let out = this.queue.pop();
+    torus.prototype._element_wise_function = function ($ = {forward: '', backward_0: ''}){
+        $ = torus.$($);
+        const forward = eval($.forward) ;
+        let out = $.out || this.out;
         if(out){
             let i = this.size;
             while(i--){
@@ -1296,29 +1294,26 @@ systems:{
         else{
             const data = this.data.map(forward);
             out = torus.from(data)._src(this)._shape(this);
-            let label;
-            try{
-                throw new Error()
-            }
+            try{throw new Error()}
             catch (e){
-                label = e.stack.split('\n');
+                let label = e.stack.split('\n');
                 const idx = label.findIndex(v=>v.includes('._element_wise')) + 1;
                 label = label[idx];
                 label = label.substr(label.indexOf('.') + 1);
                 label = label.substr(0, label.indexOf(' '));
+                out._label(label+' ('+out.shape+')');
             }
-            out._label(label+' ('+out.shape+')');
-        }
-        if (this.allowGrad && $.backward_0){
-            out._back = ()=>{
-                const backward = eval($.backward_0);
-                let i = this.size;
-                while(i--){
-                    this.grad[i] += backward(this.data[i], out.data[i]) * out.grad[i];
+            if (this.allowGrad && $.backward_0){
+                out._back = ()=>{
+                    const backward = eval($.backward_0);
+                    let i = this.size;
+                    while(i--){
+                        this.grad[i] += backward(this.data[i], out.data[i]) * out.grad[i];
+                    }
                 }
             }
+            this.out = out;
         }
-        this.queue.push(out);
         return out;
     }
 }
@@ -1481,7 +1476,7 @@ aggregates:{
         }
     }
     torus.prototype.sum = function (dims = [], $ = {}){
-        $ = Object.assign({keepdim: false, dType: Float32Array, out: null}, $);
+        $ = torus.$($);
         let shape_info = this.shape_info;
         const from = shape_info.map(i=>i.char);
         let dims_info = this.dims_info(dims)
@@ -1504,14 +1499,14 @@ aggregates:{
         return out;
     }
     torus.prototype.mean = function(dims = [], $ = {}){
-        $ = Object.assign({keepdim: false, dType: Float32Array, out: null}, $);
+        $ = torus.$($);
         let sum = this.sum(...arguments);
         let out = sum.divide(this.size / sum.size);
         out._label(sum.label.replace('sum', 'mean'))
         return out;
     }
-    torus.prototype.var = function(dims = [], $ = {}){
-        $ = Object.assign({correction: 1, keepdim: false, dType: Float32Array, out: null}, $);
+    torus.prototype.var = function(dims = [], $ = {correction: 1}){
+        $ = torus.$($);
         const avg = this.mean(dims, $);
         let s1 = this.shape_info;
         let s2 = avg.shape_info;
@@ -1530,8 +1525,8 @@ aggregates:{
         out._label(`var(dims=[${dims}], ${JSON.stringify($)}):\'${expr}\'`);
         return out;
     }
-    torus.prototype.std = function(dim = [], $ = {}){
-        $ = Object.assign({correction: 1, keepdim: false, dType: Float32Array, out: null}, $);
+    torus.prototype.std = function(dim = [], $ = {correction: 1, }){
+        $ = torus.$($);
         let out = this.var(...arguments);
         out = out.sqrt();
         out._label(`std(dim = [${dim}], ${JSON.stringify($)})`);
@@ -1580,7 +1575,7 @@ convertors:{
 }
 
 torus.einsum = (in_expr, sources = [], $ = {})=>{
-    $ = Object.assign({dType: Float32Array, forward: ''}, $);
+    $ = torus.$($);
     sources = torus.flat(sources);
     const tensors = sources.map(t => torus.from(t));
     let key = in_expr + ':' + tensors.map(i=> i.shape.toString()+'('+ i.dType.name +')' ).join('-') + JSON.stringify($);
