@@ -11,7 +11,7 @@ export class tensor/* extends Array*/{
     isParam = false;
     backs = [];
     step = 0;
-    constructor(data, $ = {}) {
+    constructor(data, $ = {dType: Float32Array}) {
         $ = torus.$($)
         if(data === undefined)
             this.#data = new ($.dType)(0);
@@ -74,10 +74,11 @@ export class tensor/* extends Array*/{
         return this;
     }
     get out(){
-        return this._outs?.[++this.step]
+        this.step++;
+        return this._outs?.[this.step];
     }
     set out(n){
-        (this._outs ??= new Object(null))[this.step] = n;
+        (this._outs ??= Object.create(null))[this.step] = n;
     }
     getPath(level = 0){
         let tab = '|'.repeat(level) + '|- '
@@ -1451,8 +1452,8 @@ aggregates:{
         out._label(sum.label.replace('sum', 'mean'))
         return out;
     }
-    torus.prototype.var = function(dims = [], $ = {correction: 1}){
-        $ = torus.$($);
+    torus.prototype.var = function(dims = [], $ = {}){
+        $ = torus.$($, {correction: 1});
         const avg = this.mean(dims, $);
         let s1 = this.shape_info;
         let s2 = avg.shape_info;
@@ -1471,8 +1472,8 @@ aggregates:{
         out._label(`var(dims=[${dims}], ${JSON.stringify($)}):\'${expr}\'`);
         return out;
     }
-    torus.prototype.std = function(dim = [], $ = {correction: 1, }){
-        $ = torus.$($);
+    torus.prototype.std = function(dim = [], $ = {}){
+        $ = torus.$($, {correction: 1});
         let out = this.var(...arguments);
         out = out.sqrt();
         out._label(`std(dim = [${dim}], ${JSON.stringify($)})`);
@@ -1573,7 +1574,7 @@ convertors:{
 }
 
 torus.einsum = (in_expr, sources = [], $ = {})=>{
-    $ = torus.$($);
+    $ = torus.$($, {forward: '', backward_0: ''});
     sources = torus.flat(sources);
     const tensors = sources.map(t => torus.from(t));
     let key = in_expr + ':' + tensors.map(i=> i.shape.toString()+'('+ i.dType.name +')' ).join('-') + JSON.stringify($);
