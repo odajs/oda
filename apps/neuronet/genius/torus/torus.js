@@ -1200,12 +1200,12 @@ systems:{
         get(){
             return this['#shape_info'] ??= (()=>{
                 let step, c, m = 1;
-                return this.shape.toReversed().map((dim, i)=>{
+                return this.shape.toReversed().map((dim, idx)=>{
                     step = m;
                     m *= dim;
-                    let char = String.fromCharCode(i + 97);
-                    i = this.dim - i - 1;
-                    return {step, dim, char, i};
+                    let char = String.fromCharCode(idx + 97);
+                    idx = this.dim - idx - 1;
+                    return {step, dim, char, idx};
                 }).toReversed();
             })()
         }
@@ -1220,15 +1220,13 @@ systems:{
     torus.prototype.dims_info = function(...dims){
         dims = torus.flat(dims);
         let shape_info = this.shape_info;
-        return dims.reduce((r, d, i)=>{
-            i = this.check_dim(d);
-            let v = shape_info[i];
-            if(v === undefined)
-                throw new Error(`Index ${i} out of range for shape [${this.shape}]`)
+        return dims.reduce((r, d, idx)=>{
+            idx = this.check_dim(d);
+            let v = shape_info[idx];
             r.add(v)
             return r
         }, []).sort((a,b)=>{
-            return a.i<b.i?-1:1
+            return a.idx<b.idx?-1:1
         })
     }
     torus.fill = (shape, value_or_handler, $ = {}) => {
