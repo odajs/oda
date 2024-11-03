@@ -443,51 +443,7 @@ export class tensor/* extends Array*/{
     static cross_entropy(tensor, target) {
         return tensor.crossEntropy(target);
     }
-    static concat (tensors = [], dim=-1){
-        const first = tensors[0];
-        if (dim < 0)
-            dim += first.dim;
-        let join_dim = tensors.reduce((r, t)=>r + t.shape[dim], 0);
-        const shape = [...first.shape];
-        shape[dim] = join_dim;
-        const size = shape.mul();
-        const data = new first.dType(size);
-        let states = [...tensors.map(i=>({from: 0}))]
-        let idx = 0;
-        do{
-            tensors.map((t, i)=>{
-                const state = states[i];
-                state.step ??= t.shape.reduce((r, v, i)=> r * (i<dim?1:v), 1)
-                const to =  state.from + state.step;
-                const slice = t.data.slice(state.from, to);
-                state.from = to;
-                data.set(slice, idx);
-                idx += state.step;
-            })
-        }
-        while (idx < size)
-        tensors.map(t=>{
-            t.__step = undefined
-            t.__from = undefined
-        })
-        const out = tensor.from(data)._shape(shape)._label('concat('+tensors.length+')')._src(tensors);
-        out._back = ()=>{
-            //todo
-        }
-        return out;
-    }
-    static hippo(size){
-        const data = Array(size).fill().map((_,n)=>{
-            return Array(size).fill().map((_,k)=>{
-                if (n>k)
-                    return -Math.sqrt(2 * n + 1) * Math.sqrt(2 * k + 1);
-                if(n === k)
-                    return -(n + 1);
-                return 0
-            })
-        })
-        return tensor.from(data)._label('hippo');
-    }
+
     static from(data, $){
         if (Object.equal(data?.constructor, tensor))
             return data;
@@ -1267,7 +1223,18 @@ systems:{
 generators:{
 
 // ФУНКЦИИ ГЕНЕРАТОРЫ
-
+    torus.hippo = (size)=>{
+        const data = Array(size).fill().map((_,n)=>{
+            return Array(size).fill().map((_,k)=>{
+                if (n>k)
+                    return -Math.sqrt(2 * n + 1) * Math.sqrt(2 * k + 1);
+                if(n === k)
+                    return -(n + 1);
+                return 0
+            })
+        })
+        return tensor.from(data)._label('hippo');
+    }
     torus.empty = (...shape)=>{
         const handle = ()=>(torus.generator() - .5) / 2
         return torus.fill(shape, handle, Float32Array)._label(`empty`);
@@ -1481,6 +1448,40 @@ aggregates:{
     }
 }
 convertors:{
+    torus.cat = torus.concat  = (tensors = [], dim=-1) => {
+        const first = tensors[0];
+        if (dim < 0)
+            dim += first.dim;
+        let join_dim = tensors.reduce((r, t)=>r + t.shape[dim], 0);
+        const shape = [...first.shape];
+        shape[dim] = join_dim;
+        const size = shape.mul();
+        const data = new first.dType(size);
+        let states = [...tensors.map(i=>({from: 0}))]
+        let idx = 0;
+        do{
+            tensors.map((t, i)=>{
+                const state = states[i];
+                state.step ??= t.shape.reduce((r, v, i)=> r * (i<dim?1:v), 1)
+                const to =  state.from + state.step;
+                const slice = t.data.slice(state.from, to);
+                state.from = to;
+                data.set(slice, idx);
+                idx += state.step;
+            })
+        }
+        while (idx < size)
+        tensors.map(t=>{
+            t.__step = undefined
+            t.__from = undefined
+        })
+        const out = tensor.from(data)._shape(shape)._label('concat('+tensors.length+')')._src(tensors);
+        out._back = ()=>{
+            //todo
+        }
+        return out;
+    }
+
     torus.prototype.split = function(split_size_or_sections = [], dim = 0){
         split_size_or_sections = torus.flat(split_size_or_sections);
         let sum = split_size_or_sections.sum();                           // считаем сумму указанных срезов
