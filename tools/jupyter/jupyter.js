@@ -805,7 +805,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             if(e.text.startsWith('Missing ";" before statement')) return false;
             return true;
         }).map(err =>{
-            return '    '+err.text + ` <u row="${err.row}" column="${err.column}" onclick="_findCodePos(this)" style="cursor: pointer; color: -webkit-link">(${err.row+1}:${err.column})</u>`
+            return '    '+err.text + ` <u row="${err.row}" column="${err.column}" onclick="_findErrorPos(this)" style="cursor: pointer; color: -webkit-link">(${err.row+1}:${err.column})</u>`
         }).join('\n') || undefined;
         if(error)
             error = '<span bold style="padding: 2px; font-size: large; margin-bottom: 4px;">SyntaxError:</span><br>'+error;
@@ -1248,8 +1248,7 @@ window._findCodeEntry = async (e) => {
     const cellElement = e.parentElement.domHost
     const codeEditor = cellElement.control?.$('oda-code-editor');
     const aceEditor = codeEditor.editor;
-    const value = aceEditor.session.getValue();
-    const row = value.substr(0, value.indexOf(text)).split(/\r\n|\r|\n/).length - 1;
+    const row = aceEditor.session.doc.$lines.findIndex(r=>r.startsWith(text))
     const range = new ace.Range(row, 1000, row, 0);
     const length = aceEditor.session.doc.getAllLines().length;
     const height = codeEditor.offsetHeight;
@@ -1260,7 +1259,7 @@ window._findCodeEntry = async (e) => {
     aceEditor.focus();
     aceEditor.session.selection.setRange(range);
 }
-window._findCodePos = async (e) => {
+window._findErrorPos = async (e) => {
     const row = +e.getAttribute('row');
     const column = +e.getAttribute('column');
 

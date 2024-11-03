@@ -41,8 +41,8 @@ export class tensor/* extends Array*/{
                     }, next);
                 }
                 else {
-                    if(!(data instanceof dType))
-                        data = new $dType(data);
+                    if(!(data instanceof $.dType))
+                        data = new $.dType(data);
                 }
                 this['#shape'] = shape;
             }
@@ -391,9 +391,6 @@ export class tensor/* extends Array*/{
             torus.__random_generator__ = Math.random
         return torus.__random_generator__;
     }
-    static split(tensor, split_size_or_sections, dim = 0){
-        return tensor.split(split_size_or_sections, dim = 0);
-    }
     static stack(tensors, dim = 0){
         let first = tensors[0];
 
@@ -444,54 +441,6 @@ export class tensor/* extends Array*/{
     }
     static cross_entropy(tensor, target) {
         return tensor.crossEntropy(target);
-    }
-    split(split_size_or_sections = 1, dim = 0){
-        split_size_or_sections = torus.flat(split_size_or_sections)
-        let max = this.check_dim(dim);
-        if (Number.isInteger(split_size_or_sections)){
-            let arr = [];
-            let i;
-            for (i = 0; i < max; i += split_size_or_sections){
-                if (i + split_size_or_sections < max)
-                    arr.push(split_size_or_sections);
-                else
-                    arr.push(max - i);
-            }
-            split_size_or_sections = arr;
-        }
-        if (!Array.isArray(split_size_or_sections))
-            throw new Error(`Argument 'split_size_or_sections' (position 1) must be 'Integer' or 'array of Integer', but not '${typeof split_size_or_sections}'`)
-        if(split_size_or_sections.sum() !== max)
-            throw new Error(`split_size_or_sections expects to sum exactly to ${max} (input tensor's size at dimension ${dim}), but got split_size_or_sections=[${split_size_or_sections}]`);
-        let idx = -1;
-        const src = this.data;
-        let shape = [...this.shape];
-        if (dim < 0)
-            dim += this.dim;
-        let outs = this.out;
-        outs = split_size_or_sections.map((v, i)=>{
-            if(outs){
-
-            }
-            else{
-                shape[dim] = v;
-                const size = shape.mul();
-                let start = idx;
-                const d = new this.dType(size).map(x=>src[++idx]);
-                let out = torus.from(d)._shape(...shape)._src(this)._label(`split ${i+1} of ${split_size_or_sections.length} -> ${v}`);
-                if (this.allowGrad){
-                    out._back = ()=>{
-                        out.grad.forEach((g, i)=>{
-                            this.grad[i + start] += g;
-                        })
-                    }
-                }
-            }
-            return out;
-        });
-        this.out = outs;
-        return outs;
-
     }
     static concat (tensors = [], dim=-1){
         const first = tensors[0];
@@ -874,7 +823,7 @@ torus.prototype.softmax = function (dim = -1, $ = {}){
     const step = this.shape[this.shape.length-1];
     const size = this.size/step;
     const exps = this.data.map(Math.exp);
-    let out = this.queue.pop();
+    let out = this.out;
     const data = out?.data || new Float32Array(this.size);
     for (let x = 0; x<size; x++){
         let sum = 0;
@@ -901,9 +850,8 @@ torus.prototype.softmax = function (dim = -1, $ = {}){
                 }
             }
         }
+        this.out = out;
     }
-    this.queue.push(out);
-
     return out;
 }
 tensor.prototype.maxIndex = function () {
@@ -1532,6 +1480,58 @@ aggregates:{
     }
 }
 convertors:{
+    torus.prototype.split = function(split_size_or_sections = [], dim = 0){
+        split_size_or_sections = torus.flat(split_size_or_sections);
+        let sum = split_size_or_sections.sum();                           // считаем сумму указанных срезов
+        if(!sum)                                                            // не указаны размеры срезов, возвращаем исходный тензор
+            return this;
+        const di = this.dims_info(dim)[0]
+        let max = di.dim;                                                   // корректируем изменение среза
+        if(sum > max)
+            throw new Error(`split_size_or_sections expects to sum exactly to ${max} (input tensor's size at dimension ${dim}), but got split_size_or_sections=[${split_size_or_sections}]`);
+        if(split_size_or_sections.length === 1){                            // если указан только 1 срез
+            let count = Math.floor(max/sum);
+            split_size_or_sections = Array(count).fill(sum);
+            sum = split_size_or_sections.sum();
+        }
+        if(sum < max)
+            split_size_or_sections.push(max - sum);
+
+        let outs = this.out;
+        const period = this.shape.slice(0, di.idx).mul() || 1;
+        const step = this.size / period;
+        const shape = Array.from(this.shape);
+        let pos = 0;
+        outs = split_size_or_sections.map((s, idx)=>{
+            let split_size = di.step * s;
+            let ps = pos + step;
+            let out = outs?.[idx];
+            if(!out){
+                shape[di.idx] = s;
+                out = torus.tensor(new this.dType(shape.mul()))._shape(shape)._src(this)._label(`split ${idx+1} of ${split_size_or_sections.length} -> ${s}`);
+                if (this.allowGrad){
+                    out._back = ()=>{
+                        for(let i = 0; i < period; i ++){
+                            let i1 = i * ps;
+                            let i2 = i * split_size;
+                            const slice = out.grad.slice(slice, i2, i2 * split_size)
+                            this.grad.set(slice, i1);
+                        }
+                    }
+                }
+            }
+            for(let i = 0; i < period; i ++){
+                let i1 = i * ps;
+                let i2 = i * split_size;
+                const slice = this.data.slice(i1, i1 + split_size);
+                out.data.set(slice, i2)
+            }
+            pos += split_size;
+            return out;
+        });
+        this.out = outs;
+        return outs;
+    }
     torus.prototype.float = function (){
         if (this.dtype !== Float32Array){
             let data = new Float32Array(this.size);
