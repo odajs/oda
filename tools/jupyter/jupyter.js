@@ -327,6 +327,8 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     template: `
         <style>
             :host{
+                padding-top: 2px;
+                padding-left: 2px;
                 @apply --vertical;
                 @apply --no-flex;
                 position: relative;
@@ -806,7 +808,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             return '    '+err.text + ` <u row="${err.row}" column="${err.column}" onclick="_findCodePos(this)" style="cursor: pointer; color: -webkit-link">(${err.row+1}:${err.column})</u>`
         }).join('\n') || undefined;
         if(error)
-            error = '<span style="padding: 2px; font-size: large; margin-bottom: 4px;">SyntaxError:</span><br>'+error;
+            error = '<span bold style="padding: 2px; font-size: large; margin-bottom: 4px;">SyntaxError:</span><br>'+error;
         return error;
     },
     get editor(){
@@ -1189,7 +1191,7 @@ class JupyterCell extends ROCKS({
             }
         }
         catch (e){
-            let error = '<span style=\'padding: 2px; font-size: large; margin-bottom: 4px;\'>'+e.toString()+':</span>';
+            let error = '<span bold style=\'padding: 2px; font-size: large; margin-bottom: 4px;\'>'+e.toString()+':</span>';
             let stack = e.stack;
             stack = stack.replaceAll('<', '&lt;')
             stack = stack.replaceAll('>', '&gt;')
@@ -1229,7 +1231,7 @@ class JupyterCell extends ROCKS({
                 cnt = s.lastIndexOf('/*')
                 if (cnt > 0)
                     s = s.substring(0, cnt);
-                s = 'log(\"<label onclick=\'_findCodeEntry(this)\' style=\'text-decoration: underline; padding: 2px; font-size: large; margin-bottom: 4px; cursor: pointer; color: -webkit-link\'>'+s.replaceAll('"', '\\\"')+':</label>\", '+s+')';
+                s = 'log(\"<label bold onclick=\'_findCodeEntry(this)\' style=\'text-decoration: underline; padding: 2px; font-size: large; margin-bottom: 4px; cursor: pointer; color: -webkit-link\'>'+s.replaceAll('"', '\\\"')+':</label>\", '+s+')';
             }
             return s;
         }).join('\n');

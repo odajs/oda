@@ -13,7 +13,7 @@ ODA({is: 'oda-loader',  extends: 'oda-icon', imports: '@oda/icon',
         }
         :host .icon{
             border-radius: 50%;
-            animation: spin 1.5s linear infinite;
+            animation: spin 2s linear infinite;
             @apply --content;
         }
         @keyframes spin {
