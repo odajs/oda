@@ -803,7 +803,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             if(e.text.startsWith('Missing ";" before statement')) return false;
             return true;
         }).map(err =>{
-            return '    '+err.text + ` <a href="_">(${err.row+1}:${err.column})</a>`
+            return '    '+err.text + ` <u row="${err.row}" column="${err.column}" onclick="_findCodePos(this)" style="cursor: pointer; color: -webkit-link">(${err.row+1}:${err.column})</u>`
         }).join('\n') || undefined;
         if(error)
             error = '<span style="padding: 2px; font-size: large; margin-bottom: 4px;">SyntaxError:</span><br>'+error;
@@ -1189,7 +1189,6 @@ class JupyterCell extends ROCKS({
             }
         }
         catch (e){
-            // jupyter.output_data.push('<label onclick=\'_onLogTap(this)\' style=\'text-decoration: underline; padding: 2px; font-size: large; margin-bottom: 4px; cursor: pointer;\'>'+e.message.replaceAll('"', '\\\"')+':</label>')
             let error = '<span style=\'padding: 2px; font-size: large; margin-bottom: 4px;\'>'+e.toString()+':</span>';
             let stack = e.stack;
             stack = stack.replaceAll('<', '&lt;')
@@ -1230,7 +1229,7 @@ class JupyterCell extends ROCKS({
                 cnt = s.lastIndexOf('/*')
                 if (cnt > 0)
                     s = s.substring(0, cnt);
-                s = 'log(\"<label onclick=\'_onLogTap(this)\' style=\'text-decoration: underline; padding: 2px; font-size: large; margin-bottom: 4px; cursor: pointer;\'>'+s.replaceAll('"', '\\\"')+':</label>\", '+s+')';
+                s = 'log(\"<label onclick=\'_findCodeEntry(this)\' style=\'text-decoration: underline; padding: 2px; font-size: large; margin-bottom: 4px; cursor: pointer; color: -webkit-link\'>'+s.replaceAll('"', '\\\"')+':</label>\", '+s+')';
             }
             return s;
         }).join('\n');
@@ -1242,7 +1241,7 @@ function getID() {
     return Math.floor(Math.random() * Date.now()).toString(16);
 }
 let last_marker = {}
-window._onLogTap = async (e) => {
+window._findCodeEntry = async (e) => {
     const cellElement = e.parentElement.domHost
     last_marker.aceEditor?.clearSelection();
     last_marker.label?.removeAttribute('selected');
@@ -1251,7 +1250,6 @@ window._onLogTap = async (e) => {
         return;
     }
     last_marker.label = e;
-    e.setAttribute('selected', true);
     const text = '>'+e.innerText.replace(':', '');
     const codeEditor = cellElement.control?.$('oda-code-editor');
     const aceEditor = codeEditor.editor;
@@ -1262,14 +1260,38 @@ window._onLogTap = async (e) => {
     const endRow = startRow + endRowOffset - 1;
     const endCollOffset = text.split(/\r\n|\r|\n/)[endRowOffset - 1].length;
     const endCol = startCol + (endCollOffset > 1 ? endCollOffset + 1 : endCollOffset);
-    const range = new ace.Range(startRow, startCol, endRow, endCol);
-    aceEditor.session.selection.setRange(range);
+    const range = new ace.Range(endRow, endCol, startRow, startCol);
     last_marker.aceEditor = aceEditor;
     const length = aceEditor.session.doc.getAllLines().length;
     const height = codeEditor.offsetHeight;
     const delta = (height / length) * startRow;
     if (cellElement.jupyter.scrollTop>codeEditor.domHost.domHost.offsetTop + delta)
         cellElement.jupyter.scrollToCell(cellElement.cell, delta);
-
+    aceEditor.moveCursorTo(startRow, startCol);
+    aceEditor.focus();
+    aceEditor.session.selection.setRange(range);
 }
-
+window._findCodePos = async (e) => {
+    const cellElement = e.parentElement.domHost
+    last_marker.aceEditor?.clearSelection();
+    last_marker.label?.removeAttribute('selected');
+    if (last_marker.label === e){
+        last_marker = {}
+        return;
+    }
+    last_marker.label = e;
+    const row = +e.getAttribute('row');
+    const column = +e.getAttribute('column');
+    const codeEditor = cellElement.control?.$('oda-code-editor');
+    const aceEditor = codeEditor.editor;
+    const range = new ace.Range(row, column + 1, row, column);
+    last_marker.aceEditor = aceEditor;
+    const length = aceEditor.session.doc.getAllLines().length;
+    const height = codeEditor.offsetHeight;
+    const delta = (height / length) * row;
+    if (cellElement.jupyter.scrollTop>codeEditor.domHost.domHost.offsetTop + delta)
+        cellElement.jupyter.scrollToCell(cellElement.cell, delta);
+    aceEditor.moveCursorTo(row, column);
+    aceEditor.focus();
+    aceEditor.session.selection.setRange(range);
+}
