@@ -305,7 +305,12 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
         return this.max * (this.step + 1);
     },
     get split_out(){
-        return this.row?.item?.split?.('\n') || [];
+        const limit = 10000
+        return this.row?.item?.split?.('\n').map(v=>{
+            if(v.length>limit)
+                return v.substring(0, limit);
+            return v
+        });
     },
     get outHtml() {
         if (this.row?.item instanceof HTMLElement)
@@ -1231,7 +1236,7 @@ class JupyterCell extends ROCKS({
                 cnt = s.lastIndexOf('/*')
                 if (cnt > 0)
                     s = s.substring(0, cnt);
-                s = 'log(\"<label bold onclick=\'_findCodeEntry(this)\' style=\'text-decoration: underline; padding: 2px; font-size: large; margin-bottom: 4px; cursor: pointer; color: -webkit-link\'>'+s.replaceAll('"', '\\\"')+':</label>\", '+s+')';
+                s = 'log(\"<label bold onclick=\'_findCodeEntry(this)\' style=\'text-decoration: underline; padding: 2px; font-size: large; margin-bottom: 4px; cursor: pointer; color: -webkit-link\'>'+s.replaceAll('"', '\\\"')+':</label>\\\n\", '+s+')';
             }
             return s;
         }).join('\n');
