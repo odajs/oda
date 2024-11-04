@@ -210,9 +210,7 @@ export class tensor/* extends Array*/{
         return this['#shape'] || [];
     }
     get size(){
-        // return this.shape.mul();
-        // // return this.data.length;
-        return this.shape.mul() || this.data.length; //У скаляров размерность 0, а количество элементов 1
+        return this['#size'] ??= (this.shape.mul() || this.data.length); //У скаляров размерность 0, а количество элементов 1
     }
     get dim(){
         return this.shape.length;
@@ -265,8 +263,8 @@ export class tensor/* extends Array*/{
             let data = this.data;
             let idx = 0;
             let val = '';
-
-            for(let i = 0; i<bins.length; i++){
+            let i = bins.length;
+            while(i--){
                 const rand = torus.generator();
                 let g = this.grad[i]// * tensor.LEARNING_RATE;
                 let value = bins[i];
@@ -305,7 +303,8 @@ export class tensor/* extends Array*/{
 
             let gamma = torus.generator();
             lr = 1 - gamma;
-            for(let i = 0; i<this.data.length; i++){
+            let i = this.data.length;
+            while(i--){
                 let prev = this.prev[i] * gamma;
                 let change = prev + this.grad[i] * lr;
                 this.data[i] += change;
@@ -523,7 +522,8 @@ export class tensor/* extends Array*/{
         const shape = Array.from(this.shape);
         let s
         while (s = shape.pop()){
-            for (let i = 0; i < data.length; i += s){
+            const size = data.length;
+            for (let i = 0; i < size; i += s){
                 res.push(Array.from(data.slice(i, i + s)))
             }
             data = res;
@@ -741,7 +741,8 @@ tensor.prototype.slice = function (...slicers){
 }
 
 tensor.prototype.log_ = function (){
-    for(let i = 0; i<this.data.length; i++){
+    let i = this.data.length
+    while(i--){
         this.data[i] = Math.log(this.data[i]);
     }
     return this;
@@ -912,7 +913,8 @@ tensor.prototype.MSE = function (target){
     const out = tensor.from(losses)._src(this)._label(`MSE (${this.shape})`);
     errors = errors.flat();
     out._back = ()=>{
-        for (let i = 0; i < this.grad.length; i++){
+        let i = this.grad.length;
+        while (i--){
             this.grad[i] += errors[i];
         }
     }
@@ -1057,7 +1059,8 @@ tensor.cosSimilar = (A, B) => {
         let avgA = 0;
         let avgB = 0;
         let a, b
-        for (let i = 0; i < A.length; i++){
+        let i = A.length;
+        while (i--){
             a = A[i];
             b = B[i];
             scalar += a * b;
@@ -1913,7 +1916,8 @@ torus.prototype.pad = function(paddings, mode = 'constant', constant_value = 0) 
         }
         return result;
     }
-    for (let i = 0; i < this.data.length; i++) {
+    let i = this.data.length;
+    while(i--){
         let indices = unpadded_indices(index(i));
         new_data[index(indices)] = this.data[i];
     }
@@ -1971,7 +1975,8 @@ torus.prototype.pad = function(paddings, mode = 'constant', constant_value = 0) 
     result._src(this);
     result._back = () => {
         let unpadded_grad = new this.dType(this.data.length);
-        for (let i = 0; i < this.data.length; i++) {
+        let i = this.data.length
+        while (i--) {
             let indices = unpadded_indices(index(i));
             unpadded_grad[i] = result.grad[index(indices)];
         }
