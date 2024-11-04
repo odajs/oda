@@ -22,22 +22,24 @@ ODA({is: 'oda-matrix',
                 
             }
             @keyframes floatUp{
-                0%{top: -100vh; opacity: 0; transform: rotate(0deg)}
-                25%{opacity: .5;transform: rotate(180deg)}
-                50%{top: 0vh; opacity: .8; transform: rotate(360deg)}
-                75%{opacity: 1;transform: rotate(180deg)}
-                100%{top: 100vh; opacity: 0; transform: rotate(0deg)}
+                0%{top: -100vh; opacity: 0;}
+                25%{opacity: .5;}
+                50%{top: 0vh; opacity: .8;}
+                75%{opacity: 1;}
+                100%{top: 100vh; opacity: 0;}
             }
-            @keyframes spin {
-                    0% { transform: rotate(0deg) scale(1); }
-                    50% { transform: rotate(180deg) scale(.9); }
-                    100% { transform: rotate(360deg) scale(1); }
-            }
+            /*@keyframes floatUp{*/
+            /*    0%{top: -100vh; opacity: 0; transform: rotate(0deg)}*/
+            /*    25%{opacity: .5;transform: rotate(180deg)}*/
+            /*    50%{top: 0vh; opacity: .8; transform: rotate(360deg)}*/
+            /*    75%{opacity: 1;transform: rotate(180deg)}*/
+            /*    100%{top: 100vh; opacity: 0; transform: rotate(0deg)}*/
+            /*}*/
         </style>
         <div ~for="count" class='light' ~style="st($for.i)"></div>
     `,
     count: 50,
-    speed: 50,
+    speed: 5,
     st(i){
         return {
             animation: 'floatUp ' + (Math.random() * this.speed + 1) + 's infinite linear',
