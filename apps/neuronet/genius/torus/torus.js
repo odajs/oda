@@ -1451,40 +1451,60 @@ aggregates:{
     }
 }
 convertors:{
-    torus.cat = torus.concat  = (tensors = [], dim=-1) => {
+    torus.cat = torus.concat  = (tensors = [], dim=-1, $ = {out: null}) => {
         const first = tensors[0];
-        if (dim < 0)
-            dim += first.dim;
-        let join_dim = tensors.reduce((r, t)=>r + t.shape[dim], 0);
-        const shape = [...first.shape];
-        shape[dim] = join_dim;
-        const size = shape.mul();
-        const data = new first.dType(size);
-        let states = [...tensors.map(i=>({from: 0}))]
-        let idx = 0;
-        do{
-            tensors.map((t, i)=>{
-                const state = states[i];
-                state.step ??= t.shape.reduce((r, v, i)=> r * (i<dim?1:v), 1)
-                const to =  state.from + state.step;
-                const slice = t.data.slice(state.from, to);
-                state.from = to;
-                data.set(slice, idx);
-                idx += state.step;
-            })
+        dim = first.check_dim(dim);
+        let out = first.out;
+        if(!out){
+            const shape = tensors.reduce((r, tensor, t)=>{
+                const shape = tensor.shape;
+                if(shape.length < r.length)
+                    throw new Error(`Incorrect dimentions of tensor №${t}: must [${r}], but `);
+                r = shape.map((s, i)=>{
+                    const old = r[i] || 0;
+                    if(i === dim)
+                        return old + s;
+                    if(old && old != s)
+                        throw new Error(`Incorrect dim ${i} on tensor №${t} have size ${s} but must be ${old}`);
+                    return s;
+                })
+                return r;
+            },[]);
+            const size = shape.mul();
+            out = torus.tensor(new first.dType(size))._label(`concat ${tensors.length} tensors`)._shape(shape)._src(...tensors);
+            const step = out.size / out.shape.slice(0, dim).mul() || 1;
+            const di = out.dims_info(dim)[0]
+            out._back = ()=>{
+                let from = 0;
+                tensors.map((tensor, t)=>{
+                    let split_size = di.step * tensor.shape[dim];
+                    let to = 0;
+                    for(let p = 0; p < size; p += step){
+                        const slice = out.data.slice(from + p, from + p + split_size);
+                        tensor.data.set(slice, to);
+                        to += split_size;
+                    }
+                    from += split_size;
+                })
+            }
+            first.out = out;
         }
-        while (idx < size)
-        tensors.map(t=>{
-            t.__step = undefined
-            t.__from = undefined
+        const di = out.dims_info(dim)[0]
+        const step = out.size / out.shape.slice(0, dim).mul() || 1;
+        let size = out.size;
+        let from = 0;
+        tensors.map((tensor, t)=>{
+            let split_size = di.step * tensor.shape[dim];
+            let to = 0;
+            for(let p = 0; p < size; p += step){
+                const slice = tensor.data.slice(to, to + split_size);
+                out.data.set(slice, from + p);
+                to += split_size;
+            }
+            from += split_size;
         })
-        const out = tensor.from(data)._shape(shape)._label('concat('+tensors.length+')')._src(tensors);
-        out._back = ()=>{
-            //todo
-        }
         return out;
     }
-
     torus.prototype.split = function(split_size_or_sections = [], dim = 0){
         split_size_or_sections = torus.flat(split_size_or_sections);
         let sum = split_size_or_sections.sum();                           // считаем сумму указанных срезов
@@ -1512,15 +1532,13 @@ convertors:{
             if(!out){
                 shape[di.idx] = s;
                 out = torus.tensor(new this.dType(shape.mul()))._shape(shape)._src(this)._label(`split ${idx+1} of ${split_size_or_sections.length} -> ${s}`);
-                if (this.allowGrad){
-                    out._back = ()=>{
-                        let to = split_size_or_sections.slice(0, idx).sum() * di.step;
-                        let from = 0;
-                        for(let p = 0; p < this.size; p += step){
-                            const slice = out.data.slice(from, from + split_size);
-                            this.data.set(slice, to + p);
-                            from += split_size;
-                        }
+                out._back = ()=>{
+                    let from = split_size_or_sections.slice(0, idx).sum() * di.step;
+                    let to = 0;
+                    for(let p = 0; p < this.size; p += step){
+                        const slice = out.data.slice(to, to + split_size);
+                        this.data.set(slice, from + p);
+                        to += split_size;
                     }
                 }
             }

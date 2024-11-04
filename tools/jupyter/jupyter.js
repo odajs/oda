@@ -310,7 +310,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
             if(v.length>limit)
                 return v.substring(0, limit);
             return v
-        });
+        }) || [];
     },
     get outHtml() {
         if (this.row?.item instanceof HTMLElement)
