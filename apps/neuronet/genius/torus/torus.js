@@ -824,32 +824,7 @@ tensor.prototype.maxIndex = function () {
     const out = tensor.from(data)._label('maxIndex')._shape(this.shape.slice(0, -1));
     return out;
 }
-tensor.prototype.multinomial = function(num_samples = 1, replacement = false){
-    const data = [];
-    const step = this.shape.last;
-    for (let i = 0; i<this.size; i += step){
-        data.push(this.data.slice(i, i + step));
-    }
-    const sums = data.map(d=>d.reduce((r, v)=>(r + v), 0));
-    const res = Array(data.length).fill().map(_=>[]);
-    for (let  i = 0; i< num_samples; i++){
-        const randoms = sums.map(s=>s * torus.generator());
-        data.map((d, i)=>{
-            const p = randoms[i];
-            let v = 0;
-            for (let x = 0; x < step; x++){
-                v += d[x];
-                if (p > v) continue;
-                res[i].push(x);
-                break;
-            }
-        })
-    }
-    const shape = [...this.shape];
-    shape[shape.length - 1] = num_samples;
-    const out = tensor.from(res)._shape(shape)._label('multinomial');
-    return out;
-}
+
 tensor.prototype.hardmax = function (){
     const step = this.shape[this.shape.length-1];
     const size = this.size/step;
@@ -924,8 +899,6 @@ tensor.prototype.MSE = function (target){
 tensor.prototype.repeat = function (count = 1) {
     return tensor.from(Array(count).fill().map(i=>this));
 }
-
-
 tensor.prototype.view = function (...shape) {
     shape = torus.flat(shape);
     if(Object.equal(shape[0]?.constructor, tensor))
@@ -1107,13 +1080,13 @@ systems:{
         configurable: true,
         get(){
             return this['#shape_info'] ??= (()=>{
-                let step, c, m = 1;
+                let stride, c, m = 1;
                 return this.shape.toReversed().map((dim, idx)=>{
-                    step = m;
+                    stride = m;
                     m *= dim;
                     let char = String.fromCharCode(idx + 97);
                     idx = this.dim - idx - 1;
-                    return {step, dim, char, idx};
+                    return {stride, dim, char, idx};
                 }).toReversed();
             })()
         }
@@ -1451,6 +1424,49 @@ aggregates:{
     }
 }
 convertors:{
+    torus.prototype.multinomial = function(num_samples = 1, replacement = false, $ = {}){
+        debugger
+        $ = torus.$({generator: null, out: null}, $);
+        const step = this.shape.last;
+        if(!$.generator)
+            $.generator = torus.generator;
+        let out = $.out || this.out;
+        let steps = this.size / step
+        if(!out){
+            this.out = out = torus.from(new Uint8Array(steps * num_samples))._shape([steps, num_samples])._label('multinomial');
+            out._back = ()=>{
+                for(let s = 0; s<steps; s++){
+                    let l = s * step;
+                    for(let n = 0; n<num_samples; n++){
+                        let i = l + n
+                        const idx = out.data[i]
+                        this.grad[l + idx] += out.grad[i];
+                    }
+                }
+            }
+        }
+        let idx = -1
+        for (let s = 0; s<steps; s++){
+            let sum = 0;
+            let arr = [];
+            let l = s * step;
+            for(let i = 0; i<step; i++){
+                let d = this.data[i+l];
+                sum += Math.abs(d);
+                arr[i] = sum;
+            }
+            for(let n = 0; n<num_samples; n++){
+                let rand = $.generator() * sum;
+                for(let a = 0; a<step; a++){
+                    if(arr[a]>=rand){
+                        out.data[++idx] = a;
+                        break;
+                    }
+                }
+            }
+        }
+        return out;
+    }
     torus.cat = torus.concat  = (tensors = [], dim=-1, $ = {out: null}) => {
         const first = tensors[0];
         dim = first.check_dim(dim);
@@ -1477,11 +1493,11 @@ convertors:{
             out._back = ()=>{
                 let from = 0;
                 tensors.map((tensor, t)=>{
-                    let split_size = di.step * tensor.shape[dim];
+                    let split_size = di.stride * tensor.shape[dim];
                     let to = 0;
                     for(let p = 0; p < size; p += step){
-                        const slice = out.data.slice(from + p, from + p + split_size);
-                        tensor.data.set(slice, to);
+                        const slice = out.grad.slice(from + p, from + p + split_size);
+                        tensor.grad.set(slice, to);
                         to += split_size;
                     }
                     from += split_size;
@@ -1494,7 +1510,7 @@ convertors:{
         let size = out.size;
         let from = 0;
         tensors.map((tensor, t)=>{
-            let split_size = di.step * tensor.shape[dim];
+            let split_size = di.stride * tensor.shape[dim];
             let to = 0;
             for(let p = 0; p < size; p += step){
                 const slice = tensor.data.slice(to, to + split_size);
@@ -1527,22 +1543,22 @@ convertors:{
         const step = this.size / period;
         const shape = Array.from(this.shape);
         outs = split_size_or_sections.map((s, idx)=>{
-            let split_size = di.step * s;
+            let split_size = di.stride * s;
             let out = outs?.[idx];
             if(!out){
                 shape[di.idx] = s;
                 out = torus.tensor(new this.dType(shape.mul()))._shape(shape)._src(this)._label(`split ${idx+1} of ${split_size_or_sections.length} -> ${s}`);
                 out._back = ()=>{
-                    let from = split_size_or_sections.slice(0, idx).sum() * di.step;
+                    let from = split_size_or_sections.slice(0, idx).sum() * di.stride;
                     let to = 0;
                     for(let p = 0; p < this.size; p += step){
-                        const slice = out.data.slice(to, to + split_size);
-                        this.data.set(slice, from + p);
+                        const slice = out.grad.slice(to, to + split_size);
+                        this.grad.set(slice, from + p);
                         to += split_size;
                     }
                 }
             }
-            let from = split_size_or_sections.slice(0, idx).sum() * di.step;
+            let from = split_size_or_sections.slice(0, idx).sum() * di.stride;
             let to = 0;
             for(let p = 0; p < this.size; p += step){
                 const slice = this.data.slice(from + p, from + p + split_size);
