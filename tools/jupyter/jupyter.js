@@ -1196,12 +1196,12 @@ class JupyterCell extends ROCKS({
             }
         }
         catch (e){
-            let error = '<span bold style=\'padding: 2px; font-size: large; margin-bottom: 4px;\'>'+e.toString()+':</span>';
-            let stack = e.stack;
-            stack = stack.replaceAll('<', '&lt;')
-            stack = stack.replaceAll('>', '&gt;')
-            stack = stack.replace(e.toString()+'\n', '')
-            error += '\n'+ stack;
+            let error = '<span bold style=\'padding: 2px; font-size: large; margin-bottom: 4px;\'>'+e.toString()+'</span>';
+            // let stack = e.stack;
+            // stack = stack.replaceAll('<', '&lt;')
+            // stack = stack.replaceAll('>', '&gt;')
+            // stack = stack.replace(e.toString()+'\n', '')
+            // error += '\n'+ stack;
             jupyter.output_data.push('<div style="padding: 4px;" border error>'+error+'</div>');
             this.status = 'error';
         }
