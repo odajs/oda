@@ -74,11 +74,16 @@ export class tensor/* extends Array*/{
         return this;
     }
     get out(){
+        if(!this.allowGrad)
+            return;
         this.step++;
         return this._outs?.[this.step];
     }
     set out(n){
+        if(!this.allowGrad)
+            return;
         (this._outs ??= Object.create(null))[this.step] = n;
+        n.step = this.step;
     }
     getPath(level = 0){
         let tab = '|'.repeat(level) + '|- '
@@ -899,16 +904,7 @@ tensor.prototype.MSE = function (target){
 tensor.prototype.repeat = function (count = 1) {
     return tensor.from(Array(count).fill().map(i=>this));
 }
-tensor.prototype.view = function (...shape) {
-    shape = torus.flat(shape);
-    if(Object.equal(shape[0]?.constructor, tensor))
-        shape = shape[0].shape;
-    const out =  tensor.from(this.data).reshape(shape)._src(this)._label('view');
-    out._back = ()=>{
-        this.grad = out.grad;
-    }
-    return out;
-}
+
 
 tensor.prototype.crossEntropy = function (target) {
     if(this.label !== 'softmax'){
@@ -1424,8 +1420,25 @@ aggregates:{
     }
 }
 convertors:{
+    torus.prototype.view = function (...shape) {
+        shape = torus.flat(shape);
+        if(shape.mul() !== this.size)
+            throw new Error(`shape [${shape}] is invalid for input of size ${this.size}`)
+        let out = this.out;
+        if(!out){
+            out = torus.from(this.data)._src(this)._label('view');
+            out._back = ()=>{
+                let i = this.size;
+                while(i--){
+                    this.grad[i] += out.grad[i];
+                }
+            }
+            this.out = out;
+        }
+        out._data(this.data)._shape(shape);
+        return out;
+    }
     torus.prototype.multinomial = function(num_samples = 1, replacement = false, $ = {}){
-        debugger
         $ = torus.$({generator: null, out: null}, $);
         const step = this.shape.last;
         if(!$.generator)

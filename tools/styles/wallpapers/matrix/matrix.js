@@ -19,28 +19,35 @@ ODA({is: 'oda-matrix',
                 left: 0px;
                 right: 0px;
                 margin: auto;
+                
             }
             @keyframes floatUp{
-                0%{top: -100vh; opacity: 0;}
-                25%{opacity: .5;}
-                50%{top: 0vh; opacity: .8;}
-                75%{opacity: 1;}
-                100%{top: 100vh; opacity: 0;}
+                0%{top: -100vh; opacity: 0; transform: rotate(0deg)}
+                25%{opacity: .5;transform: rotate(180deg)}
+                50%{top: 0vh; opacity: .8; transform: rotate(360deg)}
+                75%{opacity: 1;transform: rotate(180deg)}
+                100%{top: 100vh; opacity: 0; transform: rotate(0deg)}
             }
-
+            @keyframes spin {
+                    0% { transform: rotate(0deg) scale(1); }
+                    50% { transform: rotate(180deg) scale(.9); }
+                    100% { transform: rotate(360deg) scale(1); }
+            }
         </style>
         <div ~for="count" class='light' ~style="st($for.i)"></div>
     `,
     count: 50,
+    speed: 50,
     st(i){
         return {
-            animation: 'floatUp ' + (Math.random() * 4 + 1) + 's infinite linear',
+            animation: 'floatUp ' + (Math.random() * this.speed + 1) + 's infinite linear',
             transform: 'scale(' + (Math.random()-.5) * 4 + ')',
             left: Math.round((Math.random() - .5) * 200) + '%',
             "box-shadow": getColor() + ' 0px 0px 20px 4px'
         }
     },
     attached(){
+        document.body.style.overflow = 'hidden'
         // setInterval(()=>{
         //     this.count ++;
         // }, 5000)
