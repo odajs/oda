@@ -1506,32 +1506,31 @@ convertors:{
         const period = this.shape.slice(0, di.idx).mul() || 1;
         const step = this.size / period;
         const shape = Array.from(this.shape);
-        let pos = 0;
         outs = split_size_or_sections.map((s, idx)=>{
             let split_size = di.step * s;
-            let ps = pos + step;
             let out = outs?.[idx];
             if(!out){
                 shape[di.idx] = s;
                 out = torus.tensor(new this.dType(shape.mul()))._shape(shape)._src(this)._label(`split ${idx+1} of ${split_size_or_sections.length} -> ${s}`);
                 if (this.allowGrad){
                     out._back = ()=>{
-                        for(let i = 0; i < period; i ++){
-                            let i1 = i * ps;
-                            let i2 = i * split_size;
-                            const slice = out.grad.slice(slice, i2, i2 * split_size)
-                            this.grad.set(slice, i1);
+                        let to = split_size_or_sections.slice(0, idx).sum() * di.step;
+                        let from = 0;
+                        for(let p = 0; p < this.size; p += step){
+                            const slice = out.data.slice(from, from + split_size);
+                            this.data.set(slice, to + p);
+                            from += split_size;
                         }
                     }
                 }
             }
-            for(let i = 0; i < period; i ++){
-                let i1 = i * ps;
-                let i2 = i * split_size;
-                const slice = this.data.slice(i1, i1 + split_size);
-                out.data.set(slice, i2)
+            let from = split_size_or_sections.slice(0, idx).sum() * di.step;
+            let to = 0;
+            for(let p = 0; p < this.size; p += step){
+                const slice = this.data.slice(from + p, from + p + split_size);
+                out.data.set(slice, to);
+                to += split_size;
             }
-            pos += split_size;
             return out;
         });
         this.out = outs;
