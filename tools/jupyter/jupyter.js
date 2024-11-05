@@ -643,7 +643,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
             }
         </style>
         <div class="pe-no-print top" ~if="!readOnly" >
-            <oda-button ~if="cell?.type === 'code'" :icon-size icon="bootstrap:eye-slash" title="Hide/Show code" allow-toggle ::toggled="hideCode"></oda-button>
+            <oda-button ~if="cell?.type === 'code'" :icon-size icon="bootstrap:eye-slash" title="Hide/Show code"  allow-toggle ::toggled="hideCode"></oda-button>
             <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap.stop="move(-1)"></oda-button>
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="move(1)"></oda-button>
             <oda-button ~show="cell?.type === 'code' || cell?.type === 'html'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
@@ -792,7 +792,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         <div  class="horizontal" :border="!hideCode"  style="min-height: 64px;">
             <oda-code-editor :wrap ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>
             <div dimmed ~if="hideCode" class="horizontal left content flex" style="cursor: pointer; padding: 8px 4px;" @dblclick="hideCode=false">
-                <oda-icon icon="bootstrap:eye-slash"></oda-icon>
+                <oda-icon icon="bootstrap:eye-slash" style="align-self: baseline;"></oda-icon>
                 <span flex  vertical style="margin: 0px 16px; font-size: large; cursor: pointer; text-overflow: ellipsis;" ~html="cell.name +' <u disabled style=\\\'font-size: x-small; right: 0px;\\\'>(Double click to show...)</u>'" ></span>
             </div>
         </div>
@@ -1248,11 +1248,11 @@ window._findCodeEntry = async (e) => {
     const cellElement = e.parentElement.domHost
     const codeEditor = cellElement.control?.$('oda-code-editor');
     const aceEditor = codeEditor.editor;
-    const row = aceEditor.session.doc.$lines.findIndex(r=>r.startsWith(text))
+    const row = aceEditor.session.doc.$lines.findIndex(r=>r.trim().startsWith(text))
     const range = new ace.Range(row, 1000, row, 0);
     const length = aceEditor.session.doc.getAllLines().length;
     const height = codeEditor.offsetHeight;
-    const delta = (height / length) * row;
+    const delta = (height / length) * row - 30;
     if (cellElement.jupyter.scrollTop>codeEditor.domHost.domHost.offsetTop + delta)
         cellElement.jupyter.scrollToCell(cellElement.cell, delta);
     aceEditor.moveCursorTo(row, 0);
@@ -1269,7 +1269,7 @@ window._findErrorPos = async (e) => {
     const range = new ace.Range(row, column + 1, row, column);
     const length = aceEditor.session.doc.getAllLines().length;
     const height = codeEditor.offsetHeight;
-    const delta = (height / length) * row;
+    const delta = (height / length) * row - 30;
     if (cellElement.jupyter.scrollTop>codeEditor.domHost.domHost.offsetTop + delta)
         cellElement.jupyter.scrollToCell(cellElement.cell, delta);
     aceEditor.moveCursorTo(row, column);
