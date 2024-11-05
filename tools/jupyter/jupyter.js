@@ -1236,7 +1236,7 @@ class JupyterCell extends ROCKS({
                 cnt = s.lastIndexOf('/*')
                 if (cnt > 0)
                     s = s.substring(0, cnt);
-                s = 'log(\"<label bold onclick=\'_findCodeEntry(this)\' style=\'text-decoration: underline; padding: 2px; font-size: large; margin-bottom: 4px; cursor: pointer; color: -webkit-link\'>'+s.replaceAll('"', '\\\"')+':</label>\\\n\", '+s+')';
+                s = 'log(\"<label bold onclick=\'_findCodeEntry(this)\' style=\'text-decoration: underline; padding: 2px; font-size: large; margin-bottom: 4px; cursor: pointer; color: -webkit-link\'>'+s.replaceAll('"', '\\\"')+'</label>\\\n\", '+s+')';
             }
             return s;
         }).join('\n');
@@ -1248,7 +1248,7 @@ function getID() {
     return Math.floor(Math.random() * Date.now()).toString(16);
 }
 window._findCodeEntry = async (e) => {
-    const text = '>'+e.innerText.replace(':', '');
+    const text = '>'+e.innerText;
 
     const cellElement = e.parentElement.domHost
     const codeEditor = cellElement.control?.$('oda-code-editor');
