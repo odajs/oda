@@ -154,8 +154,8 @@ ODA({is: 'oda-code-editor',
             if ("ace/mode/javascript" === session.getMode().$id) {
                 if (!!session.$worker) {
                     session.$worker.send("setOptions", [{
-                        "esversion": 12,
-                        "esnext": true,
+                        "esversion": 11,
+                        "esnext": false
                     }]);
                 }
             }
