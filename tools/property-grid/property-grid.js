@@ -8,6 +8,7 @@ ODA({is: 'oda-property-grid', imports: '@oda/table', extends: 'this, oda-table',
         </style>
         <slot ~show="!inspectedObject" @slotchange="onSlot"></slot>
     `,
+    onTapEditMode: true,
     get columns() {
         return [
             { name: 'name', cellTemplate: 'oda-pg-cell-name', headerTemplate: 'oda-property-grid-header-cell-name', label: 'Property', treeMode: true, fix: 'left', $sort: 1 },
@@ -510,6 +511,7 @@ editors: {
             }
         </style>
         `,
+        clickOnActivate: false,
         // $listeners: {
         //     dblclick(e) {
         //         if (this.table?.activeCell === this.domHost) {
@@ -531,6 +533,9 @@ editors: {
 
                 this.async(() => {
                     input.focus();
+                    if (this.clickOnActivate) {
+                        input.click();
+                    }
                 });
             }
         },
@@ -613,10 +618,12 @@ editors: {
             }
             input{
                 min-height: 100%;
+                height: {{iconSize}}px;
             }
         </style>
         <input class="flex content" type="checkbox" ::checked="item.value">
         `,
+        clickOnActivate: true
     })
     // ODA({is: 'oda-pg-bool', imports: '@oda/checkbox',
     //     template: /*html*/`

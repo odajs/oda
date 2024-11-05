@@ -30,6 +30,10 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     hostAttributes: {
         tabindex: 0
     },
+    onTapEditMode: {
+        $pdp: true,
+        $def: false,
+    },
     overHeight: false,
     /**
      * @this {Table}
@@ -1728,8 +1732,8 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
                         :border-bottom="raisedRows.last === $for.item"
                         :column="$$for.item"
                         :item="$for.item"
-                        @pointerdown="table.focusCell($for.item, $$for.item)"
-                        @dblclick.stop="onDblclick($event);activateCell($this)"
+                        @pointerdown="_onCellPointerDown($for.item, $$for.item, $this)"
+                        @dblclick.stop="_onCellDoubleClick($event, $this)"
                         :cell-coordinates="{row: $for.item, column: $$for.item}"
                     ></div>
                 </div>
@@ -1913,6 +1917,18 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
                 this.onSelectRow(e, { value: row });
             }
         },
+    },
+    _onCellPointerDown(row, col, cell) {
+        this.table.focusCell(row, col);
+        if (this.onTapEditMode && !this.activeCell) {
+            this.activateCell(cell)
+        }
+    },
+    _onCellDoubleClick(e, cell) {
+        this.onDblclick(e);
+        if (!this.onTapEditMode) {
+            this.activateCell(cell)
+        }
     },
     _getTemplateTag(row, col) {
         if (row.__group__)

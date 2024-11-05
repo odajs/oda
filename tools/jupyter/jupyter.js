@@ -829,15 +829,12 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     },
     value: '',
     editorValueChanged(e) {
-        this.value = e.detail.value;
         this.syntaxError = undefined;
-        this.debounce('errors', async  ()=>{
+        this.value = e.detail.value;
+        this.debounce('erros', () => {
             this.syntaxError = undefined;
-            await this.$render();
-            let err = this.syntaxError;
-            await this.$render();
-        }, 100)
-
+            this.$render();
+        }, 700)
     },
 
     $public:{
@@ -1200,11 +1197,6 @@ class JupyterCell extends ROCKS({
         }
         catch (e){
             let error = '<span bold style=\'padding: 2px; font-size: large; margin-bottom: 4px;\'>'+e.toString()+'</span>';
-            // let stack = e.stack;
-            // stack = stack.replaceAll('<', '&lt;')
-            // stack = stack.replaceAll('>', '&gt;')
-            // stack = stack.replace(e.toString()+'\n', '')
-            // error += '\n'+ stack;
             jupyter.output_data.push('<div style="padding: 4px;" border error>'+error+'</div>');
             this.status = 'error';
         }
@@ -1272,7 +1264,7 @@ window._findErrorPos = async (e) => {
     const column = +e.getAttribute('column');
 
     const cellElement = e.parentElement.domHost
-    const codeEditor = cellElement.control?.$('oda-code-editor');
+    const codeEditor = cellElement.control?.$('oda-code-editor') || cellElement.$('oda-code-editor');
     const aceEditor = codeEditor.editor;
     const range = new ace.Range(row, column + 1, row, column);
     const length = aceEditor.session.doc.getAllLines().length;
