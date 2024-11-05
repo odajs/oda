@@ -811,7 +811,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             return true;
         }).map(err =>{
             return '    '+err.text + ` <u row="${err.row}" column="${err.column}" onclick="_findErrorPos(this)" style="cursor: pointer; color: -webkit-link">(${err.row+1}:${err.column})</u>`
-        }).join('\n') || undefined;
+        }).join('\n');
         if(error)
             error = '<span bold style="padding: 2px; font-size: large; margin-bottom: 4px;">SyntaxError:</span><br>'+error;
         return error;
@@ -830,10 +830,13 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     value: '',
     editorValueChanged(e) {
         this.value = e.detail.value;
-        this.throttle('errors', ()=>{
+        this.syntaxError = undefined;
+        this.debounce('errors', async  ()=>{
             this.syntaxError = undefined;
-            this.$render();
-        }, 500)
+            await this.$render();
+            let err = this.syntaxError;
+            await this.$render();
+        }, 100)
 
     },
 
