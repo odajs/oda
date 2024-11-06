@@ -34,7 +34,7 @@ export class tensor/* extends Array*/{
                     $.dType = next.dType
                     shape.push(...next.shape);
                     let size = next.size;
-                    next = new dType(shape.mul());
+                    next = new $.dType(shape.mul());
                     data = data.reduce((r, v, i)=>{
                         r.set(v.data, i * size);
                         return r
