@@ -42,6 +42,13 @@
         }
     },
     {
+        "name": "prompt",
+        "label": "<span style='color: blue; font-weight: bold;'>Prompt: </span>ODA.showPrompt()",
+        "content": {
+            "link": "index.html"
+        }
+    },
+    {
         "name": "warning",
         "label": "<span style='color: blue; font-weight: bold;'>Warning: </span>ODA.showWarning()",
         "content": {
