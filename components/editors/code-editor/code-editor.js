@@ -155,7 +155,8 @@ ODA({is: 'oda-code-editor',
                 if (!!session.$worker) {
                     session.$worker.send("setOptions", [{
                         "esversion": 11,
-                        "esnext": false
+                        "esnext": false,
+                        "asi": true // This option suppresses warnings about missing semicolons.
                     }]);
                 }
             }
