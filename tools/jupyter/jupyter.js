@@ -42,6 +42,8 @@ window.show = (...e) => {
     e = e.map(i=>{
         if (typeof i === 'string' && window.customElements.get(i))    
             i = document.createElement(i);
+        else if (typeof i === 'string')
+            i += '<!--isShow-->'
         return i;
     })
     run_context.output_data?.push(...e);
@@ -1201,8 +1203,8 @@ class JupyterCell extends ROCKS({
             this.status = 'error';
         }
         finally {
-            this.outputs = jupyter.output_data.filter(i=>!(i instanceof HTMLElement)).map(i=>({data:{"text/plain": i}}));
-            this.controls = jupyter.output_data.filter(i=>i instanceof HTMLElement).map(i=>({data:{"text/plain": i}}));
+            this.outputs = jupyter.output_data.filter(i=>!(i instanceof HTMLElement) && !i.includes('<!--isShow-->')).map(i=>({data:{"text/plain": i}}));
+            this.controls = jupyter.output_data.filter(i=>i instanceof HTMLElement || i.includes('<!--isShow-->')).map(i=>({data:{"text/plain": i}}));
             this.isRun = false;
             run_context.output_data = [];
         }
