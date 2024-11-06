@@ -275,7 +275,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
         <div id="out-src" :src="outSrc" ~is="outIs" vertical  ~html="outHtml" ~style="{overflowWrap: (textWrap ? 'break-word': ''), whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning></div>
         <div ~if="curRowsLength<maxRowsLength && !showAll" class="horizontal left header flex" style="font-size: small; align-items: center;">
             <span style="padding: 9px;">Rows: {{curRowsLength.toLocaleString()}} of {{maxRowsLength.toLocaleString()}}</span>
-            <oda-button ~if="!showAll" :icon-size class="dark border" style="margin: 4px; border-radius: 2px;" @tap="setStep($event, 1)">Show next {{max.toLocaleString()}}</oda-button>
+            <oda-button ~if="!showAll" :icon-size class="dark border" style="margin: 4px; border-radius: 2px;" @tap="setStep($event, 1)">Show next {{(max*2).toLocaleString()}}</oda-button>
             <oda-button ~if="!showAll" :icon-size class="dark border" style="margin: 4px; border-radius: 2px;" @tap="showAll=true">Show all</oda-button>
         </div>
     `,
@@ -304,7 +304,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
         return  this.split_out.length;
     },
     get curRowsLength(){
-        return this.max * (this.step + 1);
+        return this.max * 2 * (this.step + 1);
     },
     get split_out(){
         const limit = 10000
