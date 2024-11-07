@@ -1040,7 +1040,10 @@ class JupyterCell extends ROCKS({
         this.data.source = [n];
         this.notebook.change();
         if (this.type !== 'code') return;
-        let clear = false;
+        this.clearTimes();
+    },
+    clearTimes(all = false){
+        let clear = all;
         for (let codeCell of this.notebook.codes){
             if (codeCell === this)
                 clear = true;
@@ -1159,13 +1162,17 @@ class JupyterCell extends ROCKS({
         }
     },
     delete() {
-        this.notebook.data.cells.splice(this.index, 1);
+        const cell = this.notebook.data.cells.splice(this.index, 1)[0];
+        if (!cell) return
+        cell.clearTimes();
         this.notebook.change();
     },
     move(direct) {
         direct = this.index + direct;
-        const cells = this.notebook.data.cells.splice(this.index, 1);
-        this.notebook.data.cells.splice(direct, 0, cells[0]);
+        const cell = this.notebook.data.cells.splice(this.index, 1)[0];
+        if (!cell) return
+        this.notebook.data.cells.splice(direct, 0, cell);
+        cell.clearTimes();
         this.notebook.change();
     },
     get isLast(){
