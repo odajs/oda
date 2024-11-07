@@ -900,6 +900,7 @@ class JupyterNotebook extends ROCKS({
     async load(url) {
         try {
             this.data = await ODA.loadJSON(url);
+            this.data.cells.forEach(c=>c.time = '');
             this.url = url;
         } catch (err) {
 
@@ -964,7 +965,7 @@ class JupyterCell extends ROCKS({
     data: null,
     notebook: null,
     isRun: false,
-    time: '',
+
     type: {
         $def: 'text',
         $list: ['text', 'code'],
@@ -991,6 +992,12 @@ class JupyterCell extends ROCKS({
             case 'code': return firstSource ?? ' [empty]';
         }
         return '???'
+    },
+    get time(){
+        return this.data.time;
+    },
+    set time(n){
+        return this.data.time = n;
     },
     get metadata() {
         return this.data.metadata;
