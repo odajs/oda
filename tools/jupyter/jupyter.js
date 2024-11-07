@@ -610,7 +610,6 @@ ODA({ is: 'oda-jupyter-divider',
     add(key) {
         this.jupyter.editMode = false;
         this.selectedCell = this.notebook.add(this.cell, key);
-        this.selectedCell.clearRunTime();
     },
     showInsertBtn() {
         return top._jupyterCellData;
@@ -619,7 +618,6 @@ ODA({ is: 'oda-jupyter-divider',
         this.jupyter.editMode = false;
         this.selectedCell = this.notebook.add(this.cell, '', top._jupyterCellData);
         top._jupyterCellData = undefined;
-        this.selectedCell.clearRunTime();
     }
 })
 
@@ -687,13 +685,11 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         }
         this.cell.move(direction);
         this.jupyter.scrollTop = top;
-        this.cell.clearRunTime();
     },
     cell: null,
     iconSize: 16,
     deleteCell() {
         if (!window.confirm(`Do you really want delete current cell?`)) return;
-        this.cell.clearRunTime();
         this.cell.delete();
     },
     control: null,
@@ -968,15 +964,7 @@ class JupyterCell extends ROCKS({
     data: null,
     notebook: null,
     isRun: false,
-    // time: '',
-    time: {
-        get(){
-            return this.data.time || '';
-        },
-        set(n){
-            this.data.time = n;
-        }
-    },
+    time: '',
     type: {
         $def: 'text',
         $list: ['text', 'code'],
@@ -1044,13 +1032,10 @@ class JupyterCell extends ROCKS({
     set src(n) {
         this.data.source = [n];
         this.notebook.change();
-        this.clearRunTime();
-    },
-    clearRunTime(cell = this) {
-        if (cell.type !== 'code') return;
+        if (this.type !== 'code') return;
         let clear = false;
         for (let codeCell of this.notebook.codes){
-            if (codeCell === cell)
+            if (codeCell === this)
                 clear = true;
             if (clear)
                 codeCell.status = codeCell.time = '';
