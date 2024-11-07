@@ -576,16 +576,17 @@ if (!window.ODA?.IsReady) {
     }
     ODA.rootPath = import.meta.url;
     ODA.rootPath = ODA.rootPath.split('/').slice(0, -1).join('/');
-    /** @type {{[key: string]: {promise: Promise<string>|undefined, reg: function|undefined}}} */
+    /** @type {{[key: string]: {promise: Promise<string>|undefined, reg: function|undefined, err: function|undefined}}} */
     ODA.wait = {};
     /** @param {string} tag */
     ODA.waitDependence = function (tag) {
         if (tag in ODA.telemetry.components) {
             return ODA.telemetry.components[tag].prototype;
         }
-        ODA.wait[tag] ??= { promise: undefined, reg: undefined };
-        ODA.wait[tag].promise ??= new Promise(resolve => {
+        ODA.wait[tag] ??= { promise: undefined, reg: undefined, err: undefined };
+        ODA.wait[tag].promise ??= new Promise((resolve, reject) => {
             ODA.wait[tag].reg = prototype => resolve(prototype);
+            ODA.wait[tag].err = error => reject(error);
         });
         return ODA.wait[tag].promise;
     }
