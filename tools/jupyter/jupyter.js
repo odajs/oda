@@ -68,7 +68,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 outline: none !important;
                 overflow-y: auto;
                 overflow-x: hidden;
-                padding: 12px 6px 30px 6px;
+                /*padding: 12px 6px 30px 6px;*/
                 opacity: 0;
                 transition: opacity 1s;
                 background-color: var(--content-background);
@@ -238,6 +238,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         PrintElements.print([this]);
         // this.ownerDocument.defaultView.print();
         this.ownerDocument.body.classList.remove("pe-preserve-ancestor");
+        this.scrollToCell(this.selectedCell);
     },
     setFullscreen() {
         const element = this;
