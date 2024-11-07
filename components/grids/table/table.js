@@ -1732,7 +1732,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
                         :border-bottom="raisedRows.last === $for.item"
                         :column="$$for.item"
                         :item="$for.item"
-                        @pointerdown="_onCellPointerDown($for.item, $$for.item, $this)"
+                        @mousedown="_onCellPointerDown($for.item, $$for.item, $this)"
                         @dblclick.stop="_onCellDoubleClick($event, $this)"
                         :cell-coordinates="{row: $for.item, column: $$for.item}"
                     ></div>
