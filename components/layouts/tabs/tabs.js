@@ -57,9 +57,20 @@ ODA({
                 {{direction === 'horizontal' ? 'left' : 'top'}}: 0px;
                 margin-{{direction === 'horizontal' ? 'left' : 'top'}}: -4px;
             }
+            .scroll-button {
+                max-{{direction === 'horizontal' ? 'width' : 'height'}}: {{iconSize/2}}px;
+            }
+            .scroll-button[icon="icons:chevron-right"]:not([disabled]), .scroll-button[icon="icons:chevron-right"]:not([disabled]):active{
+                box-shadow: {{direction === 'horizontal' ? '-16px 0px' : '0px -16px'}} 16px rgba(0, 0, 0, 0.5);
+                filter: unset;
+            }
+            .scroll-button[icon="icons:chevron-left"]:not([disabled]), .scroll-button[icon="icons:chevron-left"]:not([disabled]):active{
+                box-shadow: {{direction === 'horizontal' ?  '16px 0px' : '0px 16px'}} 16px rgba(0, 0, 0, 0.5);
+                filter: unset;
+            }
             {{''}}
         </style>
-        <oda-button ~if="overflow" icon="icons:chevron-left" :disabled="scrollIsMin" :rotate="direction === 'vertical' ? '90' : '0'" @tap="_scroll(-1)" class="raised"></oda-button>
+        <oda-button ~if="overflow" icon="icons:chevron-left" :disabled="scrollIsMin" :rotate="direction === 'vertical' ? '90' : '0'" @tap="_scroll(-1)" class="scroll-button"></oda-button>
         <div class="scroll-container">
             <div id="container" ~if="direction" ~class="{horizontal: direction === 'horizontal', vertical: direction === 'vertical'}">
                 <div ~for="items"
@@ -74,7 +85,7 @@ ODA({
             </div>
             <div class="pseudo-scroll"></div>
         </div>
-        <oda-button ~if="overflow" icon="icons:chevron-right" :disabled="scrollIsMax" :rotate="direction === 'vertical' ? '90' : '0'" @tap="_scroll(1)" class="raised"></oda-button>
+        <oda-button ~if="overflow" icon="icons:chevron-right" :disabled="scrollIsMax" :rotate="direction === 'vertical' ? '90' : '0'" @tap="_scroll(1)" class="scroll-button"></oda-button>
         <oda-button ~if="items?.some(i => typeof i.close === 'function')"  icon="icons:close" style="fill: red;" title="close all tabs" @tap="_closeAll"></oda-button>
     `,
     $public: {
