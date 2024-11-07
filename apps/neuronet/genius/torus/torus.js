@@ -1207,10 +1207,6 @@ generators:{
         })
         return tensor.from(data)._label('hippo');
     }
-    torus.empty = (...shape)=>{
-        const handle = ()=>(torus.generator() - .5) / 2
-        return torus.fill(shape, handle, Float32Array)._label(`empty`);
-    }
 
     torus.rand_n = (...shape)=>{
         const handle = ()=>{
@@ -1268,21 +1264,12 @@ generators:{
         });
         return new torus(data, Int32Array)._shape(shape)._label(`rand_int ${min_or_max}-${max}`);
     }
-    torus.rand = (...shape) => {
-        return torus.fill(shape, torus.generator, Float32Array)._label('rand');
-    }
     torus.rand_bin = (...shape) => {
         const handler = ()=>{
             let value = torus.generator().toString(2).substring(2);
             return BigInt('0b' + value.padEnd(64, value))
         }
         return torus.fill(...shape, handler, BinaryArray)._label('rand_bin');
-    }
-    torus.zeros = (...shape) => {
-        return torus.fill(shape, 0, Int8Array)._label('zeros');
-    }
-    torus.ones = (...shape) => {
-        return torus.fill(shape, 1, Int8Array)._label('ones');
     }
     torus.eye = (...shape)=>{
         shape = torus.flat(shape);
@@ -1295,7 +1282,51 @@ generators:{
         }
         return torus.from(data)._shape(shape)._label('eye');
     }
+    // FINAL
 
+
+    torus.ones = (...shape) => {
+        shape = torus.flat(shape);
+        let size = shape.mul();
+        if(!size){
+            size = 1;
+            shape = [1]
+        }
+        return torus.tensor(new Int32Array(size).fill(1))._label('ones')._shape(shape);
+    }
+    torus.zeros = (...shape) => {
+        shape = torus.flat(shape);
+        let size = shape.mul();
+        if(!size){
+            size = 1;
+            shape = [1]
+        }
+        return torus.tensor(new Int32Array(size))._label('zeros')._shape(shape);
+    }
+    torus.empty = (...shape)=>{
+        shape = torus.flat(shape);
+        let size = shape.mul();
+        if(!size){
+            size = 1;
+            shape = [1]
+        }
+        const data = new Float32Array(size);
+        while(size--)
+            data[size] = torus.generator() - .5
+        return torus.tensor(data)._label('empty')._shape(shape);
+    }
+    torus.rand = (...shape) => {
+        shape = torus.flat(shape);
+        let size = shape.mul();
+        if(!size){
+            size = 1;
+            shape = [1]
+        }
+        const data = new Float32Array(size);
+        while(size--)
+            data[size] = torus.generator()
+        return torus.tensor(data)._label('rand')._shape(shape);
+    }
 }
 functions:{
 

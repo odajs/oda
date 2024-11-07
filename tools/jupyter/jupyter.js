@@ -960,7 +960,6 @@ class JupyterNotebook extends ROCKS({
 
     }
 }
-
 class JupyterCell extends ROCKS({
     data: null,
     notebook: null,
@@ -1233,7 +1232,10 @@ class JupyterCell extends ROCKS({
                 cnt = s.lastIndexOf('/*')
                 if (cnt > 0)
                     s = s.substring(0, cnt);
-                s = 'log(\"<label bold onclick=\'_findCodeEntry(this)\' style=\'text-decoration: underline; padding: 2px; font-size: large; margin-bottom: 4px; cursor: pointer; color: -webkit-link\'>'+s.replaceAll('"', '\\\"')+'</label>\\\n\", '+s+')';
+                if(s.match(/('[^']*')|("[^"]*")/g))
+                    s = 'log('+s+')';
+                else
+                    s = 'log(\"<label bold onclick=\'_findCodeEntry(this)\' style=\'text-decoration: underline; padding: 2px; font-size: large; margin-bottom: 4px; cursor: pointer; color: -webkit-link\'>'+s.replaceAll('"', '\\\"')+'</label>\\\n\", '+s+')';
             }
             return s;
         }).join('\n');
