@@ -1214,6 +1214,7 @@ class JupyterCell extends ROCKS({
             let error = '<span bold style=\'padding: 2px; font-size: large; margin-bottom: 4px;\'>'+e.toString()+'</span>';
             jupyter.output_data.push('<div style="padding: 4px;" border error>'+error+'</div>');
             this.status = 'error';
+            this.time = '0 ms';
         }
         finally {
             this.outputs = jupyter.output_data.filter(i=>!(i instanceof HTMLElement) && !i.includes('<!--isShow-->')).map(i=>({data:{"text/plain": i}}));
@@ -1237,19 +1238,24 @@ class JupyterCell extends ROCKS({
                 s = s.slice(1);
             }
             if (cnt){
-                cnt = s.lastIndexOf(';')
-                if (cnt > 0)
-                    s = s.substring(0, cnt);
                 cnt = s.lastIndexOf('//')
                 if (cnt > 0)
                     s = s.substring(0, cnt);
                 cnt = s.lastIndexOf('/*')
                 if (cnt > 0)
                     s = s.substring(0, cnt);
-                if(s.match(/('[^']*')|("[^"]*")/g))
-                    s = 'log('+s+')';
-                else
+                if(s.match(/('[^']*')|("[^"]*")/g)) {
+                    s = s.substring(1, s.length - 1);
+                    s = s.replaceAll('"', '\\\"');
+                    s = 'log(\"<div style=\'cursor: pointer\' onclick=\'_findCodeEntry(this)\'>' + s + '</div>\")';
+                }
+                else{
+                    cnt = s.lastIndexOf(';')
+                    if (cnt > 0)
+                        s = s.substring(0, cnt);
                     s = 'log(\"<label bold onclick=\'_findCodeEntry(this)\' style=\'text-decoration: underline; padding: 2px; font-size: large; margin-bottom: 4px; cursor: pointer; color: -webkit-link\'>'+s.replaceAll('"', '\\\"')+'</label>\\\n\", '+s+')';
+                }
+
             }
             return s;
         }).join('\n');
