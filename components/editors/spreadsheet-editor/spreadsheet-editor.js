@@ -1,6 +1,6 @@
 const distPath = import.meta.url.split('/').slice(0, -1).join('/') + '/dist/';
 
-ODA({ is: 'oda-spreadsheet-editor', imports: './dist/xspreadsheet.js',
+ODA({ is: 'oda-spreadsheet-editor',
     template: `
         <style>
             :host {
@@ -9,13 +9,15 @@ ODA({ is: 'oda-spreadsheet-editor', imports: './dist/xspreadsheet.js',
                 position: relative;
             }
         </style>
-        <link rel="stylesheet" href="${distPath}xspreadsheet.css">
-        <div></div>
+        <iframe style="border: none; width: 100%; height: 100%;"></iframe>
     `,
     src: {
         $def: '',
         set(n) {
-            if (this.isReady) this.setEditor();
+            if (this.isReady) {
+                this.editor = undefined;
+                this.setEditor();
+            }
         }
     },
     defSrc: `[
@@ -34,11 +36,34 @@ ODA({ is: 'oda-spreadsheet-editor', imports: './dist/xspreadsheet.js',
         this.isReady = true;
         this.setEditor();
     },
-    setEditor(src = this.src || this.defSrc) {
-        this.editor ||= x_spreadsheet(this.$('div')).change(data => {
-            this.fire('change', JSON.stringify(this.editor.getData()));
+    setEditor() {
+        if (this.editor) return;
+        const iframe = this.$('iframe');
+        if (iframe) {
+            iframe.onload = () => {
+                iframe.contentDocument.addEventListener("change", (e) => {
+                    this.fire('change', e.detal);
+                })
+                this.editor = iframe.contentWindow.xspreadsheet;
+            }
+            iframe.srcdoc = this.srcdoc(this.src || this.defSrc);
+        }
+    },
+    srcdoc(src) {
+        return `
+<link rel="stylesheet" href="${distPath}xspreadsheet.css">
+<script src="${distPath}xspreadsheet.js"></script>
+
+<div id="xspreadsheet"></div>
+
+<script>
+    window.xspreadsheet = x_spreadsheet('#xspreadsheet')
+        .loadData(${src})
+        .change(data => {
+            document.dispatchEvent(new CustomEvent('change', { detail: JSON.stringify(window.xspreadsheet.getData()) }));
         })
-        this.editor.loadData(JSON.parse(src));
-        this.editor.validate();
+        window.xspreadsheet.validate();
+</script>
+        `
     }
 })
