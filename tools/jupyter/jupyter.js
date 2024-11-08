@@ -188,7 +188,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         editors: {
             code: { label: 'Code', editor: 'oda-jupyter-code-editor', type: 'code' },
             text: { label: 'Text', editor: 'oda-markdown', type: 'text' },
-            html: { label: 'HTML', editor: 'oda-jupyter-html-editor', type: 'html' }
+            sheet: { label: 'Sheet', editor: 'oda-jupyter-sheet-editor', type: 'sheet' }
         },
         selectedCell: {
             $def: null,
@@ -649,7 +649,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
             <oda-button ~if="cell?.type === 'code'" :icon-size icon="bootstrap:eye-slash" title="Hide/Show code"  allow-toggle ::toggled="hideCode"></oda-button>
             <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap.stop="move(-1)"></oda-button>
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="move(1)"></oda-button>
-            <oda-button ~show="cell?.type === 'code' || cell?.type === 'html'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
+            <oda-button ~show="cell?.type === 'code'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
             <oda-button :icon-size icon="icons:delete" @tap.stop="deleteCell"></oda-button>
             <oda-button :icon-size icon="icons:content-copy" @tap.stop="copyCell" ~style="{fill: top._jupyterCellData ? 'red' : ''}"></oda-button>
             <oda-button ~if="cell.type!=='code'" allow-toggle ::toggled="editMode"  :icon-size :icon="editMode?'icons:close':'editor:mode-edit'"></oda-button>
@@ -754,17 +754,22 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
     }
 })
 
-ODA({ is: 'oda-jupyter-html-editor', imports: '@oda/html-editor', extends: 'oda-html-editor',
-    $public: {
-        editType:{
-            $def: 'html',
-            get(){
-                return this.cell?.readMetadata('editType', 'html');
-            },
-            set(n){
-                this.cell?.writeMetadata('editType', n);
+ODA({ is: 'oda-jupyter-sheet-editor', imports: '@oda/spreadsheet-editor', extends: 'oda-spreadsheet-editor',
+    template:`
+        <style>
+            :host {
+                min-height: 400px;
             }
-        }
+        </style>
+    `,
+    set editMode(v) {
+        this.showToolbar = this.mode = undefined;
+    },
+    get mode() {
+        return this.editMode ? 'edit' : 'read';
+    },
+    get showToolbar() {
+        return this.editMode;
     }
 })
 
