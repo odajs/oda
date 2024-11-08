@@ -646,7 +646,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
                  border-radius: 4px;
             }
         </style>
-        <div class="pe-no-print top" ~if="!readOnly" >
+        <div class="pe-no-print top" ~if="!readOnly" @down="tap">
             <oda-button ~if="cell?.type === 'code'" :icon-size icon="bootstrap:eye-slash" title="Hide/Show code"  allow-toggle ::toggled="hideCode"></oda-button>
             <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap.stop="move(-1)"></oda-button>
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="move(1)"></oda-button>
@@ -701,6 +701,9 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
     copyCell() {
         top._jupyterCellData = JSON.stringify(this.cell.data);
         this.jupyter.$render();
+    },
+    tap(e) {
+        this.selectedCell = this.cell;
     }
 })
 
