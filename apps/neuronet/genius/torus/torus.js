@@ -1214,6 +1214,9 @@ generators:{
         }
         return torus.fill(shape, handle, Float32Array)._label(`rand_n`);
     }
+    torus.zeros_like = (src) => {
+        return torus.zeros(src.shape);
+    }
     torus.ones_like = (src) => {
         return torus.ones(src.shape);
     }

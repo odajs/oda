@@ -56,7 +56,6 @@ ODA({ is: 'oda-spreadsheet-editor',
                 iframe.onload = () => {
                     iframe.contentDocument.addEventListener("change", (e) => {
                         this.value = e.detail;
-                        console.log(this.value)
                         this.fire('change', e.detal);
                     })
                     this.editor = iframe.contentWindow.xspreadsheet;

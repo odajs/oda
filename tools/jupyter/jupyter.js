@@ -1170,7 +1170,7 @@ class JupyterCell extends ROCKS({
     delete() {
         const cell = this.notebook.data.cells.splice(this.index, 1)[0];
         if (!cell) return
-        cell.clearTimes();
+        this.clearTimes();
         this.notebook.change();
     },
     move(direct) {
@@ -1178,7 +1178,7 @@ class JupyterCell extends ROCKS({
         const cell = this.notebook.data.cells.splice(this.index, 1)[0];
         if (!cell) return
         this.notebook.data.cells.splice(direct, 0, cell);
-        cell.clearTimes();
+        this.clearTimes();
         this.notebook.change();
     },
     get isLast(){
