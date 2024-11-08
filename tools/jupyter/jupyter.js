@@ -337,7 +337,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         <style>
             :host{
                 padding-top: 2px;
-                padding-left: 2px;
+                /*padding-left: 2px;*/
                 @apply --vertical;
                 @apply --no-flex;
                 position: relative;
