@@ -1231,7 +1231,7 @@ einops:{
             if(subscrs.inputs.length > tensors.length)
                 throw new Error(`einsum(): fewer tensors were provided than specified in the equation`);
             else if(subscrs.inputs.length < tensors.length)
-                throw new Error(`einsum(): number of einsum subscripts (${subscrs.inputs.length}), must be equal to the number of operands (${operands.length})`);
+                throw new Error(`einsum(): number of einsum subscripts (${subscrs.inputs.length}), must be equal to the number of tensors (${tensors.length})`);
             subscrs.axes = Object.create(null);
             let m = 1;
             inputs = shapes.map((shape, i)=>{
@@ -1241,7 +1241,7 @@ einops:{
                         //todo доделать варианты с точками
                     }
                     else if(shape.length != subs.length)
-                        throw new Error(`einsum(): number of tensors in '${subs}' (${subs.length}), must be equal to the number of dimentions [${shape}] (${operands.length})`);
+                        throw new Error(`einsum(): number of tensors in '${subs}' (${subs.length}), must be equal to the number of dimentions [${shape}] (${tensors.length})`);
                     let m = 1;
                     let input = shape.map((dim, d)=>{
                         const op = subs[d];

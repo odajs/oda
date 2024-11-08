@@ -1259,7 +1259,7 @@ class JupyterCell extends ROCKS({
                 cnt = s.lastIndexOf('/*')
                 if (cnt > 0)
                     s = s.substring(0, cnt);
-                if(s.match(/('[^']*')|("[^"]*")/g)) {
+                if(s.match(/(^'*')|(^"*")/g)) {
                     s = s.substring(1, s.length - 1);
                     s = s.replaceAll('"', '\\\"');
                     s = 'log(\"<div style=\'cursor: pointer\' onclick=\'_findCodeEntry(this)\'>' + s + '</div>\")';
