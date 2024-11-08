@@ -1214,11 +1214,11 @@ generators:{
         }
         return torus.fill(shape, handle, Float32Array)._label(`rand_n`);
     }
-    torus.zeros_like = (src) => {
-        return torus.zeros(src.shape);
+    torus.zeros_like = (pattern) => {
+        return torus.zeros(pattern.shape);
     }
-    torus.ones_like = (src) => {
-        return torus.ones(src.shape);
+    torus.ones_like = (pattern) => {
+        return torus.ones(pattern.shape);
     }
     torus.arange = (from_or_size = 0, to, step = 1, ...shape)=>{
         shape = torus.flat(shape);

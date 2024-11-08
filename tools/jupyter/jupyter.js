@@ -69,6 +69,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 overflow-y: auto;
                 overflow-x: hidden;
                 /*padding: 12px 6px 30px 6px;*/
+                padding-top: 14px;
                 opacity: 0;
                 transition: opacity 1s;
                 background-color: var(--content-background);
@@ -770,6 +771,11 @@ ODA({ is: 'oda-jupyter-sheet-editor', imports: '@oda/spreadsheet-editor', extend
     },
     get showToolbar() {
         return this.editMode;
+    },
+    $listeners: {
+        'sheet-tap'(e) {
+            this.selectedCell = this.cell;
+        }
     }
 })
 

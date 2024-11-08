@@ -58,6 +58,9 @@ ODA({ is: 'oda-spreadsheet-editor',
                         this.value = e.detail;
                         this.fire('change', e.detal);
                     })
+                    iframe.contentDocument.addEventListener("pointerdown", (e) => {
+                        this.fire('sheet-tap');
+                    })
                     this.editor = iframe.contentWindow.xspreadsheet;
                 }
                 const opt = {
@@ -82,6 +85,7 @@ ODA({ is: 'oda-spreadsheet-editor',
         .change(data => {
             document.dispatchEvent(new CustomEvent('change', { detail: JSON.stringify(window.xspreadsheet.getData()) }));
         })
+        document.dispatchEvent(new Event('pointerdown'));
         window.xspreadsheet.validate();
 </script>
         `
