@@ -1192,6 +1192,189 @@ systems:{
         return out;
     }
 }
+einops:{
+
+    const test_subscr = (subs, side)=>{
+        subs = subs.trim()
+        while(subs.includes('..'))
+            subs = subs.replace('..', '.');
+        const match = subs.match(/(^\.?[a-zA-Z]+$)|(^[a-zA-Z]+\.?$)/g)
+        if(!match)
+            throw new Error(`invalid subscript '${subs}' given in the ${side} equation string, subscripts must be in ([a-zA-Z]*.*) or (.*[a-zA-Z]*)`);
+        return subs;
+    }
+    torus._einops_parse = (expression) => {
+        const parts = expression.split('->');
+        let inputs = parts[0].trim().split(',').map((subs,i)=>{
+            subs = test_subscr(subs, ('input['+i+']'));
+            return subs.split('');
+        });
+
+        let output = test_subscr((parts[1] || '').trim(), 'output').split('').map((subs, i, items)=>{
+            if(!inputs.some(i=>i.some(x=>x === subs)))
+                throw new Error(`Output subscript '${subs}' does not appear in the equation for any input operand.`)
+            if(items.filter(f=>f === subs).length>1)
+                throw new Error(`Output subscript '${subs}' appears more than once in the output.`)
+            return subs;
+        })
+        return {inputs, output}
+    }
+    torus.einsum = (expression, tensors = [], $ = {})=>{
+        tensors = torus.flat(tensors);
+        $ = torus.$($, {forward: '', backward_0: ''});
+        const shapes = tensors.map(i=>i.shape);
+        let key = expression + ': [' + shapes.join(']-[') + '] ' + JSON.stringify($);
+        let inputs, out_shape, output;
+        let fn = fn_cache?.einsum?.[key];
+        if (!fn){
+            const subscrs = torus._einops_parse(expression);
+            if(subscrs.inputs.length > tensors.length)
+                throw new Error(`einsum(): fewer tensors were provided than specified in the equation`);
+            else if(subscrs.inputs.length < tensors.length)
+                throw new Error(`einsum(): number of einsum subscripts (${subscrs.inputs.length}), must be equal to the number of operands (${operands.length})`);
+            subscrs.axes = Object.create(null);
+            let m = 1;
+            inputs = shapes.map((shape, i)=>{
+                    const subs = subscrs.inputs[i];
+                    if(subs.includes('.')){// с точкой
+                        subscrs.dot = ''
+                        //todo доделать варианты с точками
+                    }
+                    else if(shape.length != subs.length)
+                        throw new Error(`einsum(): number of tensors in '${subs}' (${subs.length}), must be equal to the number of dimentions [${shape}] (${operands.length})`);
+                    let m = 1;
+                    let input = shape.map((dim, d)=>{
+                        const op = subs[d];
+                        const old = subscrs.axes[op];
+                        if(old && old != dim)
+                            throw new Error(`einsum(): subscript '${op}' has size ${dim} for tensor ${i} which does not broadcast with previously seen size ${old}`);
+                        subscrs.axes[op] = dim;
+                        return {op, dim}
+                    }).toReversed().map((ax)=>{
+                        ax._stride = m;
+                        m *= ax.dim;
+                        return ax;
+                    }).sort((a,b)=>a.dim<b.dim?-1:1);
+                    return input
+                })
+            output = subscrs.output.map(op=>{
+                let dim = subscrs.axes[op];
+                return {op, dim};
+            });
+            out_shape = output.map(ax=>ax.dim);
+            output.inputs = [];
+            let code = tensors.map((tensor, i)=>`let val_${i}, data_${i} = t[${i}].data;\n`).join('');
+            const func = $.forward || '('+tensors.map((_, i)=>'v'+i).join(',')+')=>('+tensors.map((_, i)=>'v'+i).join(' * ')+')'
+            code += `let idx, val, next, func = eval(${func});\n`;
+            code += Object.keys(subscrs.axes).map((op, i)=>`let ${op}, _${op}, ${op}_;\n`).join('');
+            code += inputs.map((input, i)=>{
+                const out = output.filter(axo=>input.some(axi=>axi.op === axo.op));
+                let m = 1
+                out.toReversed().forEach(axo=>{
+                    axo.stride_ = m;
+                    m *= subscrs.axes[axo.op];
+                })
+
+                let size = out.map(ax=>ax.dim).mul() || 1
+                let expr = `out_${i} = new ${$.dType.name}(${size});\n`;
+                output.inputs.push(out);
+                expr += input.map((ax, a)=>{
+                    let tab = ' '.repeat(a * 2);
+                    let expr =  tab + `${ax.op} = ${ax.dim};\n`;
+                    expr += tab + `while(${ax.op}--){\n`;
+                    tab  += '  ';
+                    const o = out.find(axo=>axo.op === ax.op)
+                    if(o)
+                        expr += tab + `${ax.op}_ = ${ax.op} * ${o.stride_};\n`;
+                    if(ax._stride)
+                        expr += tab + `_${ax.op} = ${ax.op} * ${ax._stride};\n`;
+                    return expr;
+                }).join('');
+                let tab = ' '.repeat(input.length * 2)
+
+                expr += tab + `val = data_${i}[${subscrs.inputs[i].map(op=>'_'+op).join(' + ')}];\n`;
+                expr += tab + `out_${i}[${out.map(axis=>axis.op + '_').join(' + ')}] += val;\n`;
+                expr += input.map((ax, a)=> ' '.repeat(a * 2) + '}\n').toReversed().join('');
+                return expr;
+            }).join('');
+            output.inputs.forEach(input=>{
+                m = 1;
+                input.toReversed().forEach((axin, i)=>{
+                    axin.stride = m;
+                    m*= axin.dim;
+                })
+            })
+            m = 1
+            code += output.toReversed().map(axo=>{
+                axo.stride_ = m;
+                m *= subscrs.axes[axo.op];
+                return axo;
+            }).sort((a,b)=>a.dim<b.dim?-1:1).map((out, o)=>{
+                let tab = ' '.repeat(o * 2);
+                let expr = tab + `${out.op} = ${out.dim};\n`;
+                expr += tab + `while(${out.op}--){\n`;
+                expr += tab + `  ${out.op}_ = ${out.op} * ${out.stride_};\n`;
+                output.inputs.forEach((input, i)=>{
+                    input.forEach(axin=>{
+                        if(axin.op === out.op)
+                            expr += tab + `  _${axin.op} = ${axin.op} * ${axin.stride};\n`;
+                    })
+                })
+                return expr;
+            }).join('');
+            let tab = '  '.repeat(output.length);
+            output.inputs.forEach((input, i)=>{
+                code += tab + `val_${i} = out_${i}[${input.map(ax=>'_'+ax.op).join(' + ')}];\n`;
+            })
+            code += tab + `out[${output.map(ax=>ax.op+'_').join(' + ')}] += func(${output.inputs.map((_,i)=>'val_'+i).join(', ')});\n`;
+            code += output.map((out, o)=>' '.repeat(o * 2)+`}\n`).toReversed().join('');
+            code += output.inputs.map((_,i)=>`out_${i}.buffer.transfer(0)\n`).join('');
+            fn = new Function('t', 'out', code);
+            fn = (fn_cache.einsum[key] = {fn, out_shape, inputs, output}).fn;
+        }
+        else{
+            out_shape = fn.out_shape;
+            inputs = fn.inputs;
+            output = fn.output;
+            fn = fn.fn
+        }
+        const data = new $.dType(out_shape.mul() || 1);
+        let out = torus.from(data)._shape(out_shape)._src(tensors)._label(`einsum '${expression}'`);
+        out._back = function (){
+            const grad = torus.from(out.grad)._shape(out);
+            const out_res = []
+            tensors.forEach((t, i)=>{
+                if(!t.allowGrad) return;
+                const in_vars = inputs.map((input, ii)=>{
+                    if(ii === i)
+                        return output.map(ax=>ax.op).join('');
+                    return input.map(ax=>ax.op).join('');
+                })
+                let out_vars = inputs[i].map(i=>i.op);//.filter(o=>in_vars.some(i => i.includes(o)))
+                let adds = inputs[i].filter(ax=>!in_vars.some(i => i.includes(ax.op)))
+                let expr = in_vars.join(',')  + '->' + out_vars.join('');
+                if (adds.length)
+                    expr += JSON.stringify(adds.map(a=>{
+                        delete a.used;
+                        return a;
+                    }));
+                let sources = tensors.map((tt,ii)=>{
+                    if(ii === i)
+                        return grad;
+                    return tt;
+                })
+                let out_back = torus.einsum(expr, sources, {forward: $['backward_'+ i]?.toString()});
+                out_res.push(out_back);
+                t.grad = t.grad.map((g,i)=>{
+                    return g + out_back.data[i];
+                });
+            })
+            return out_res;
+        }
+        fn(tensors, out.data);
+        return out;
+    }
+}
 generators:{
 
 // ФУНКЦИИ ГЕНЕРАТОРЫ
@@ -1656,284 +1839,6 @@ convertors:{
 
     }
 }
-
-torus.einsum = (in_expr, sources = [], $ = {})=>{
-    $ = torus.$($, {forward: '', backward_0: ''});
-    sources = torus.flat(sources);
-    const tensors = sources.map(t => torus.from(t));
-    let key = in_expr + ':' + tensors.map(i=> i.shape.toString()+'('+ i.dType.name +')' ).join('-') + JSON.stringify($);
-    // console.time(key)
-    let fn = fn_cache.einsum?.[key];
-    let inputs, outs;
-    if (!fn){         // Выделение из выражения оператора
-        let expr = in_expr.split('[');
-        const axis = JSON.parse('['+(expr[1] || ']'));
-        expr = expr[0];
-        expr = expr.split('->');                            // Разделение выражения на вход и выход
-        const terms = expr[0].trim().split(',');            // Разделение входа на термы
-        inputs = terms.map((term, i)=>{                  // Анализ входных термов по размерностям
-            term = term.trim();
-            const tensor = tensors[i];
-            let inp =  term.split('').map((a, j)=>{            // Разделение терма на индексы и их анализ
-                let d =  tensor.shape[j];
-                let ax = axis.find(v => v.a === a);
-                if(ax === undefined){
-                    ax = {a, d};
-                    axis.push(ax);
-                }
-                else if(ax.d !== d)
-                    throw new Error(`In expression '${in_expr}':\n axis '${a}' have size ${ax.d} but on tensor №${i+1} this got ${d}`);
-                return ax;
-            })
-            inp.t = tensor;
-            return inp;
-        });
-        outs = expr[1].trim().split('').map(a => {   // Разделение выходного терма на индексы и их анализ
-            if(!a) return;
-            let idx = axis.findIndex(v => v.a === a);
-            if(idx < 0)
-                throw new Error(`Unknown axis: '${a}'`);
-            let ax = axis[idx];
-            axis.splice(idx, 1);
-            return ax;
-        }).filter(i=>i)
-
-
-        let vars = [
-            [...outs, ...axis].map((o, i) =>`let _${o.a} = ${o.d} || 1;`).join('\n'),
-            inputs.map((_, i) => {
-                const t = tensors[i]
-                let str =  '';//`let dType${i} = ${t.dType.name};\n`;
-                if (t.dType === BinaryArray){
-                    str += `let t${i} = t[${i}].bins;`
-                    str += `\nlet b${i} = 0;`;
-                }
-                else{
-                    str += `let t${i} = t[${i}].data;`;
-                    str += `\nlet v${i} = 0;`;
-                }
-
-                return str;
-            }).join('\n'),
-        ].join('\n');
-        vars += `\nlet idx = -1;\n`;
-        if ($.forward)
-            vars += `let forward = eval(${$.forward.toString()});\n`;
-
-
-        const out_tabs = '\t'.repeat(outs.length);
-
-        inputs.map((t, i) => {
-            let expr = ''
-            if(t.length){
-                if (t.t.dType === BinaryArray)
-                    expr += `b${i}`;
-                else
-                    expr += `v${i}`;
-                expr += ` = t${i}[`;
-                let m = ''
-                for (let o of t.toReversed()){
-                    if (m)
-                        expr += ' + ' + m;
-                    expr += o.a;
-                    m =  '_' + o.a +' * (';
-                }
-                expr += ')'.repeat(t.length - 1);
-                expr+=']'
-            }
-            t.idx_expr = expr;
-            if (t.t.dType === BinaryArray)
-                t.v = `b${i}`;
-            else
-                t.v = `v${i}`;
-        })
-        let last_input = null
-        let prev_v = [];
-        let prev_b = [];
-        let out_for = outs.map((o, i) => {
-            let axis_name = o.a;
-            let tabs = '\t'.repeat(i)
-            let res = tabs + `for(let ${axis_name} = 0; ${axis_name} < _${axis_name}; ${axis_name}++){\n`;
-            let inps = inputs.filter(i=>{
-                return i.some(a => {
-                    if (a.a === axis_name){
-                        a.used = true;
-                        return  true;
-                    }
-                });
-            })
-            res += inps.filter(i=>{
-                return i.every(a=>a.used)
-            }).map(i=>{
-                let res = '\t'+tabs;
-                if (last_input?.t === i?.t)
-                    res += `${i.v} = ${last_input.v}`;
-                else
-                    res += i.idx_expr;
-                last_input = i;
-                if (i.t.dType === BinaryArray)
-                    prev_b.push(i.v)
-                else
-                    prev_v.push(i.v)
-                return res + ';'
-            }).join('\n');
-            if (prev_v.length>1){
-                let v = prev_v.pop();
-                if ($.forward)
-                    res += `\n\t${tabs + v} = forward(${prev_v.join(' * ')}, ${v});`
-                else
-                    res += `\n\t${tabs + v} = ${prev_v.join(' * ')} * ${v};`;
-                prev_v = [v]
-            }
-            if (prev_b.length>1){
-                let b = prev_b.last;
-                result += '\n\t'+tabs + b + ` = (${prev_b.join(' + ')} - ${prev_b.length})&1;`;
-                prev_b = [b]
-            }
-            return res;
-        }).join('\n')+'\n'
-        const input_for_func = function (ts){
-            const uses = outs.map(o => o.a);
-            let result = ''
-            let cl = 0;
-            let tab = 0
-            let tabs = out_tabs;
-            inputs.map((input, i)=>{
-                for (let axis of input){
-                    let axis_name = axis.a;
-                    if (uses.includes(axis_name))
-                        continue;
-                    uses.push(axis_name);
-                    result+= '\n'+tabs + `for(let ${axis_name} = 0; ${axis_name} < _${axis_name}; ${axis_name}++){\n`
-
-                    let inps = inputs.filter(i=>{
-                        return i.some(a => {
-                            if (a.a === axis_name){
-                                a.used = true;
-                                return  true;
-                            }
-                        });
-                    })
-                    result += inps.filter(i=>{
-                        return i.every(a=>a.used)
-                    }).map(i=>{
-                        let res = '\t'+tabs;
-                        if (last_input?.t === i?.t)
-                            res += `${i.v} = ${last_input.v}`;
-                        else
-                            res += i.idx_expr;
-                        if (i.t.dType === BinaryArray)
-                            prev_b.push(i.v)
-                        else
-                            prev_v.push(i.v)
-                        last_input = i;
-                        return res + ';'
-                    }).join('\n');
-                    if (prev_v.length>1){
-                        let v = prev_v.pop();
-                        if ($.forward)
-                            result += `\n\t${tabs + v} = forward(${prev_v.join(' * ')}, ${v});`
-                        else
-                            result += `\n\t${tabs + v} = ${prev_v.join(' * ')} * ${v};`;
-                        prev_v = [v]
-                    }
-                    if (prev_b.length>1){
-                        let b = prev_b.last;
-                        result += '\n\t'+tabs + b + ` = (${prev_b.join(' + ')} - ${prev_b.length})&1;`;
-                        prev_b = [b]
-                    }
-                    cl++;
-                    tab++
-                    tabs = out_tabs + '\t'.repeat(tab)
-                }
-            })
-            const has_bins = tensors.some(t=>t.dType === BinaryArray)
-            result += '\n';
-            if (has_bins){
-                let b = prev_b.pop();
-                if (prev_v.length){
-                    let v = prev_v.pop();
-                    result += tabs + `if(${b} === '1')\n`;
-                    result += tabs + `\tres += ${v};\n`;
-                    result += tabs + `else\n`;
-                    result += tabs + `\tres -= ${v};\n`;
-                }
-                else
-                    result += tabs + `res += (${b}==='1')?1:-1;\n`;
-            }
-            else{
-                result += tabs + `res += ${last_input.v};\n`;
-            }
-
-
-            result += Array(cl).fill('').map((c, i)=> out_tabs + '\t'.repeat(i) + '}').toReversed().join('\n')
-            return result + '\n';
-        }
-
-        let body = '';
-        body += input_for_func(inputs);
-        body += out_tabs + 'out[++idx]  = res;';
-
-        let fwd_expr = vars + '\n';
-        fwd_expr += out_for;
-
-        fwd_expr +=  out_tabs + 'let res = 0;';
-        fwd_expr += '\n' + body + '\n';
-        fwd_expr += outs.map((_, i)=>'\t'.repeat(i)+'}').toReversed().join('\n');
-
-        fn = new Function('t', 'out', fwd_expr);
-        fn_cache.einsum ??= Object.create(null);
-        fn = (fn_cache.einsum[key] = {fn, outs, inputs}).fn;
-    }
-    else{
-        outs = fn.outs;
-        inputs = fn.inputs;
-        fn = fn.fn
-    }
-
-    const data = outs.length?new $.dType(outs.reduce((r,a)=> r * a.d, 1)):new $.dType(1);
-    let out = torus.from(data);
-    let shape = outs.map(i=>i.d);
-    if(!shape.length)
-        shape = [1];
-    out._shape(shape);
-    out._src(tensors);
-    out._back = function (){
-        const grad = torus.from(out.grad)._shape(out);
-        const out_res = []
-        tensors.forEach((t, i)=>{
-            if(!t.allowGrad) return;
-            const in_vars = inputs.map((tt, ii)=>{
-                if(ii === i)
-                    return outs.map(o=>o.a).join('');
-                return tt.map(o=>o.a).join('');
-            })
-            let out_vars = inputs[i].map(i=>i.a);//.filter(o=>in_vars.some(i => i.includes(o)))
-            let adds = inputs[i].filter(o=>!in_vars.some(i => i.includes(o.a)))
-            let expr = in_vars.join(',')  + '->' + out_vars.join('');
-            if (adds.length)
-                expr += JSON.stringify(adds.map(a=>{
-                    delete a.used;
-                    return a;
-                }));
-            let sources = tensors.map((tt,ii)=>{
-                if(ii === i)
-                    return grad;
-                return tt;
-            })
-            let out_back = torus.einsum(expr, sources, {forward: $['backward_'+ i]?.toString()});
-            out_res.push(out_back);
-            t.grad = t.grad.map((g,i)=>{
-                return g + out_back.data[i];
-            });
-        })
-        return out_res;
-    }
-    fn(tensors, out.data);
-    out._label(`einsum (${out.shape}): '${in_expr}'`);
-    // console.timeEnd(key)
-    return out;
-}
 torus.prototype.transpose = function(dim0= -1, dim1 = -2) {
     if (this.dim < 2)
         throw new Error(`Dimension out of range (expected more 2 or more, but got ${this.dim})`);
@@ -2153,7 +2058,7 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
         return (this[data_idx]>>BigInt(idx))&this.bit_mask;
     }
 }
-const fn_cache = Object.create(null);
+const fn_cache = {einsum:{}};
 
 globalThis.range ??= (count = 0)=>{
     return Array(count).fill().map((_, i)=>i);
