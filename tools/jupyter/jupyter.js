@@ -1277,13 +1277,16 @@ class JupyterCell extends ROCKS({
         code = `with (context) {try{
 ${code}
         }catch(e){
-            let stack = e.stack.split('\\n')[1];
-            let idx = stack.lastIndexOf('>')
-            stack = stack.substring(idx+2, stack.length-1)
+            let stack = e.stack;
+            let idx = stack.indexOf('<anonymous>')
+            debugger
+            stack = stack.substring(idx+'<anonymous>'.length+1);
+            idx = stack.indexOf(')')
+            stack = stack.substring(0, idx);
             stack = stack.split(':');
-            let row = stack[0] - 4;
+            let row = stack[0] - 3;
             let column = stack[1];
-            let mess = e.message + \` <u row="\$\{row\}" column="\$\{column\}" onclick="_findErrorPos(this)" style="cursor: pointer; color: -webkit-link">(\$\{row\}:\$\{column\})</u>\`
+            let mess = e.message + \` <u row="\$\{row-1\}" column="\$\{column\}" onclick="_findErrorPos(this)" style="cursor: pointer; color: -webkit-link">(\$\{row\}:\$\{column\})</u>\`
             throw new Error(mess)
         }}`;
         return code;
