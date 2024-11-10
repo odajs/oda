@@ -1208,13 +1208,7 @@ class JupyterCell extends ROCKS({
         try{
             let time = Date.now();
             run_context.output_data = jupyter.output_data = [];
-            let fn;
-            try{
-                fn = new AsyncFunction('context', this.code);
-            }
-            catch (e){
-                throw new Error(e.toString());
-            }
+            let fn = new AsyncFunction('context', this.code);
             let res =  await fn.call(jupyter, run_context);
             time = new Date(Date.now() - time);
             let time_str = '';
@@ -1280,7 +1274,18 @@ class JupyterCell extends ROCKS({
             }
             return s;
         }).join('\n');
-        code = 'with (context) {\n\t' + code + '\n\n}';
+        code = `with (context) {try{
+${code}
+        }catch(e){
+            let stack = e.stack.split('\\n')[1];
+            let idx = stack.lastIndexOf('>')
+            stack = stack.substring(idx+2, stack.length-1)
+            stack = stack.split(':');
+            let row = stack[0] - 4;
+            let column = stack[1];
+            let mess = e.message + \` <u row="\$\{row\}" column="\$\{column\}" onclick="_findErrorPos(this)" style="cursor: pointer; color: -webkit-link">(\$\{row\}:\$\{column\})</u>\`
+            throw new Error(mess)
+        }}`;
         return code;
     }
 }
@@ -1308,10 +1313,14 @@ window._findErrorPos = async (e) => {
     const row = +e.getAttribute('row');
     const column = +e.getAttribute('column');
 
-    const cellElement = e.parentElement.domHost
+    let cellElement = e.parentElement;
+    while(cellElement && !cellElement.domHost){
+        cellElement = cellElement.parentElement;
+    }
+    cellElement = cellElement.domHost
     const codeEditor = cellElement.control?.$('oda-code-editor') || cellElement.$('oda-code-editor');
     const aceEditor = codeEditor.editor;
-    const range = new ace.Range(row, column + 1, row, column);
+    const range = new ace.Range(row, 0, row, column);
     const length = aceEditor.session.doc.getAllLines().length;
     const height = codeEditor.offsetHeight;
     const delta = (height / length) * row - 30;
