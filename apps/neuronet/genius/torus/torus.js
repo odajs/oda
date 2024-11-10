@@ -1196,11 +1196,23 @@ einops:{
 
     const test_subscr = (subs, side)=>{
         subs = subs.trim()
-        while(subs.includes('..'))
-            subs = subs.replace('..', '.');
-        const match = subs.match(/(^\.?[a-zA-Z]+$)|(^[a-zA-Z]+\.?$)/g)
-        if(!match)
-            throw new Error(`invalid subscript '${subs}' given in the ${side} equation string, subscripts must be in ([a-zA-Z]*.*) or (.*[a-zA-Z]*)`);
+
+        switch(side){
+            case 'variable':{
+                while(subs.includes(' '))
+                    subs = subs.replace(' ', '');
+                const match = side === subs.match(/([a-zA-Z]=\d*,?)+/g)
+                if(!match)
+                    throw new Error(`invalid variable subscript '${subs}' given in the ${side} equation string, subscripts must be in ${'([a-zA-Z]=\d*,?)+'}`);
+            } break;
+            default:{
+                while(subs.includes('..'))
+                    subs = subs.replace('..', '.');
+                const match = side === subs.match(/(^\.?[a-zA-Z]+$)|(^[a-zA-Z]+\.?$)/g)
+                if(!match)
+                    throw new Error(`invalid subscript '${subs}' given in the ${side} equation string, subscripts must be in ${'(^\\.?[a-zA-Z]+$)|(^[a-zA-Z]+\\.?$)'}`);
+            }
+        }
         return subs;
     }
     torus._einops_parse = (expression) => {
