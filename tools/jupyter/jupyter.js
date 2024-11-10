@@ -1208,7 +1208,13 @@ class JupyterCell extends ROCKS({
         try{
             let time = Date.now();
             run_context.output_data = jupyter.output_data = [];
-            const fn = new AsyncFunction('context', this.code);
+            let fn;
+            try{
+                fn = new AsyncFunction('context', this.code);
+            }
+            catch (e){
+                throw new Error(e.toString());
+            }
             let res =  await fn.call(jupyter, run_context);
             time = new Date(Date.now() - time);
             let time_str = '';
