@@ -1216,22 +1216,39 @@ einops:{
         return subs;
     }
     torus._einops_parse = (expression) => {
+        const test_subscr = (subs = '', side)=>{
+            subs = subs.trim()
+            while(subs.includes('..'))
+                subs = subs.replace('..', '.');
+            while(subs.includes(' '))
+                subs = subs.replace(' ', '');
+            let expr = side === 'vars'?/([a-zA-Z]=\d*,?)+/g:/(^\.?[a-zA-Z]+$)|(^[a-zA-Z]+\.?$)/g;
+            if(subs.length && !subs.match(expr))
+                throw new Error(`einops_parse('${expression}'): invalid ${side} subscript '${subs}' given in the equation string, subscripts must be in ${expr}`);
+            return subs;
+        }
         const parts = expression.split('->');
         let inputs = parts[0].trim().split(',').map((subs,i)=>{
             subs = test_subscr(subs, ('input['+i+']'));
             return subs.split('');
         });
+        const out_parts = (parts[1] || '').trim().split(':');
+        let vars = test_subscr(out_parts[1], 'vars').split(',').filter(Boolean).reduce((r,v)=>{
+            v = v.split('=');
+            r[v[0]] = +v[1]
+            return r;
+        }, {});
 
-        let output = test_subscr((parts[1] || '').trim(), 'output').split('').map((subs, i, items)=>{
-            if(!inputs.some(i=>i.some(x=>x === subs)))
-                throw new Error(`Output subscript '${subs}' does not appear in the equation for any input operand.`)
-            if(items.filter(f=>f === subs).length>1)
-                throw new Error(`Output subscript '${subs}' appears more than once in the output.`)
+        let output = test_subscr(out_parts[0], 'output').split('').map((subs, i, outputs)=>{
+            if(!inputs.some(i=>i.some(i=>i === subs)) && !vars[subs])
+                throw new Error(`einops_parse('${expression}'): output subscript '${subs}' in expression '${expression}' does not appear in the equation for any input or variable operand.`)
+            if(outputs.filter(o=>o === subs).length>1)
+                throw new Error(`einops_parse('${expression}'): output subscript '${subs}' in expression '${expression}' appears more than once in the output.`)
             return subs;
         })
-        return {inputs, output}
+        return {inputs, output, vars}
     }
-    torus.einsum = (expression, tensors = [], $ = {})=>{
+    torus.einsum = (expression, tensors = [], $ = {turbo: true})=>{
         tensors = torus.flat(tensors);
         $ = torus.$($, {forward: '', backward_0: ''});
         const shapes = tensors.map(i=>i.shape);
@@ -1241,107 +1258,130 @@ einops:{
         if (!fn){
             const subscrs = torus._einops_parse(expression);
             if(subscrs.inputs.length > tensors.length)
-                throw new Error(`einsum(): fewer tensors were provided than specified in the equation`);
+                throw new Error(`einsum('${expression}'): fewer tensors were provided than specified in the equation`);
             else if(subscrs.inputs.length < tensors.length)
-                throw new Error(`einsum(): number of einsum subscripts (${subscrs.inputs.length}), must be equal to the number of tensors (${tensors.length})`);
+                throw new Error(`einsum('${expression}'): number of einsum subscripts (${subscrs.inputs.length}), must be equal to the number of tensors (${tensors.length})`);
             subscrs.axes = Object.create(null);
             let m = 1;
-            inputs = shapes.map((shape, i)=>{
-                    const subs = subscrs.inputs[i];
-                    if(subs.includes('.')){// с точкой
-                        subscrs.dot = ''
-                        //todo доделать варианты с точками
-                    }
-                    else if(shape.length != subs.length)
-                        throw new Error(`einsum(): number of tensors in '${subs}' (${subs.length}), must be equal to the number of dimentions [${shape}] (${tensors.length})`);
-                    let m = 1;
-                    let input = shape.map((dim, d)=>{
-                        const op = subs[d];
-                        const old = subscrs.axes[op];
-                        if(old && old != dim)
-                            throw new Error(`einsum(): subscript '${op}' has size ${dim} for tensor ${i} which does not broadcast with previously seen size ${old}`);
-                        subscrs.axes[op] = dim;
-                        return {op, dim}
-                    }).toReversed().map((ax)=>{
-                        ax._stride = m;
-                        m *= ax.dim;
-                        return ax;
-                    }).sort((a,b)=>a.dim<b.dim?-1:1);
-                    return input
-                })
-            output = subscrs.output.map(op=>{
-                let dim = subscrs.axes[op];
-                return {op, dim};
-            });
-            out_shape = output.map(ax=>ax.dim);
-            output.inputs = [];
-            let code = tensors.map((tensor, i)=>`let val_${i}, data_${i} = t[${i}].data;\n`).join('');
-            const func = $.forward || '('+tensors.map((_, i)=>'v'+i).join(',')+')=>('+tensors.map((_, i)=>'v'+i).join(' * ')+')'
-            code += `let idx, val, next, func = eval(${func});\n`;
-            code += Object.keys(subscrs.axes).map((op, i)=>`let ${op}, _${op}, ${op}_;\n`).join('');
-            code += inputs.map((input, i)=>{
-                const out = output.filter(axo=>input.some(axi=>axi.op === axo.op));
-                let m = 1
-                out.toReversed().forEach(axo=>{
-                    axo.stride_ = m;
-                    m *= subscrs.axes[axo.op];
-                })
+            inputs = shapes.map((shape, s)=>{
+                const subs = subscrs.inputs[s];
+                if(subs.includes('.')){// с точкой
+                    subscrs.dot = ''
+                    //todo доделать варианты с точками
+                }
+                else if(shape.length != subs.length)
+                    throw new Error(`einsum('${expression}'): number of tensors in '${subs}' (${subs.length}), must be equal to the number of dimentions [${shape}] (${tensors.length})`);
 
-                let size = out.map(ax=>ax.dim).mul() || 1
-                let expr = `out_${i} = new ${$.dType.name}(${size});\n`;
-                output.inputs.push(out);
-                expr += input.map((ax, a)=>{
-                    let tab = ' '.repeat(a * 2);
-                    let expr =  tab + `${ax.op} = ${ax.dim};\n`;
-                    expr += tab + `while(${ax.op}--){\n`;
-                    tab  += '  ';
-                    const o = out.find(axo=>axo.op === ax.op)
-                    if(o)
-                        expr += tab + `${ax.op}_ = ${ax.op} * ${o.stride_};\n`;
-                    if(ax._stride)
-                        expr += tab + `_${ax.op} = ${ax.op} * ${ax._stride};\n`;
+                let m = 1;
+                let input = shape.map((d, i)=>{
+                    const n = subs[i];
+                    const old = subscrs.axes[n];
+                    if(old && old != d)
+                        throw new Error(`einsum('${expression}'): subscript '${n}' has size ${d} for tensor ${s} which does not broadcast with previously seen size ${old}`);
+                    subscrs.axes[n] = d;
+                    return {n, d}
+                }).toReversed().map((ax)=>{
+                    ax.s = m;
+                    m *= ax.d;
+                    return ax;
+                }).toReversed();
+                return input
+            })
+            output = subscrs.output.map(n=>({n, d: subscrs.axes[n] || subscrs.vars[n]}));
+            // let out_expr = subscrs.output.join('');
+            let code = '';
+
+            if(subscrs.inputs.length > 1 && !$.turbo){
+                const exprs = [];
+                code += inputs.map((input, i)=>{
+                    let out_expr = subscrs.output.filter(o=>input.some(ai=>o === ai.n)).join('');
+                    exprs.push(out_expr);
+                    let expr = input.map(a=>a.n).join('')+'->'+out_expr;
+                    // let over = output.filter(ao=>!input.some(ai=>ai.n === ao.n));
+                    // if(over.length){
+                    //     expr+=':'+over.map(a=>a.n+'='+a.d).join(',');
+                    // }
+                    return `let out${i} = torus.einsum('${expr}', t[${i}]);\n`
+                }).join('');
+                let expr = exprs.join(',')+'->'+output.map(a=>a.n).join('');
+                $.turbo = true;
+                code += `return torus.einsum('${expr}', [${inputs.map((_,i)=>'out'+i).join(',')}], ${JSON.stringify($)});\n`
+            }
+            else{
+                code = tensors.map((tensor, i)=>`let val_${i}, data_${i} = t[${i}].data;\n`).join('');
+                const func = $.forward || '('+tensors.map((_, i)=>'v'+i).join(',')+')=>'+tensors.map((_, i)=>'v'+i).join(' * ');
+                let size = output.map(a=>a.d).mul() || 1;
+                code += `let out = t[0].out || torus.tensor(new t[0].dType(${size}))._src(t)._shape(${output.map(a=>a.d)})._label('${'einsum: ' + expression}');\n`;
+                code += `let out_data = out.data;\n`;
+                code += `let func = eval(${func});\n`
+
+                const axes = [];
+                m = 1;
+                output = output.toReversed().map(axo=>{
+                    axo.s = m;
+                    m *= subscrs.axes[axo.n] || subscrs.vars[axo.n];
+                    return axo;
+                })/*.sort((a,b)=>a.d<b.d?-1:1)*/.toReversed().filter(a=>!subscrs.vars[a.n]);
+                code += output.map((out, o)=>{
+                    axes.push(out.n);
+                    let tab = ' '.repeat(axes.length * 2);
+                    let s1 = '';
+                    inputs.forEach((input, i)=>input
+                        .forEach(a=>{
+                            if(a.n === out.n)
+                                s1 += `, _${a.n}${i} = 0`;
+                        }))
+                    let s2 = '';
+                    inputs.forEach((input, i)=>input
+                        .forEach(a=>{
+                            if(a.n === out.n)
+                                s2 += `, _${a.n}${i} += ${a.s/* || 1*/}`;
+                        }))
+
+                    let expr = tab + `for(let ${out.n} = 0, ${out.n}_ = 0${s1}; ${out.n}<${out.d}; ${out.n}++, ${out.n}_ += ${out.s}${s2}){\n`;
                     return expr;
                 }).join('');
-                let tab = ' '.repeat(input.length * 2)
 
-                expr += tab + `val = data_${i}[${subscrs.inputs[i].map(op=>'_'+op).join(' + ')}];\n`;
-                expr += tab + `out_${i}[${out.map(axis=>axis.op + '_').join(' + ')}] += val;\n`;
-                expr += input.map((ax, a)=> ' '.repeat(a * 2) + '}\n').toReversed().join('');
-                return expr;
-            }).join('');
-            output.inputs.forEach(input=>{
-                m = 1;
-                input.toReversed().forEach((axin, i)=>{
-                    axin.stride = m;
-                    m*= axin.dim;
-                })
-            })
-            m = 1
-            code += output.toReversed().map(axo=>{
-                axo.stride_ = m;
-                m *= subscrs.axes[axo.op];
-                return axo;
-            }).sort((a,b)=>a.dim<b.dim?-1:1).map((out, o)=>{
-                let tab = ' '.repeat(o * 2);
-                let expr = tab + `${out.op} = ${out.dim};\n`;
-                expr += tab + `while(${out.op}--){\n`;
-                expr += tab + `  ${out.op}_ = ${out.op} * ${out.stride_};\n`;
-                output.inputs.forEach((input, i)=>{
-                    input.forEach(axin=>{
-                        if(axin.op === out.op)
-                            expr += tab + `  _${axin.op} = ${axin.op} * ${axin.stride};\n`;
+                let tab = ' '.repeat(axes.length * 2);
+                code += tab + `  let sum = 0;\n`;
+                inputs.forEach((input, i)=>{
+                    input.forEach(inp=>{
+                        if(axes.includes(inp.n)) return;
+                        axes.push(inp.n);
+                        let tab = ' '.repeat(axes.length * 2);
+                        let s1 = ''
+                        inputs.forEach((input, i)=>input
+                            .forEach(a=>{
+                                if(a.n === inp.n)
+                                    s1 += `, _${a.n}${i} = 0`;
+
+                            }))
+                        let s2 = '';
+                        inputs.forEach((input, i)=>input
+                            .forEach(a=>{
+                                if(a.n === inp.n)
+                                    s2 += `, _${a.n}${i} += ${a.s/* || 1*/}`;
+                            }))
+                        code += tab + `for(let ${inp.n} = 0 ${s1}; ${inp.n}<${inp.d}; ${inp.n}++ ${s2}){\n`;
                     })
+                    let tab = ' '.repeat(axes.length * 2);
                 })
-                return expr;
-            }).join('');
-            let tab = '  '.repeat(output.length);
-            output.inputs.forEach((input, i)=>{
-                code += tab + `val_${i} = out_${i}[${input.map(ax=>'_'+ax.op).join(' + ')}];\n`;
-            })
-            code += tab + `out[${output.map(ax=>ax.op+'_').join(' + ')}] += func(${output.inputs.map((_,i)=>'val_'+i).join(', ')});\n`;
-            code += output.map((out, o)=>' '.repeat(o * 2)+`}\n`).toReversed().join('');
-            code += output.inputs.map((_,i)=>`out_${i}.buffer.transfer(0)\n`).join('');
-            fn = new Function('t', 'out', code);
+                tab = ' '.repeat(axes.length * 2);
+                inputs.forEach((input, i)=>{
+                    code += tab + `  val_${i} = data_${i}[${input.map(ax=>'_'+ax.n+i).join(' + ')}];\n`;
+                })
+                code += tab + `  sum += func(${inputs.map((_,i)=>'val_'+i).join(', ')});\n`;
+                axes.forEach((out, o)=>{
+                    let idx = axes.length - o;
+                    if(idx === output.length)
+                        code += ' '.repeat(2 * idx) + `  out_data[${output.map(ax=>ax.n+'_').join(' + ')}] = sum;\n`;
+                    code +=' '.repeat(2 * idx)+`}\n`
+                });
+                code+='t[0].out = out;\n'
+                code+='return out;\n'
+            }
+
+            fn = new Function('t', code);
             fn = (fn_cache.einsum[key] = {fn, out_shape, inputs, output}).fn;
         }
         else{
@@ -1350,8 +1390,14 @@ einops:{
             output = fn.output;
             fn = fn.fn
         }
-        const data = new $.dType(out_shape.mul() || 1);
-        let out = torus.from(data)._shape(out_shape)._src(tensors)._label(`einsum '${expression}'`);
+        let out;
+        try{
+            out = fn(tensors);
+        }
+        catch(e){
+            throw new Error(`SubcodeError einsum('${expression}'):\n`+e.message + '\n' + e.stack)
+        }
+
         out._back = function (){
             const grad = torus.from(out.grad)._shape(out);
             const out_res = []
@@ -1359,11 +1405,11 @@ einops:{
                 if(!t.allowGrad) return;
                 const in_vars = inputs.map((input, ii)=>{
                     if(ii === i)
-                        return output.map(ax=>ax.op).join('');
-                    return input.map(ax=>ax.op).join('');
+                        return output.map(ax=>ax.n).join('');
+                    return input.map(ax=>ax.n).join('');
                 })
-                let out_vars = inputs[i].map(i=>i.op);//.filter(o=>in_vars.some(i => i.includes(o)))
-                let adds = inputs[i].filter(ax=>!in_vars.some(i => i.includes(ax.op)))
+                let out_vars = inputs[i].map(i=>i.n);
+                let adds = inputs[i].filter(ax=>!in_vars.some(i => i.includes(ax.n)))
                 let expr = in_vars.join(',')  + '->' + out_vars.join('');
                 if (adds.length)
                     expr += JSON.stringify(adds.map(a=>{
@@ -1383,7 +1429,6 @@ einops:{
             })
             return out_res;
         }
-        fn(tensors, out.data);
         return out;
     }
 }

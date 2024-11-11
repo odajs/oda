@@ -519,14 +519,17 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     if(autorun !== true)
                         this.notebook?.change();
                     resolve();
-                    if (!this.cell?.hideOutput && this.outputs) {
-                        this.lastScrollTop = this.jupyter.scrollTop;
-                        this.$('#outputs').scrollIntoView();
-                    }
+                    this.scrollToOutput()
                 }
             }, 50)
         })
 
+    },
+    scrollToOutput(){
+        // if (!this.cell?.hideOutput && this.outputs) {
+        //     this.lastScrollTop = this.jupyter.scrollTop;
+        //     this.$('#outputs').scrollIntoView();
+        // }
     },
     scrollToLast() {
         if (this.lastScrollTop >= 0) {
