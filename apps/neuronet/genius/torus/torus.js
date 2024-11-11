@@ -1311,7 +1311,7 @@ einops:{
                 code = tensors.map((tensor, i)=>`let val_${i}, data_${i} = t[${i}].data;\n`).join('');
                 const func = $.forward || '('+tensors.map((_, i)=>'v'+i).join(',')+')=>'+tensors.map((_, i)=>'v'+i).join(' * ');
                 let size = output.map(a=>a.d).mul() || 1;
-                code += `let out = t[0].out || torus.tensor(new t[0].dType(${size}))._src(t)._shape(${output.map(a=>a.d)})._label('${'einsum: ' + expression}');\n`;
+                code += `let out = t[0].out || torus.tensor(new Float32Array(${size}))._src(t)._shape(${output.map(a=>a.d)})._label('${'einsum: ' + expression}');\n`;
                 code += `let out_data = out.data;\n`;
                 code += `let func = eval(${func});\n`
 
