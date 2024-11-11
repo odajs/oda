@@ -1415,36 +1415,7 @@ generators:{
     torus.ones_like = (pattern) => {
         return torus.ones(pattern.shape);
     }
-    torus.arange = (from_or_size = 0, to, step = 1, ...shape)=>{
-        shape = torus.flat(shape);
-        let repeat = shape.mul() || 1;
-        let steps;
-        let label = 'arange';
-        if(from_or_size !== undefined)
-            label +=' '+from_or_size;
-        if(to !== undefined)
-            label +=' … '+to;
-        if (to === undefined){
-            to = from_or_size
-            from_or_size = 0;
-        }
-        else
-            to -= from_or_size;
-        step *= Math.sign(to - from_or_size);
-        to = Math.abs(step>0?Math.ceil(to / step):Math.floor(to / step));
-        if(to){
-            let data = [];
-            let idx = -1;
-            let v = from_or_size - step;
-            for (let i = 0; i < to; i++){
-                data[++idx] = (v += step)
-            }
-            data = new Float32Array(Array(repeat).fill(data).flat());
-            shape.push(to)
-            return torus.tensor(data)._shape(shape)._label(label);
-        }
-        return torus.tensor()._label(label)
-    }
+
     torus.rand_int = (min_or_max = 0, max, ...shape)=>{
         shape = torus.flat(shape)
         if(max === undefined){
@@ -1469,19 +1440,75 @@ generators:{
         }
         return torus.fill(...shape, handler, BinaryArray)._label('rand_bin');
     }
+
+    // FINAL
+
+
+    torus.arange = (from_or_size = 0, to, ...step_or_shape)=>{
+        step_or_shape = torus.flat(step_or_shape);
+        let step, steps;
+        let label = 'arange';
+        let data = [];
+        if (to === undefined) {   //Если у метода один параметр — размер прогрессии
+            to = from_or_size;
+            from_or_size = 0;
+            step = Math.sign(to);
+            steps = Math.ceil(Math.abs(to));
+        }
+        else if (step_or_shape.length === 0) {   //Если у метода два параметра — начало и конец прогрессии
+            step = Math.sign(to - from_or_size)
+            steps = Math.ceil(Math.abs(to - from_or_size));
+        }
+        else if (step_or_shape.length === 1) {   //Если указан шаг прогрессии
+            step = step_or_shape[0];
+            if (step === 0)
+                throw new Error('step must be nonzero');
+            if (Math.sign(step) !== Math.sign(to - from_or_size) && to !== from_or_size)
+                throw new Error("starting and final bounds inconsistent with step sign");
+            steps = Math.ceil(Math.abs( (to - from_or_size) / step ));
+        }
+        else {   //Если указана форма тензора
+            steps = step_or_shape.mul();
+            step = (to - from_or_size) / steps;
+
+        }
+        if ( steps ) {
+            for ( let i = 0; i < steps ; i++) {
+                data[i] = from_or_size + step * i;
+            }
+            label += ` ${from_or_size} … ${to}`;
+        }
+        data = new Float32Array(data);
+        // data = new Float32Array(Array(1).fill(data).flat());
+        if (step_or_shape.length <= 1)   //Если форма тензора не задана
+            return torus.tensor(data)._label(label);
+        return torus.tensor(data)._shape(step_or_shape)._label(label);
+    }
+
+
+
     torus.eye = (...shape)=>{
         shape = torus.flat(shape);
-        const size = shape.mul();
-        const data = new Int8Array(size);
-        let dim = shape.last
-        let step = Math.min(size/ dim, dim);
-        for (let i = 0; i<step; i++){
-            data[i * dim + i] = 1;
+        if (shape.length === 1)   //Если укана только одна ось, то создаётся вторая того же размера. Тензор приводится к 2-D.
+            shape[1] = shape[0];
+        const columns = shape[shape.length - 1] ?? 0;
+        const rows = shape[shape.length - 2] ?? 0;
+        const steps = Math.min( rows, columns);
+        const step = columns + 1;
+        let data = [];
+        let repeat = 1;
+        if (shape.length > 2) {
+            repeat = shape.slice(0, -2).mul();
+        }
+        if( repeat ) {   //Если передано более 2-х осей, и среди них нет осей с нулевой длинной
+            data = Array(rows * columns).fill(0);
+            for (let i = 0, idx = 0; i<steps; i++, idx+=step){
+                data[idx] = 1;
+            }
+            data = new Int8Array(Array(repeat).fill(data).flat());
         }
         return torus.from(data)._shape(shape)._label('eye');
     }
-    // FINAL
-
 
     torus.ones = (...shape) => {
         shape = torus.flat(shape);
