@@ -11,7 +11,14 @@ ODA({ is: 'oda-spreadsheet-editor',
         </style>
         <iframe style="border: none; width: 100%; height: 100%;"></iframe>
     `,
-    value: '',
+    value: {
+        $def: '',
+        set(v) {
+            if (this.mode === 'read') {
+                this.setEditor();
+            }
+        }
+    },
     defValue: `[
         {
             "name": "sheet1"
