@@ -32,16 +32,16 @@ class NeuroModule extends Function{
             },
             apply(target, _, args) {
                 const result = target.forward(...args);
-                setTimeout(()=>{
-                    if(result instanceof tensor)
-                        result.destroy?.();
-                    else if(Array.isArray(result)){
-                        result.forEach(t=>{
-                            if(t instanceof tensor)
-                                result.destroy?.();
-                        })
-                    }
-                }, target.destroyTime);
+                // setTimeout(()=>{
+                //     if(result instanceof tensor)
+                //         result.destroy?.();
+                //     else if(Array.isArray(result)){
+                //         result.forEach(t=>{
+                //             if(t instanceof tensor)
+                //                 result.destroy?.();
+                //         })
+                //     }
+                // }, target.destroyTime);
                 return result;
             }
         })
