@@ -162,6 +162,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                         this.selectedCell = this.cells[this.savedIndex];
                         await this.scrollToCell();
                     }
+                    this.lastScrollTop = -1;
                     this.style.visibility = 'visible';
                     this.style.opacity = 1;
                     this.style.scrollBehavior = 'smooth';
@@ -212,7 +213,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 if (n && this.readOnly)
                     this.editMode = false;
             }
-        }
+        },
+        lastScrollTop: -1
     },
     async scrollToCell(cell = this.selectedCell, delta = 0) {
         if (!cell) return;
@@ -383,6 +385,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run()" :success-invert="cell?.autoRun" style="margin: 4px; border-radius: 50%;"></oda-button>
                     <div>{{time}}</div>
                     <div>{{status}}</div>
+                    <oda-icon ~if="selectedCell === cell && lastScrollTop >= 0 && outputs && !cell?.hideOutput && cell.type === 'code'"  :icon-size icon="icons:expand-less" @tap="scrollToLast" style="margin: 8px; border-radius: 50%;"></oda-icon>
                 </div>
             </div>
             <div class="pe-preserve-print vertical no-flex" style="width: calc(100% - 34px); position: relative;">
@@ -397,7 +400,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         <div style="margin: 8px;">Hidden {{cell.childrenCount}} cells</div>
                     </div>
                 </div>
-                <div ~if="cell?.outputs?.length || cell?.controls?.length" class="info border" flex>
+                <div id="outputs" ~if="cell?.outputs?.length || cell?.controls?.length" class="info border" flex>
                     <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell ~show="selected"></oda-jupyter-outputs-toolbar>
                     <div class="vertical flex" style="overflow: hidden;">
                         <div flex vertical ~if="!cell?.hideOutput" style="overflow: hidden;">
@@ -516,10 +519,23 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     if(autorun !== true)
                         this.notebook?.change();
                     resolve();
+                    if (!this.cell?.hideOutput && this.outputs) {
+                        this.lastScrollTop = this.jupyter.scrollTop;
+                        this.$('#outputs').scrollIntoView();
+                    }
                 }
             }, 50)
         })
 
+    },
+    scrollToLast() {
+        if (this.lastScrollTop >= 0) {
+            this.jupyter.scrollTop = this.lastScrollTop;
+            this.lastScrollTop = -1;
+        }
+    },
+    get outputs() {
+        return this.cell?.outputs?.length || this.cell?.controls?.length;
     },
     $pdp: {
         get icon(){
@@ -1296,12 +1312,14 @@ function getID() {
     return Math.floor(Math.random() * Date.now()).toString(16);
 }
 window._findCodeEntry = async (e) => {
-    const text = '>'+e.innerText;
+    // const text = '>'+e.innerText;
+    const text = e.innerText;
 
     const cellElement = e.parentElement.domHost
     const codeEditor = cellElement.control?.$('oda-code-editor');
     const aceEditor = codeEditor.editor;
-    const row = aceEditor.session.doc.$lines.findIndex(r=>r.trim().startsWith(text))
+    // const row = aceEditor.session.doc.$lines.findIndex(r=>r.trim().startsWith(text))
+    const row = aceEditor.session.doc.$lines.findIndex(r=>r.trim().startsWith('>') && r.includes(text));
     const range = new ace.Range(row, 1000, row, 0);
     const length = aceEditor.session.doc.getAllLines().length;
     const height = codeEditor.offsetHeight;
