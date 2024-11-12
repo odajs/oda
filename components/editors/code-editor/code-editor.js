@@ -66,7 +66,7 @@ ODA({is: 'oda-code-editor',
         maxLines: { $def: '', set(n) { this.editor?.setOption('maxLines', n) } },
         showGutter: { $def: true, set(n) { this.editor?.setOption('showGutter', n) } },
         highlightGutterLine: { $def: false, set(n) { this.editor?.setOption('highlightGutterLine', n) } },
-        highlightActiveLine: { $def: false, set(n) { this.editor?.setOption('highlightActiveLine', n) } },
+        highlightActiveLine: { $def: true, set(n) { this.editor?.setOption('highlightActiveLine', n) } },
         enableSnippets: {
             $def: true,
             set(n) {
