@@ -401,7 +401,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     </div>
                 </div>
                 <div id="outputs" ~if="cell?.outputs?.length || cell?.controls?.length" class="info border" flex>
-                    <div id="before-outputs" style="width: 100%; height: 1px; margin-top: -48px"></div>
                     <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell ~show="selected"></oda-jupyter-outputs-toolbar>
                     <div class="vertical flex" style="overflow: hidden;">
                         <div flex vertical ~if="!cell?.hideOutput" style="overflow: hidden;">
@@ -530,7 +529,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         this.lastScrollTop = -1;
         if (!this.cell?.hideOutput && this.outputs && !this.control?.isVisibleSplitter) {
             this.lastScrollTop = this.jupyter.scrollTop;
-            this.$('#before-outputs').scrollIntoView();
+            this.$('#outputs').scrollIntoView();
         }
     },
     scrollToLast() {

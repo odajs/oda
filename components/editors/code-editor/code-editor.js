@@ -17,17 +17,12 @@ ODA({is: 'oda-code-editor',
                 background-color: lightyellow;
             }
             .ace_scrollbar-h {
-                position: {{scrollCalculate?'fixed':''}};
-                bottom: {{scrollCalculate?'0px':''}};
-                left: {{gutterWidth + (scrollCalculate?36:0)}}px!important;
+                transform: translateY({{scrollCalculate}}px); 
             }
         </style>
         <div @keydown.stop  style="min-height: 100%; font-size: large;"></div>
     `,
     $public: {
-        get gutterWidth() {
-            return this.$$('.ace_gutter-cell')?.[0]?.clientWidth;
-        },
         scrollCalculate: false,
         marker: '',
         value: {
