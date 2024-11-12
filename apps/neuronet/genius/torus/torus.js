@@ -55,8 +55,11 @@ export class tensor/* extends Array*/{
                     this['#shape'] = [1]
                 else if (data?.length)
                     this['#shape'] = [data?.length]
-                else if (!data?.buffer)
+                else if (!data?.buffer){
+                    this['#shape'] = [1];
                     data = new this.dType([data])
+                }
+
             }
             this.#data = data;
         }
@@ -1250,7 +1253,7 @@ einops:{
     }
     torus.einsum = (expression, tensors = [], $ = {turbo: false})=>{
         tensors = torus.flat(tensors);
-        $ = torus.$($, {forward: '', backward_0: ''});
+        $ = torus.$({forward: '', backward_0: ''}, $);
         const shapes = tensors.map(i=>i.shape);
         let key = expression + ': [' + shapes.join(']-[') + '] ' + JSON.stringify($);
         let inputs, out_shape, output;
@@ -1424,7 +1427,7 @@ einops:{
                 });
 
                 if(!output.length){
-                    code += tab + `  out_data[0] = sum;\n`;
+                    code += `  out_data[0] = sum;\n`;
                 }
 
                 code+='t[0].out = out;\n'
@@ -1725,7 +1728,7 @@ aggregates:{
 
         let expr = from.join('') + '->' + to.join('');
 
-        $.forward ??= (x,y) => x + y;
+        $.forward ??= x => x;
         $.backward_0 ??= g => g;
         let out = torus.einsum(expr, this, $)
 
