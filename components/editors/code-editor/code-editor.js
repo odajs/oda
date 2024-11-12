@@ -23,7 +23,7 @@ ODA({is: 'oda-code-editor',
         <div @keydown.stop  style="min-height: 100%; font-size: large;"></div>
     `,
     $public: {
-        scrollCalculate: false,
+        scrollCalculate: 0,
         marker: '',
         value: {
             $def: '',

@@ -140,7 +140,19 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             $save: true
         }
     },
+    $listeners:{
+        scroll(e){
+            this.jupyter_scroll_top = this.scrollTop;
+        },
+        resize(e){
+            this.jupyter_height = this.offsetHeight;
+        }
+    },
     $pdp: {
+        jupyter_scroll_top: 0,
+        get jupyter_height(){
+            return this.offsetHeight;
+        },
         showLoader: false,
         get jupyter() {
             return this;
@@ -478,6 +490,10 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 this.editMode = true;
                 this.$render();
             }
+        },
+        resize(e) {
+            this.control_height = undefined;
+            this.cell_height = undefined;
         }
     },
     get time(){
@@ -486,6 +502,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     get status(){
         return this.cell?.status || '';
     },
+
     async run(autorun) {
         return new Promise(resolve => {
             const task = ODA.addTask();
@@ -519,18 +536,27 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     if(autorun !== true)
                         this.notebook?.change();
                     resolve();
-                    this.scrollToOutput()
+                    if(autorun !== true)
+                        this.scrollToOutput()
                 }
             }, 50)
         })
 
     },
     scrollToOutput(){
-        this.lastScrollTop = -1;
-        if (!this.cell?.hideOutput && this.outputs && !this.control?.isVisibleSplitter) {
-            this.lastScrollTop = this.jupyter.scrollTop;
-            this.$('#outputs').scrollIntoView();
-        }
+        if (this.control_bottom < (this.jupyter_height + this.jupyter_scroll_top) /*&& this.control_offsetBottom > this.jupyter_scroll_top*/)
+            return;
+        if (this.cell?.hideOutput)
+            return;
+        if (this.output_height>this.jupyter_height)
+            this.jupyter.scrollTop = this.control_bottom - 64;
+        else
+            this.$('#outputs').scrollIntoView({block: "end"});
+
+        // if (!this.cell?.hideOutput && this.outputs) {
+        //     this.lastScrollTop = this.jupyter.scrollTop;
+        //     this.$('#outputs').scrollIntoView();
+        // }
     },
     scrollToLast() {
         if (this.lastScrollTop >= 0) {
@@ -539,10 +565,19 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             this.$('#control')?.editor?.focus();
         }
     },
-    get outputs() {
-        return this.cell?.outputs?.length || this.cell?.controls?.length;
+    get output_height() {
+        return this.cell_height - this.control_height;
+    },
+    get control_height() {
+        return this.control.offsetHeight;
+    },
+    get cell_height() {
+        return this.offsetHeight;
     },
     $pdp: {
+        get control_bottom(){
+            return this.offsetTop + this.control_height;
+        },
         get icon(){
             return this.cell?.isRun? 'spinners:8-dots-rotate': 'av:play-circle-outline';
         },
@@ -839,10 +874,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             }
         </style>
         <div  class="horizontal" :border="!hideCode"  style="min-height: 64px;">
-            <div class="vertical flex">
-                <oda-code-editor :scroll-calculate="isVisibleEditor && !isVisibleSplitter" :wrap ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" max-lines="Infinity" @change="editorValueChanged" enable-breakpoints></oda-code-editor>
-                <div id="splitter" style="width: 100%; height:1px;"></div>
-            </div>
+            <oda-code-editor :scroll-calculate="getScrollCalculate()" :wrap ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" max-lines="Infinity" @change="editorValueChanged" enable-breakpoints></oda-code-editor>
             <div dimmed ~if="hideCode" class="horizontal left content flex" style="cursor: pointer; padding: 8px 4px;" @dblclick="hideCode=false">
                 <oda-icon icon="bootstrap:eye-slash" style="align-self: baseline;"></oda-icon>
                 <span flex  vertical style="margin: 0px 16px; font-size: large; cursor: pointer; text-overflow: ellipsis;" ~html="cell.name +' <u disabled style=\\\'font-size: x-small; right: 0px;\\\'>(Double click to show...)</u>'" ></span>
@@ -933,20 +965,11 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         const exp = await this.$('oda-code-editor')?.exportValue();
         return exp;
     },
-    isVisibleEditor: false,
-    isVisibleSplitter: false,
-    attached() {
-        const editor = this.$("oda-code-editor");
-        new IntersectionObserver(async e => {
-            this.isVisibleEditor = e[0].isIntersecting;
-            editor.gutterWidth = undefined;
-            await this.$render();
-        }, { rootMargin: "1px", threshold: .01 }).observe(editor);
-        new IntersectionObserver(async e => {
-            this.isVisibleSplitter = e[0].isIntersecting;
-            editor.gutterWidth = undefined;
-            await this.$render();
-        }, { rootMargin: "1px", threshold: .01 }).observe(this.$("#splitter"));
+    getScrollCalculate(){
+        let value = this.jupyter_scroll_top + this.jupyter_height -  this.control_bottom;
+        if (value>0)
+            value = 0;
+        return value
     }
 })
 
