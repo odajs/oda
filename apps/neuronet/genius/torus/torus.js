@@ -1222,7 +1222,7 @@ einops:{
                 subs = subs.replace('..', '.');
             while(subs.includes(' '))
                 subs = subs.replace(' ', '');
-            let expr = side === 'vars'?/([a-zA-Z]=\d*,?)+/g:/(^\.?[a-zA-Z]+$)|(^[a-zA-Z]+\.?$)/g;
+            let expr = side === 'vars' ? /([a-zA-Z]=\d*,?)+/g : /([a-zA-Z]+)|\.?/g;
             if(subs.length && !subs.match(expr))
                 throw new Error(`einops_parse('${expression}'): invalid ${side} subscript '${subs}' given in the equation string, subscripts must be in ${expr}`);
             return subs;
@@ -1248,7 +1248,7 @@ einops:{
         })
         return {inputs, output, vars}
     }
-    torus.einsum = (expression, tensors = [], $ = {turbo: true})=>{
+    torus.einsum = (expression, tensors = [], $ = {turbo: false})=>{
         tensors = torus.flat(tensors);
         $ = torus.$($, {forward: '', backward_0: ''});
         const shapes = tensors.map(i=>i.shape);
@@ -1264,10 +1264,43 @@ einops:{
             subscrs.axes = Object.create(null);
             let m = 1;
             inputs = shapes.map((shape, s)=>{
-                const subs = subscrs.inputs[s];
+                let subs = subscrs.inputs[s];
                 if(subs.includes('.')){// с точкой
-                    subscrs.dot = ''
-                    //todo доделать варианты с точками
+                    if(!subscrs.dots){
+                        const axes = [...subscrs.inputs.flat(), ...subscrs.output];
+                        subscrs.dots = [];
+                        let sp = shape;
+                        if(subs.first === '.'){
+                            subs.shift();
+                            sp = sp.toReversed();
+                            subs.reverse();
+                        }
+                        else if(subs.last === '.'){
+                            subs.pop();
+                        }
+                        else
+                            throw new Error(`einsum('${expression}'): dots cannot be between operators`)
+                        let char = 97;
+                        subs = sp.map((_, i)=>{
+                            let s = subs[i];
+                            if(!s){
+                                while((s = String.fromCharCode(char++)) && axes.includes(s));
+                                subscrs.dots.push(s);
+                            }
+                            return s;
+                        });
+                        if(sp !== shape){
+                            subscrs.dots
+                            subs.reverse();
+                        }
+                        subscrs.inputs[s] = subs;
+                    }
+                    else{
+                        const idx = subscrs.inputs[s].indexOf('.');
+                        subscrs.inputs[s].splice(idx, 1, ...subscrs.dots);
+                    }
+
+
                 }
                 else if(shape.length != subs.length)
                     throw new Error(`einsum('${expression}'): number of tensors in '${subs}' (${subs.length}), must be equal to the number of dimentions [${shape}] (${tensors.length})`);
@@ -1287,11 +1320,22 @@ einops:{
                 }).toReversed();
                 return input
             })
+
+
+            if(subscrs.output.includes('.')){ // замена точек в выходе
+                if(!subscrs.dots)
+                    throw new Error(`einsum('${expression}'): dots must be declared in the input operands`);
+                let idx = subscrs.output.indexOf('.');
+                subscrs.output.splice(idx, 1, ...subscrs.dots);
+            }
             output = subscrs.output.map(n=>({n, d: subscrs.axes[n] || subscrs.vars[n]}));
             // let out_expr = subscrs.output.join('');
             let code = '';
-
-            if(subscrs.inputs.length > 1 && !$.turbo){
+            let ins = inputs.flat().reduce((r,a)=>{
+                r.add(a.n);
+                return r;
+            },[]);
+            if(subscrs.inputs.length > 1 && ins.length>output.length && $.turbo){
                 const exprs = [];
                 code += inputs.map((input, i)=>{
                     let out_expr = subscrs.output.filter(o=>input.some(ai=>o === ai.n)).join('');
@@ -1321,22 +1365,22 @@ einops:{
                     axo.s = m;
                     m *= subscrs.axes[axo.n] || subscrs.vars[axo.n];
                     return axo;
-                })/*.sort((a,b)=>a.d<b.d?-1:1)*/.toReversed().filter(a=>!subscrs.vars[a.n]);
+                }).toReversed().filter(a=>!subscrs.vars[a.n]);
                 code += output.map((out, o)=>{
                     axes.push(out.n);
                     let tab = ' '.repeat(axes.length * 2);
                     let s1 = '';
                     inputs.forEach((input, i)=>input
-                        .forEach(a=>{
-                            if(a.n === out.n)
-                                s1 += `, _${a.n}${i} = 0`;
-                        }))
+                    .forEach(a=>{
+                        if(a.n === out.n)
+                            s1 += `, _${a.n}${i} = 0`;
+                    }))
                     let s2 = '';
                     inputs.forEach((input, i)=>input
-                        .forEach(a=>{
-                            if(a.n === out.n)
-                                s2 += `, _${a.n}${i} += ${a.s/* || 1*/}`;
-                        }))
+                    .forEach(a=>{
+                        if(a.n === out.n)
+                            s2 += `, _${a.n}${i} += ${a.s/* || 1*/}`;
+                    }))
 
                     let expr = tab + `for(let ${out.n} = 0, ${out.n}_ = 0${s1}; ${out.n}<${out.d}; ${out.n}++, ${out.n}_ += ${out.s}${s2}){\n`;
                     return expr;
@@ -1351,17 +1395,17 @@ einops:{
                         let tab = ' '.repeat(axes.length * 2);
                         let s1 = ''
                         inputs.forEach((input, i)=>input
-                            .forEach(a=>{
-                                if(a.n === inp.n)
-                                    s1 += `, _${a.n}${i} = 0`;
+                        .forEach(a=>{
+                            if(a.n === inp.n)
+                                s1 += `, _${a.n}${i} = 0`;
 
-                            }))
+                        }))
                         let s2 = '';
                         inputs.forEach((input, i)=>input
-                            .forEach(a=>{
-                                if(a.n === inp.n)
-                                    s2 += `, _${a.n}${i} += ${a.s/* || 1*/}`;
-                            }))
+                        .forEach(a=>{
+                            if(a.n === inp.n)
+                                s2 += `, _${a.n}${i} += ${a.s/* || 1*/}`;
+                        }))
                         code += tab + `for(let ${inp.n} = 0 ${s1}; ${inp.n}<${inp.d}; ${inp.n}++ ${s2}){\n`;
                     })
                     let tab = ' '.repeat(axes.length * 2);
@@ -1380,7 +1424,6 @@ einops:{
                 code+='t[0].out = out;\n'
                 code+='return out;\n'
             }
-
             fn = new Function('t', code);
             fn = (fn_cache.einsum[key] = {fn, out_shape, inputs, output}).fn;
         }
@@ -1421,7 +1464,8 @@ einops:{
                         return grad;
                     return tt;
                 })
-                let out_back = torus.einsum(expr, sources, {forward: $['backward_'+ i]?.toString()});
+                $.forward = $['backward_'+ i]?.toString();
+                let out_back = torus.einsum(expr, sources, $);
                 out_res.push(out_back);
                 t.grad = t.grad.map((g,i)=>{
                     return g + out_back.data[i];
