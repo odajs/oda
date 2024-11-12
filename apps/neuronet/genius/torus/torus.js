@@ -77,15 +77,15 @@ export class tensor/* extends Array*/{
         return this;
     }
     get out(){
-        if(!this.allowGrad)
-            return;
-        console.log('get out()', label_from_error())
-        return this._outs?.[this.step];
+        if(!this.allowGrad) return;
+        const key = label_from_error();
+        return  this._outs?.[key]?.[this.step];
     }
     set out(n){
-        if(!this.allowGrad)
-            return;
+        if(!this.allowGrad) return;
+        const key = label_from_error();
         let outs = this._outs ??= Object.create(null);
+        outs = outs[key] ??= Object.create(null);
         outs[this.step] = n
         this.step++;
         n.step = this.step;
