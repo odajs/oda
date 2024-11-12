@@ -155,7 +155,6 @@ ODA({is: 'oda-code-editor',
             }
         });
         this.editor.session.on('change', (e) => {
-            this.gutterWidth = undefined;
             this['#value'] = undefined;
             this.isChanged = this.value !== this.src;
             this.fire('change', this.value);
@@ -174,7 +173,6 @@ ODA({is: 'oda-code-editor',
         this.editor.commands.removeCommand('find');
         // https://ourcodeworld.com/articles/read/1052/how-to-add-toggle-breakpoints-on-the-ace-editor-gutter#disqus_thread
         this.editor.on("guttermousedown", (e) => {
-            this.gutterWidth = undefined;
             if (!this.enableBreakpoints)
                 return;
             const target = e.domEvent.target;

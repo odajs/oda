@@ -79,12 +79,7 @@ export class tensor/* extends Array*/{
     get out(){
         if(!this.allowGrad)
             return;
-        try {
-            throw new Error()
-        }
-        catch (e){
-            console.log(e)
-        }
+        console.log('get out()', label_from_error())
         return this._outs?.[this.step];
     }
     set out(n){
@@ -1010,24 +1005,7 @@ function genId(){
     return ++_id;
 }
 let _id = 0;
-// tensor.parse_shape = (expr, src)=>{
-//     const shape = src.shape;
-//     const vars = expr.split('');
-//     if(vars.length !== shape.length)
-//         throw new Error(`Shape size [${shape.length}] does not match variable count [${vars.length}]`);
-//     vars.reduce((r, d, i)=>{
-//         d = d.trim();
-//         switch (d){
-//             case '_':{
-//
-//             } break;
-//             default:{
-//                 r[d] = shape[i];
-//             }
-//         }
-//         return r
-//     },{})
-// }
+
 tensor.cosSimilar = (A, B) => {
     if (A && B) {
         A = A.emb || A
@@ -1154,16 +1132,7 @@ systems:{
         }
         let expr = (t_vars.reverse().join('') || '$') + ', ' + (o_vars.reverse().join('') || '$') + ' -> ' + outs.reverse().join('');
         const out = torus.einsum(expr,  [this, other], $);
-        let label;
-        try{throw new Error()}
-        catch (e){
-            label = e.stack.split('\n');
-            const idx = label.findIndex(v=>v.includes('._element_wise')) + 1;
-            label = label[idx];
-            label = label.substr(label.indexOf('.') + 1);
-            label = label.substr(0, label.indexOf(' '));
-            out._label(label + ' ('+expr+')');
-        }
+        out._label(label_from_error() + ' ('+expr+')');
         return out;
     }
     torus.prototype._element_wise_function = function ($ = {forward: '', backward_0: ''}){
@@ -1179,15 +1148,7 @@ systems:{
         else{
             const data = this.data.map(forward);
             out = torus.from(data)._src(this)._shape(this);
-            try{throw new Error()}
-            catch (e){
-                let label = e.stack.split('\n');
-                const idx = label.findIndex(v=>v.includes('._element_wise')) + 1;
-                label = label[idx];
-                label = label.substr(label.indexOf('.') + 1);
-                label = label.substr(0, label.indexOf(' '));
-                out._label(label+' ('+out.shape+')');
-            }
+            out._label(label_from_error()+' ('+out.shape+')');
             if (this.allowGrad && $.backward_0){
                 out._back = ()=>{
                     const backward = eval($.backward_0);
@@ -2223,4 +2184,8 @@ for (let n in descr){
     torus[n] ??= (tensor, ...params)=>{
         return d.value.call(tensor, ...params);
     }
+}
+
+function label_from_error(){
+    return new Error().stack.split('at torus.')?.[1].split(' ')?.[0] || 'torus';
 }
