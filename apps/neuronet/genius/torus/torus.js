@@ -160,7 +160,7 @@ export class tensor/* extends Array*/{
             shape = shape[0].shape;
         const size = shape.mul()
         if (size !== this.size)
-            throw new Error(`_shape from (${this.shape}) to (${shape}) not allow.`);
+            throw new Error(`_shape(${this.shape}) to (${shape}) not allow.`);
         this.#shape_multipliers = undefined;
         this['#shape'] = shape
         return this;
@@ -194,7 +194,7 @@ export class tensor/* extends Array*/{
     }
     set data(n){
         if (n.length !== this.size)
-            throw new Error(`Dimension out of range (expected ${this.#data.length}, but got ${n.length})`);
+            throw new Error(`set data(n): dimension out of range (expected ${this.#data.length}, but got ${n.length})`);
         this.#data = n
         this.dType = this.#data.constructor;
     }
@@ -405,7 +405,7 @@ export class tensor/* extends Array*/{
         let first = tensors[0];
 
         if (((dim > 0)?(first.dim < dim):((first.dim + dim)<-1)))
-            throw new Error(`Dimension out of range (expected to be in range of [-${dim+1}, ${dim}], but got ${dim})`);
+            throw new Error(`torus.stack(): dimension out of range (expected to be in range of [-${dim+1}, ${dim}], but got ${dim})`);
         let shape = [tensors.length];
         let next;
         while ((next = tensors[0]) && Array.isArray(next)){
@@ -475,7 +475,7 @@ export class tensor/* extends Array*/{
     }
     reverse(dim = 0){
         if (-this.dim > dim || this.dim - 1 < dim)
-            throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`)
+            throw new Error(`tensor.reverse(${dim}): dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`)
         if (dim < 0)
             dim += this.dim;
 
@@ -636,7 +636,7 @@ torus.prototype.set = function(value, ...indeces){
 
 tensor.prototype.slice = function (...slicers){
     if (slicers.length>this.dim)
-        throw new Error(`IndexError: too many indices for tensor of dimension ${this.dim}`);
+        throw new Error(`tensor.splice(${slicers}): indexError: too many indices for tensor of dimension ${this.dim}`);
     let key = '(' + this.shape.toString() + '):  [' + slicers.map(i=>i).join(',')+']';
     let fn = fn_cache.slice?.[key];
     if (!fn){
@@ -873,14 +873,14 @@ tensor.prototype.MSE = function (target){
     target = tensor.from(target);
     let y = target.data;
     if (target.size>this.size)
-        throw new Error(`Size of target (${target.size}) must be less then size of source (${this.size})`);
+        throw new Error(`tensor.MSE(): size of target (${target.size}) must be less then size of source (${this.size})`);
     for (let i = 0; i<target.shape.length; i++){
         let target_dim = target.shape[target.shape.length - 1 - i];
         let this_dim = this.shape[this.shape.length - 1 - i];
         if (this_dim === undefined)
-            throw new Error(`Size of target (${target.size}) must be less then size of source (${this.size})`);
+            throw new Error(`tensor.MSE(): size of target (${target.size}) must be less then size of source (${this.size})`);
         if (target_dim !== undefined && target_dim > this_dim)
-            throw new Error(`Dimension (${target.shape.length - 1 - i} = ${target_dim}) of target must be equal with dimension (${this.shape.length - 1 - i} = ${this_dim}) of source`);
+            throw new Error(`tensor.MSE(): dimension (${target.shape.length - 1 - i} = ${target_dim}) of target must be equal with dimension (${this.shape.length - 1 - i} = ${this_dim}) of source`);
     }
     let step = this.shape.last;
     let errors = Array(this.size/step).fill().map((d, i)=>{
@@ -1077,7 +1077,7 @@ systems:{
     })
     torus.prototype.check_dim = function (dim){
         if (-this.dim > dim || this.dim - 1 < dim)
-            throw new Error(`Dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`);
+            throw new Error(`tensor.check_dim((dim = ${dim}): dimension out of range (expected to be in range of [-${this.dim}, ${this.dim - 1}], but got ${dim})`);
         if (dim < 0)
             dim += this.dim;
         return dim;
@@ -1165,27 +1165,6 @@ systems:{
 }
 einops:{
 
-    const test_subscr = (subs, side)=>{
-        subs = subs.trim()
-
-        switch(side){
-            case 'variable':{
-                while(subs.includes(' '))
-                    subs = subs.replace(' ', '');
-                const match = side === subs.match(/([a-zA-Z]=\d*,?)+/g)
-                if(!match)
-                    throw new Error(`invalid variable subscript '${subs}' given in the ${side} equation string, subscripts must be in ${'([a-zA-Z]=\d*,?)+'}`);
-            } break;
-            default:{
-                while(subs.includes('..'))
-                    subs = subs.replace('..', '.');
-                const match = side === subs.match(/(^\.?[a-zA-Z]+$)|(^[a-zA-Z]+\.?$)/g)
-                if(!match)
-                    throw new Error(`invalid subscript '${subs}' given in the ${side} equation string, subscripts must be in ${'(^\\.?[a-zA-Z]+$)|(^[a-zA-Z]+\\.?$)'}`);
-            }
-        }
-        return subs;
-    }
     torus._einops_parse = (expression) => {
         const test_subscr = (subs = '', side)=>{
             subs = subs.trim()
@@ -1195,7 +1174,7 @@ einops:{
                 subs = subs.replace(' ', '');
             let expr = side === 'vars' ? /([a-zA-Z]=\d*,?)+/g : /([a-zA-Z]+)|\.?/g;
             if(subs.length && !subs.match(expr))
-                throw new Error(`einops_parse('${expression}'): invalid ${side} subscript '${subs}' given in the equation string, subscripts must be in ${expr}`);
+                throw new Error(`torus.einops_parse('${expression}'): invalid ${side} subscript '${subs}' given in the equation string, subscripts must be in ${expr}`);
             return subs;
         }
         const parts = expression.split('->');
@@ -1212,9 +1191,9 @@ einops:{
 
         let output = test_subscr(out_parts[0], 'output').split('').map((subs, i, outputs)=>{
             if(!inputs.some(i=>i.some(i=>i === subs)) && !vars[subs])
-                throw new Error(`einops_parse('${expression}'): output subscript '${subs}' in expression '${expression}' does not appear in the equation for any input or variable operand.`)
+                throw new Error(`torus.einops_parse('${expression}'): output subscript '${subs}' in expression '${expression}' does not appear in the equation for any input or variable operand.`)
             if(outputs.filter(o=>o === subs).length>1)
-                throw new Error(`einops_parse('${expression}'): output subscript '${subs}' in expression '${expression}' appears more than once in the output.`)
+                throw new Error(`torus.einops_parse('${expression}'): output subscript '${subs}' in expression '${expression}' appears more than once in the output.`)
             return subs;
         })
         return {inputs, output, vars}
@@ -1229,9 +1208,9 @@ einops:{
         if (!fn){
             const subscrs = torus._einops_parse(expression);
             if(subscrs.inputs.length > tensors.length)
-                throw new Error(`einsum('${expression}'): fewer tensors were provided than specified in the equation`);
+                throw new Error(`torus.einsum('${expression}'): fewer tensors were provided than specified in the equation`);
             else if(subscrs.inputs.length < tensors.length)
-                throw new Error(`einsum('${expression}'): number of einsum subscripts (${subscrs.inputs.length}), must be equal to the number of tensors (${tensors.length})`);
+                throw new Error(`torus.einsum('${expression}'): number of einsum subscripts (${subscrs.inputs.length}), must be equal to the number of tensors (${tensors.length})`);
             subscrs.axes = Object.create(null);
             let m = 1;
             inputs = shapes.map((shape, s)=>{
@@ -1250,7 +1229,7 @@ einops:{
                             subs.pop();
                         }
                         else
-                            throw new Error(`einsum('${expression}'): dots cannot be between operators`)
+                            throw new Error(`torus.einsum('${expression}'): dots cannot be between operators`)
                         let char = 97;
                         subs = sp.map((_, i)=>{
                             let s = subs[i];
@@ -1274,14 +1253,14 @@ einops:{
 
                 }
                 else if(shape.length != subs.length)
-                    throw new Error(`einsum('${expression}'): number of tensors in '${subs}' (${subs.length}), must be equal to the number of dimentions [${shape}] (${tensors.length})`);
+                    throw new Error(`torus.einsum('${expression}'): number of tensors in '${subs}' (${subs.length}), must be equal to the number of dimentions [${shape}] (${tensors.length})`);
 
                 let m = 1;
                 let input = shape.map((d, i)=>{
                     const n = subs[i];
                     const old = subscrs.axes[n];
                     if(old && old != d)
-                        throw new Error(`einsum('${expression}'): subscript '${n}' has size ${d} for tensor ${s} which does not broadcast with previously seen size ${old}`);
+                        throw new Error(`torus.einsum('${expression}'): subscript '${n}' has size ${d} for tensor ${s} which does not broadcast with previously seen size ${old}`);
                     subscrs.axes[n] = d;
                     return {n, d}
                 }).toReversed().map((ax)=>{
@@ -1295,7 +1274,7 @@ einops:{
 
             if(subscrs.output.includes('.')){ // замена точек в выходе
                 if(!subscrs.dots)
-                    throw new Error(`einsum('${expression}'): dots must be declared in the input operands`);
+                    throw new Error(`torus.einsum('${expression}'): dots must be declared in the input operands`);
                 let idx = subscrs.output.indexOf('.');
                 subscrs.output.splice(idx, 1, ...subscrs.dots);
             }
@@ -1417,7 +1396,7 @@ einops:{
             out = fn(tensors);
         }
         catch(e){
-            throw new Error(`SubcodeError einsum('${expression}'):\n`+e.message + '\n' + e.stack)
+            throw new Error(`SubcodeError torus.einsum('${expression}'):\n`+e.message + '\n' + e.stack)
         }
 
         out._back = function (){
@@ -1492,7 +1471,7 @@ generators:{
 
         }
         if(max <= min_or_max)
-            throw new Error('max <= min');
+            throw new Error('torus.rand_int(min_or_max = ${min_or_max}, max = ${max}, ...shape = [${shape}]): max <= min');
         if (shape.length === 0)
             shape = [Math.round(max - min_or_max)];
         const data = new Int32Array(shape.mul() || 1).map(i=>{
@@ -1530,9 +1509,9 @@ generators:{
         else if (step_or_shape.length === 1) {   //Если указан шаг прогрессии
             step = step_or_shape[0];
             if (step === 0)
-                throw new Error('step must be nonzero');
+                throw new Error('torus.arange(from_or_size=${from_or_size}, to=${to}, ...step_or_shape=${step_or_shape}): step must be nonzero');
             if (Math.sign(step) !== Math.sign(to - from_or_size) && to !== from_or_size)
-                throw new Error("starting and final bounds inconsistent with step sign");
+                throw new Error("torus.arange(from_or_size=${from_or_size}, to=${to}, ...step_or_shape=${step_or_shape}): starting and final bounds inconsistent with step sign");
             steps = Math.ceil(Math.abs( (to - from_or_size) / step ));
         }
         else {   //Если указана форма тензора
@@ -1673,7 +1652,7 @@ aggregates:{
         }
         else{
             // const dims = this.check_dims([dim]);
-            throw new Error('not ready!')
+            throw new Error('tensor.max(dim = ${dim}): not ready!')
         }
     }
     torus.prototype.min = function(dim,  $ = {}){
@@ -1684,7 +1663,7 @@ aggregates:{
         }
         else{
             // const dims = this.check_dims([dim]);
-            throw new Error('not ready!')
+            throw new Error('tensor.min(dim = ${dim}): not ready!')
         }
     }
     torus.prototype.sum = function (dims = [], $ = {}){
@@ -1749,7 +1728,7 @@ convertors:{
     torus.prototype.view = function (...shape) {
         shape = torus.flat(shape);
         if(shape.mul() !== this.size)
-            throw new Error(`shape [${shape}] is invalid for input of size ${this.size}`)
+            throw new Error(`tensor.view(...shape = [${shape}]): shape is invalid for input of size ${this.size}`)
         let out = this.out;
         if(!out){
             out = torus.from(this.data)._src(this)._label('view')._shape(shape);
@@ -1814,13 +1793,13 @@ convertors:{
             const shape = tensors.reduce((r, tensor, t)=>{
                 const shape = tensor.shape;
                 if(shape.length < r.length)
-                    throw new Error(`Incorrect dimentions of tensor №${t}: must [${r}], but `);
+                    throw new Error(`torus.concat(): incorrect dimentions of tensor №${t}: must [${r}], but `);
                 r = shape.map((s, i)=>{
                     const old = r[i] || 0;
                     if(i === dim)
                         return old + s;
                     if(old && old != s)
-                        throw new Error(`Incorrect dim ${i} on tensor №${t} have size ${s} but must be ${old}`);
+                        throw new Error(`torus.concat(): incorrect dim ${i} on tensor №${t} have size ${s} but must be ${old}`);
                     return s;
                 })
                 return r;
