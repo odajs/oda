@@ -1355,7 +1355,7 @@ einops:{
                 code = tensors.map((tensor, i)=>`let val_${i}, data_${i} = t[${i}].data;\n`).join('');
                 const func = $.forward || '('+tensors.map((_, i)=>'v'+i).join(',')+')=>'+tensors.map((_, i)=>'v'+i).join(' * ');
                 let size = output.map(a=>a.d).mul() || 1;
-                code += `let out = t.filter(i=>i.allowGrad)[0]?.out || torus.tensor(new Float32Array(${size}))._src(t)._shape(${output.map(a=>a.d)})._label('${'einsum: ' + expression}');\n`;
+                code += `let out = t.filter(i=>i.allowGrad)[0]?.out || torus.tensor(new Float32Array(${size}))._src(t)._shape(${output.length?output.map(a=>a.d):1})._label('${'einsum: ' + expression}');\n`;
                 code += `let out_data = out.data;\n`;
                 code += `let func = eval(${func});\n`
 
@@ -1415,12 +1415,18 @@ einops:{
                     code += tab + `  val_${i} = data_${i}[${input.map(ax=>'_'+ax.n+i).join(' + ')}];\n`;
                 })
                 code += tab + `  sum += func(${inputs.map((_,i)=>'val_'+i).join(', ')});\n`;
+
                 axes.forEach((out, o)=>{
                     let idx = axes.length - o;
                     if(idx === output.length)
                         code += ' '.repeat(2 * idx) + `  out_data[${output.map(ax=>ax.n+'_').join(' + ')}] = sum;\n`;
                     code +=' '.repeat(2 * idx)+`}\n`
                 });
+
+                if(!output.length){
+                    code += tab + `  out_data[0] = sum;\n`;
+                }
+
                 code+='t[0].out = out;\n'
                 code+='return out;\n'
             }
@@ -1687,7 +1693,8 @@ functions:{
     }
 }
 aggregates:{
-    torus.prototype.max = function(dim, keepdim = false){
+    torus.prototype.max = function(dim,  $ = {}){
+        $ = torus.$($);
         if(dim === undefined){
             const data = this.data.reduce((r, v)=>r>v?r:v,this.data[0]);
             return torus.tensor(data)._label('max');
@@ -1697,7 +1704,8 @@ aggregates:{
             throw new Error('not ready!')
         }
     }
-    torus.prototype.min = function(dim, keepdim = false){
+    torus.prototype.min = function(dim,  $ = {}){
+        $ = torus.$($);
         if(dim === undefined){
             const data = this.data.reduce((r, v)=>r<v?r:v,this.data[0]);
             return  torus.tensor(data)._label('min');

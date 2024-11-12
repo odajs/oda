@@ -386,6 +386,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <div>{{time}}</div>
                     <div>{{status}}</div>
                     <oda-icon info ~if="selectedCell === cell && lastScrollTop >= 0 && outputs && !cell?.hideOutput && cell.type === 'code'"  :icon-size icon="icons:expand-less" @tap="scrollToLast" style="margin: 8px; border-radius: 50%;"></oda-icon>
+                    <oda-icon info ~if="selectedCell === cell && lastScrollTop >= 0 && outputs && !cell?.hideOutput && cell.type === 'code'"  :icon-size icon="icons:expand-less" @tap="scrollToLast" style="margin: 8px; border-radius: 50%;"></oda-icon>
                 </div>
             </div>
             <div class="pe-preserve-print vertical no-flex" style="width: calc(100% - 34px); position: relative;">
