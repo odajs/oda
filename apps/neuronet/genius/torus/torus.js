@@ -11,6 +11,7 @@ export class tensor/* extends Array*/{
     isParam = false;
     backs = [];
     step = 0;
+    id = genId();
     constructor(data, $ = {dType: Float32Array}) {
         $ = torus.$($)
         if(data === undefined)
@@ -64,7 +65,6 @@ export class tensor/* extends Array*/{
             this.#data = data;
         }
         this.dType = this.data.constructor
-        this.id = genId();
     }
     _resize_data(data, ...shape){
         while (shape.some(i=>Array.isArray(i)))
@@ -76,19 +76,27 @@ export class tensor/* extends Array*/{
         this['#shape'] = shape
         return this;
     }
-    get out(){
+    get out_map(){
         if(!this.allowGrad) return;
-        const key = label_from_error();
-        return  this._outs?.[key]?.[this.step];
+        if(this.isParam)
+            return this['#out_map'] ??= {};
+        return this.src.find(i => i.allowGrad)?.out_map;
+    }
+    get out(){
+        return this.getOut();
+    }
+    getOut(src = this, add_key = ''){
+        if(!this.allowGrad) return;
+        const key = label_from_error()+ '.' + (src.map?.(t=>t.id).join('.') || src.id) + ' ' + add_key;
+        return  this.out_map[key];
     }
     set out(n){
+        this.setOut(n);
+    }
+    setOut(n, src = this, add_key = ''){
         if(!this.allowGrad) return;
-        const key = label_from_error();
-        let outs = this._outs ??= Object.create(null);
-        outs = outs[key] ??= Object.create(null);
-        outs[this.step] = n
-        this.step++;
-        n.step = this.step;
+        const key = label_from_error()+ '.' + (src.map?.(t=>t.id).join('.') || src.id) + ' ' + add_key;
+        this.out_map[key] = n;
     }
     getPath(level = 0){
         let tab = '|'.repeat(level) + '|- '
@@ -1137,8 +1145,9 @@ systems:{
     }
     torus.prototype._element_wise_function = function ($ = {forward: '', backward_0: ''}){
         $ = torus.$($);
-        const forward = eval($.forward) ;
-        let out = $.out || this.out;
+        const forward = eval($.forward);
+        let label = label_from_error();
+        let out = $.out || this.getOut(this, label);
         if(out){
             let i = this.size;
             while(i--){
@@ -1148,7 +1157,7 @@ systems:{
         else{
             const data = this.data.map(forward);
             out = torus.from(data)._src(this)._shape(this);
-            out._label(label_from_error()+' ('+out.shape+')');
+            out._label(label+' ('+out.shape+')');
             if (this.allowGrad && $.backward_0){
                 out._back = ()=>{
                     const backward = eval($.backward_0);
@@ -1158,7 +1167,7 @@ systems:{
                     }
                 }
             }
-            this.out = out;
+            this.setOut(out, this, label);
         }
         return out;
     }
@@ -1306,7 +1315,7 @@ einops:{
                 const func = $.forward || '('+tensors.map((_, i)=>'v'+i).join(',')+')=>'+tensors.map((_, i)=>'v'+i).join(' * ');
                 let size = output.map(a=>a.d).mul() || 1;
                 code += `let main = t.filter(i=>i.allowGrad)[0];\n`;
-                code += `let out = main?.out || torus.tensor(new Float32Array(${size}))._src(t)._shape(${output.length?output.map(a=>a.d):1})._label('${'einsum: ' + expression}');\n`;
+                code += `let out = main?.getOut(t, '${expression}') || torus.tensor(new Float32Array(${size}))._src(t)._shape(${output.length?output.map(a=>a.d):1})._label('${'einsum: ' + expression}');\n`;
                 code += `let out_data = out.data;\n`;
                 code += `let func = eval(${func});\n`
 
@@ -1378,8 +1387,8 @@ einops:{
                     code += `  out_data[0] = sum;\n`;
                 }
 
-                code+='if(main) main.out = out;\n'
-                code+='return out;\n'
+                code += `if(main) main.setOut(out, t, '${expression}');\n`
+                code += 'return out;\n'
             }
             // >code
             fn = new Function('t', code);
@@ -1729,7 +1738,7 @@ convertors:{
         shape = torus.flat(shape);
         if(shape.mul() !== this.size)
             throw new Error(`tensor.view(...shape = [${shape}]): shape is invalid for input of size ${this.size}`)
-        let out = this.out;
+        let out = this.getOut(this, shape.toString());
         if(!out){
             out = torus.from(this.data)._src(this)._label('view')._shape(shape);
             out._back = ()=>{
@@ -1738,7 +1747,7 @@ convertors:{
                     this.grad[i] += out.grad[i];
                 }
             }
-            this.out = out;
+            this.setOut(out, shape.toString());
         }
         out._data(this.data);
         return out;
@@ -1786,9 +1795,9 @@ convertors:{
         return out;
     }
     torus.cat = torus.concat  = (tensors = [], dim=-1, $ = {out: null}) => {
-        const first = tensors[0];
+        const first = tensors.first;
         dim = first.check_dim(dim);
-        let out = first.out;
+        let out = first.getOut(tensors, dim);
         if(!out){
             const shape = tensors.reduce((r, tensor, t)=>{
                 const shape = tensor.shape;
@@ -1821,7 +1830,7 @@ convertors:{
                     from += split_size;
                 })
             }
-            first.out = out;
+            first.setOut(out, tensors, dim);
         }
         const di = out.dims_info(dim)[0]
         const step = out.size / out.shape.slice(0, dim).mul() || 1;
