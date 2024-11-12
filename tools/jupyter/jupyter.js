@@ -386,7 +386,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <div>{{time}}</div>
                     <div>{{status}}</div>
                     <oda-icon info ~if="selectedCell === cell && lastScrollTop >= 0 && outputs && !cell?.hideOutput && cell.type === 'code'"  :icon-size icon="icons:expand-less" @tap="scrollToLast" style="margin: 8px; border-radius: 50%;"></oda-icon>
-                    <oda-icon info ~if="selectedCell === cell && lastScrollTop >= 0 && outputs && !cell?.hideOutput && cell.type === 'code'"  :icon-size icon="icons:expand-less" @tap="scrollToLast" style="margin: 8px; border-radius: 50%;"></oda-icon>
                 </div>
             </div>
             <div class="pe-preserve-print vertical no-flex" style="width: calc(100% - 34px); position: relative;">
@@ -402,6 +401,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     </div>
                 </div>
                 <div id="outputs" ~if="cell?.outputs?.length || cell?.controls?.length" class="info border" flex>
+                    <div id="before-outputs" style="width: 100%; height: 1px; margin-top: -48px"></div>
                     <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell ~show="selected"></oda-jupyter-outputs-toolbar>
                     <div class="vertical flex" style="overflow: hidden;">
                         <div flex vertical ~if="!cell?.hideOutput" style="overflow: hidden;">
@@ -527,15 +527,17 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
 
     },
     scrollToOutput(){
-        // if (!this.cell?.hideOutput && this.outputs) {
-        //     this.lastScrollTop = this.jupyter.scrollTop;
-        //     this.$('#outputs').scrollIntoView();
-        // }
+        this.lastScrollTop = -1;
+        if (!this.cell?.hideOutput && this.outputs && !this.control?.isVisibleSplitter) {
+            this.lastScrollTop = this.jupyter.scrollTop;
+            this.$('#before-outputs').scrollIntoView();
+        }
     },
     scrollToLast() {
         if (this.lastScrollTop >= 0) {
             this.jupyter.scrollTop = this.lastScrollTop;
             this.lastScrollTop = -1;
+            this.$('#control')?.editor?.focus();
         }
     },
     get outputs() {
@@ -838,7 +840,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             }
         </style>
         <div  class="horizontal" :border="!hideCode"  style="min-height: 64px;">
-            <oda-code-editor :wrap ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged" enable-breakpoints></oda-code-editor>
+            <div class="vertical flex">
+                <oda-code-editor :scroll-calculate="isVisibleEditor && !isVisibleSplitter" :wrap ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" max-lines="Infinity" @change="editorValueChanged" enable-breakpoints></oda-code-editor>
+                <div id="splitter" style="width: 100%; height:1px;"></div>
+            </div>
             <div dimmed ~if="hideCode" class="horizontal left content flex" style="cursor: pointer; padding: 8px 4px;" @dblclick="hideCode=false">
                 <oda-icon icon="bootstrap:eye-slash" style="align-self: baseline;"></oda-icon>
                 <span flex  vertical style="margin: 0px 16px; font-size: large; cursor: pointer; text-overflow: ellipsis;" ~html="cell.name +' <u disabled style=\\\'font-size: x-small; right: 0px;\\\'>(Double click to show...)</u>'" ></span>
@@ -928,6 +933,21 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     async exportValue() {
         const exp = await this.$('oda-code-editor')?.exportValue();
         return exp;
+    },
+    isVisibleEditor: false,
+    isVisibleSplitter: false,
+    attached() {
+        const editor = this.$("oda-code-editor");
+        new IntersectionObserver(async e => {
+            this.isVisibleEditor = e[0].isIntersecting;
+            editor.gutterWidth = undefined;
+            await this.$render();
+        }, { rootMargin: "1px", threshold: .01 }).observe(editor);
+        new IntersectionObserver(async e => {
+            this.isVisibleSplitter = e[0].isIntersecting;
+            editor.gutterWidth = undefined;
+            await this.$render();
+        }, { rootMargin: "1px", threshold: .01 }).observe(this.$("#splitter"));
     }
 })
 

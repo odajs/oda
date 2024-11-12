@@ -79,13 +79,14 @@ export class tensor/* extends Array*/{
     get out(){
         if(!this.allowGrad)
             return;
-        this.step++;
         return this._outs?.[this.step];
     }
     set out(n){
         if(!this.allowGrad)
             return;
-        (this._outs ??= Object.create(null))[this.step] = n;
+        let outs = this._outs ??= Object.create(null);
+        outs[this.step] = n
+        this.step++;
         n.step = this.step;
     }
     getPath(level = 0){
@@ -1783,7 +1784,7 @@ convertors:{
             throw new Error(`shape [${shape}] is invalid for input of size ${this.size}`)
         let out = this.out;
         if(!out){
-            out = torus.from(this.data)._src(this)._label('view');
+            out = torus.from(this.data)._src(this)._label('view')._shape(shape);
             out._back = ()=>{
                 let i = this.size;
                 while(i--){
@@ -1792,7 +1793,7 @@ convertors:{
             }
             this.out = out;
         }
-        out._data(this.data)._shape(shape);
+        out._data(this.data);
         return out;
     }
     torus.prototype.multinomial = function(num_samples = 1, replacement = false, $ = {}){
