@@ -79,6 +79,12 @@ export class tensor/* extends Array*/{
     get out(){
         if(!this.allowGrad)
             return;
+        try {
+            throw new Error()
+        }
+        catch (e){
+            console.log(e)
+        }
         return this._outs?.[this.step];
     }
     set out(n){
@@ -1359,7 +1365,8 @@ einops:{
                 code = tensors.map((tensor, i)=>`let val_${i}, data_${i} = t[${i}].data;\n`).join('');
                 const func = $.forward || '('+tensors.map((_, i)=>'v'+i).join(',')+')=>'+tensors.map((_, i)=>'v'+i).join(' * ');
                 let size = output.map(a=>a.d).mul() || 1;
-                code += `let out = t.filter(i=>i.allowGrad)[0]?.out || torus.tensor(new Float32Array(${size}))._src(t)._shape(${output.length?output.map(a=>a.d):1})._label('${'einsum: ' + expression}');\n`;
+                code += `let main = t.filter(i=>i.allowGrad)[0];\n`;
+                code += `let out = main?.out || torus.tensor(new Float32Array(${size}))._src(t)._shape(${output.length?output.map(a=>a.d):1})._label('${'einsum: ' + expression}');\n`;
                 code += `let out_data = out.data;\n`;
                 code += `let func = eval(${func});\n`
 
@@ -1431,7 +1438,7 @@ einops:{
                     code += `  out_data[0] = sum;\n`;
                 }
 
-                code+='t[0].out = out;\n'
+                code+='if(main) main.out = out;\n'
                 code+='return out;\n'
             }
             // >code
