@@ -11,6 +11,11 @@ ODA({is: 'oda-code-editor',
             .ace_editor .ace_marker-layer .ace_selection {
                 background: {{marker?marker+'!important':''}};
             }
+            .ace_gutter-cell.ace_breakpoint{ 
+                border-radius: 20px 0px 0px 20px; 
+                box-shadow: 0px 0px 1px 1px red inset; 
+                background-color: lightyellow;
+            }
         </style>
         <div @keydown.stop  style="min-height: 100%; font-size: large;"></div>
     `,
@@ -96,7 +101,7 @@ ODA({is: 'oda-code-editor',
         },
         showCursor: true,
         isChanged: false,
-
+        enableBreakpoints: true
     },
     src: {
         $def: '',
@@ -162,6 +167,27 @@ ODA({is: 'oda-code-editor',
             }
         });
         this.editor.commands.removeCommand('find');
+        // https://ourcodeworld.com/articles/read/1052/how-to-add-toggle-breakpoints-on-the-ace-editor-gutter#disqus_thread
+        this.editor.on("guttermousedown", (e) => {
+            if (!this.enableBreakpoints)
+                return;
+            const target = e.domEvent.target;
+            if (target.className.indexOf("ace_gutter-cell") == -1)
+                return;
+            if (!e.editor.isFocused())
+                return;
+            // console.log(e.clientX > 25 + target.getBoundingClientRect().left);
+            // console.log(e.clientX, 25 + target.getBoundingClientRect().left);
+            if (e.clientX > 25 + target.getBoundingClientRect().left)
+                return;
+            const row = e.getDocumentPosition().row;
+            const breakpoints = e.editor.session.getBreakpoints(row, 0);
+            if (typeof breakpoints[row] === typeof undefined)
+                e.editor.session.setBreakpoint(row);
+            else
+                e.editor.session.clearBreakpoint(row);
+            e.stop();
+        })
         this.fire('loaded', this.editor);
     },
     async exportValue() {
