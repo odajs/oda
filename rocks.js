@@ -799,6 +799,11 @@ in the <${host.localName}>`;
                 return this[this.length - 1];
             }
         });
+        Object.defineProperty(Array.prototype, 'first', {
+            enumerable: false, configurable: true, get() {
+                return this[0];
+            }
+        });
         Object.defineProperty(Array.prototype, 'add', {
             enumerable: false, configurable: true, value: function (...item) {
                 let index = -1;
