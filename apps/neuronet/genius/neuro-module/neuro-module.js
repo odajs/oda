@@ -203,34 +203,7 @@ class Linear extends NeuroModule{
     forward(input){
         input = tensor.from(input);
         input._label(`INPUT (${input.shape})`);
-
-        this._axis_ext ??= (()=>{
-            let shape_input = [...input.shape];
-            let shape_in = [...this.shape_in];
-            let shape_out = [...this.shape_out];
-            this._axis_ext = '';
-            this._axis_in = '';
-            this._axis_out = ''
-            let char_code = 65;
-            let d1;
-            while(d1 = shape_input.pop()){
-                let char = String.fromCharCode(char_code++);
-                let d2 = shape_in.pop();
-                if(d2 !== undefined){
-                    if(d1 !== d2)
-                        throw new Error('Error input shape!');
-                    this._axis_in += char
-                }
-                else
-                    this._axis_ext += char
-            }
-            while(d1 = shape_out.pop()){
-                this._axis_out += String.fromCharCode(char_code++);
-            }
-            return this._axis_ext;
-        })();
-        let expression = `${this._axis_ext + this._axis_in}, ${this._axis_in + this._axis_out} -> ${this._axis_ext + this._axis_out}`;
-        let output = tensor.einsum(expression, [input, this.weight]);
+        let output = tensor.einsum('...a, ab->...b', [input, this.weight]);
         if (this.bias)
             output = output.plus(this.B)._label('plus BIAS');
         output._label(`Linear (${output.shape}): bias=`+this.bias);
