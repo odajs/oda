@@ -101,7 +101,7 @@ ODA({is: 'oda-code-editor',
         },
         showCursor: true,
         isChanged: false,
-        enableBreakpoints: true
+        enableBreakpoints: false
     },
     src: {
         $def: '',

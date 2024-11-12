@@ -669,7 +669,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
             <oda-button ~if="cell?.type === 'code'" :icon-size icon="bootstrap:eye-slash" title="Hide/Show code"  allow-toggle ::toggled="hideCode"></oda-button>
             <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap.stop="move(-1)"></oda-button>
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="move(1)"></oda-button>
-            <oda-button ~show="cell?.type === 'code'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
+            <oda-button ~show="cell?.type === 'code' || cell?.type === 'sheet'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
             <oda-button :icon-size icon="icons:delete" @tap.stop="deleteCell"></oda-button>
             <oda-button :icon-size icon="icons:content-copy" @tap.stop="copyCell" ~style="{fill: top._jupyterCellData ? 'red' : ''}"></oda-button>
             <oda-button ~if="cell.type!=='code'" allow-toggle ::toggled="editMode"  :icon-size :icon="editMode?'icons:close':'editor:mode-edit'"></oda-button>
@@ -781,10 +781,21 @@ ODA({ is: 'oda-jupyter-sheet-editor', imports: '@oda/spreadsheet-editor', extend
     template:`
         <style>
             :host {
-                min-height: 400px;
+                height: {{height}};
             }
         </style>
     `,
+    $public: {
+        height: {
+            $def: '400px',
+            get(){
+                return this.cell?.readMetadata('height', '400px');
+            },
+            set(n){
+                this.cell?.writeMetadata('height', n);
+            }
+        }
+    },
     set editMode(v) {
         this.showToolbar = this.mode = undefined;
     },
@@ -826,7 +837,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             }
         </style>
         <div  class="horizontal" :border="!hideCode"  style="min-height: 64px;">
-            <oda-code-editor :wrap ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged"></oda-code-editor>
+            <oda-code-editor :wrap ~if="!hideCode" show-gutter :read-only @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" show-gutter="false" max-lines="Infinity" @change="editorValueChanged" enable-breakpoints></oda-code-editor>
             <div dimmed ~if="hideCode" class="horizontal left content flex" style="cursor: pointer; padding: 8px 4px;" @dblclick="hideCode=false">
                 <oda-icon icon="bootstrap:eye-slash" style="align-self: baseline;"></oda-icon>
                 <span flex  vertical style="margin: 0px 16px; font-size: large; cursor: pointer; text-overflow: ellipsis;" ~html="cell.name +' <u disabled style=\\\'font-size: x-small; right: 0px;\\\'>(Double click to show...)</u>'" ></span>

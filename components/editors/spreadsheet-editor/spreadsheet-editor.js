@@ -31,7 +31,6 @@ ODA({ is: 'oda-spreadsheet-editor',
         }
     ]`,
     $public: {
-        $public: true,
         mode: {
             $def: 'edit',
             $list: ['edit', 'read'],
