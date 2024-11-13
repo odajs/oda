@@ -373,15 +373,7 @@ export class tensor/* extends Array*/{
         }
         topo.forEach((node, index) => {
             if (!node.src) return;
-            let back_fn;
-            if (node._back){
-                node._back();
-                back_fn = node.label+'_back';
-            }
-            else{
-                back_fn = 'no-back('+node.label+')';
-            }
-            node.src.forEach(i=>i.backs.push(back_fn))
+            node._back?.();
         })
         topo.forEach((node) => {
             if (!node.src){
@@ -1212,7 +1204,7 @@ einops:{
                 let size = output.map(a=>a.d).mul() || 1;
                 code += `let using = t.filter(i=>i.allowGrad);\n`;
                 code += `let main = using[0];\n`;
-                code += `let out = main?.getOut(t, '${expression}') || torus.tensor(new Float32Array(${size}))._src(t)._shape(${output.length?output.map(a=>a.d):1})._label('${'einsum: ' + expression}');\n`;
+                code += `let out = main?.getOut(using, '${expression}') || torus.tensor(new Float32Array(${size}))._src(t)._shape(${output.length?output.map(a=>a.d):1})._label('${'einsum: ' + expression}');\n`;
                 code += `let out_data = out.data;\n`;
                 code += `let func = eval(${func});\n`
 
