@@ -397,7 +397,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         </style>
 
         <div class="horizontal">
-            <div class="pe-no-print left-panel vertical" :error-invert="status === 'error'">
+            <div class="pe-no-print left-panel vertical" :error-invert="status === 'error'" style="z-index: 2;">
                 <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: 2px; min-height: 50px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run()" :success-invert="cell?.autoRun" style="margin: 4px; border-radius: 50%;"></oda-button>
                     <div>{{time}}</div>
@@ -905,7 +905,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             }
         </style>
         <div  class="horizontal" :border="!hideCode"  style="min-height: 64px;">
-            <oda-code-editor :scroll-calculate="getScrollCalculate()" :wrap ~if="!hideCode" show-gutter :read-only @change-cursor="on_change_cursor" @change-breakpoints="on_change_breakpoints" @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" max-lines="Infinity" @change="editorValueChanged" enable-breakpoints></oda-code-editor>
+            <oda-code-editor :scroll-calculate="getScrollCalculate()" :wrap ~if="!hideCode" show-gutter :read-only @change-cursor="on_change_cursor" @change-breakpoints="on_change_breakpoints" @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" max-lines="Infinity" @change="editorValueChanged" enable-breakpoints sticky-search></oda-code-editor>
             <div dimmed ~if="hideCode" class="horizontal left content flex" style="cursor: pointer; padding: 8px 4px;" @dblclick="hideCode=false">
                 <oda-icon icon="bootstrap:eye-slash" style="align-self: baseline;"></oda-icon>
                 <span flex  vertical style="margin: 0px 16px; font-size: large; cursor: pointer; text-overflow: ellipsis;" ~html="cell.name +' <u disabled style=\\\'font-size: x-small; right: 0px;\\\'>(Double click to show...)</u>'" ></span>

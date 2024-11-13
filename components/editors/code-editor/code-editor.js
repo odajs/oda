@@ -19,14 +19,21 @@ ODA({is: 'oda-code-editor',
             .ace_scrollbar-h {
                 transform: translateY({{scrollCalculate}}px); 
             }
-            .ace_search{
-                position: fixed;
+            .ace_search.right {
+                position: sticky;
+                top: 20px;
+                width: fit-content;
+                margin-left: auto;
+            }
+            .ace_scroller, .ace_editor {
+                overflow: {{stickySearch?'unset':''}};
             }
         </style>
         <div @keydown.stop  style="min-height: 100%; font-size: large;"></div>
     `,
     $public: {
         scrollCalculate: 0,
+        stickySearch: false,
         marker: '',
         value: {
             $def: '',

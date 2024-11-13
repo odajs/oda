@@ -1515,7 +1515,6 @@ generators:{
         step_or_shape = torus.flat(step_or_shape);
         let step, steps;
         let label = 'arange';
-        let data = [];
         if (to === undefined) {   //Если у метода один параметр — размер прогрессии
             to = from_or_size;
             from_or_size = 0;
@@ -1529,9 +1528,9 @@ generators:{
         else if (step_or_shape.length === 1) {   //Если указан шаг прогрессии
             step = step_or_shape[0];
             if (step === 0)
-                throw new Error('torus.arange(from_or_size=${from_or_size}, to=${to}, ...step_or_shape=${step_or_shape}): step must be nonzero');
+                throw new Error('step must be nonzero');
             if (Math.sign(step) !== Math.sign(to - from_or_size) && to !== from_or_size)
-                throw new Error("torus.arange(from_or_size=${from_or_size}, to=${to}, ...step_or_shape=${step_or_shape}): starting and final bounds inconsistent with step sign");
+                throw new Error("starting and final bounds inconsistent with step sign");
             steps = Math.ceil(Math.abs( (to - from_or_size) / step ));
         }
         else {   //Если указана форма тензора
@@ -1539,14 +1538,14 @@ generators:{
             step = (to - from_or_size) / steps;
 
         }
+        let dType = Float32Array;
+        const data = new dType(steps);
         if ( steps ) {
-            for ( let i = 0; i < steps ; i++) {
-                data[i] = from_or_size + step * i;
+            for ( let i = 0, v = from_or_size; i < steps ; i++, v += step){
+                data[i] = v;
             }
             label += ` ${from_or_size} … ${to}`;
         }
-        data = new Float32Array(data);
-        // data = new Float32Array(Array(1).fill(data).flat());
         if (step_or_shape.length <= 1)   //Если форма тензора не задана
             return torus.tensor(data)._label(label);
         return torus.tensor(data)._shape(step_or_shape)._label(label);
