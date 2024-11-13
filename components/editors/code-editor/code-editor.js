@@ -159,6 +159,9 @@ ODA({is: 'oda-code-editor',
             this.isChanged = this.value !== this.src;
             this.fire('change', this.value);
         });
+        this.editor.session.selection.on('changeCursor',  (e) => {
+            this.fire('change-cursor', this.editor.session.selection.cursor);
+        });
         this.editor.session.on('changeMode', (e, session) => {
             if ("ace/mode/javascript" === session.getMode().$id) {
                 if (!!session.$worker) {

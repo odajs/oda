@@ -572,7 +572,7 @@ function* pseudoRandom(seed) {
 }
 // let generator = pseudoRandom(1);
 
-tensor.prototype.item = function (...shape){
+torus.prototype.item = function (...shape){
     shape = torus.flat(...shape);
     //todo
 }
@@ -642,7 +642,7 @@ torus.prototype.set = function(value, ...indeces){
     this.data.set(value.data || torus.flat(value), idx);
 }
 
-tensor.prototype.slice = function (...slicers){
+torus.prototype.slice = function (...slicers){
     if (slicers.length>this.dim)
         throw new Error(`tensor.splice(${slicers}): indexError: too many indices for tensor of dimension ${this.dim}`);
     let key = '(' + this.shape.toString() + '):  [' + slicers.map(i=>i).join(',')+']';
@@ -758,7 +758,7 @@ tensor.prototype.slice = function (...slicers){
     return out;
 }
 
-tensor.prototype.log_ = function (){
+torus.prototype.log_ = function (){
     let i = this.data.length
     while(i--){
         this.data[i] = Math.log(this.data[i]);
@@ -776,16 +776,16 @@ torus.prototype.masked_fill = function(other, value = 0, mask = 0){
     return this._element_wise_operator(other, h);
 }
 
-tensor.prototype.plus = function (other){
+torus.prototype.plus = function (other){
     return this._element_wise_operator(other, {forward: '(x, y) => x + y', backward_0: '(g) => g',  backward_1:'(_, g) => g'});
 }
-tensor.prototype.minus = function (other){
+torus.prototype.minus = function (other){
     return this._element_wise_operator( other, {forward: '(x, y) => x - y', backward_0: '(g) => g', backward_1: '(_, g) => -g'});
 }
-tensor.prototype.multiply = function (other){
+torus.prototype.multiply = function (other){
     return this._element_wise_operator(other, {forward:  '(x, y) => x * y', backward_0: '(g, y) => g * y', backward_1: '(x, g) => x * g'});
 }
-tensor.prototype.divide = function (other){
+torus.prototype.divide = function (other){
     return this._element_wise_operator(other, {forward: '(x, y) => x / y', backward_0: '(g, y) => g / y', backward_1: '(x, g) => -x / (g ** 2)'});
 }
 torus.prototype.pow = function (other){
@@ -830,7 +830,7 @@ torus.prototype.softmax = function (dim = -1, $ = {}){
     }
     return out;
 }
-tensor.prototype.maxIndex = function () {
+torus.prototype.maxIndex = function () {
     let step = this.shape.last;
     let data = new Uint8Array(this.size / step);
     let idx = -1;
@@ -843,7 +843,7 @@ tensor.prototype.maxIndex = function () {
     return out;
 }
 
-tensor.prototype.hardmax = function (){
+torus.prototype.hardmax = function (){
     const step = this.shape[this.shape.length-1];
     const size = this.size/step;
     const data = new Float32Array(this.size);
@@ -877,7 +877,7 @@ tensor.prototype.hardmax = function (){
     // }
     return out;
 }
-tensor.prototype.MSE = function (target){
+torus.prototype.MSE = function (target){
     target = tensor.from(target);
     let y = target.data;
     if (target.size>this.size)
@@ -914,12 +914,12 @@ tensor.prototype.MSE = function (target){
     return out;
 }
 
-tensor.prototype.repeat = function (count = 1) {
+torus.prototype.repeat = function (count = 1) {
     return tensor.from(Array(count).fill().map(i=>this));
 }
 
 
-tensor.prototype.crossEntropy = function (target) {
+torus.prototype.crossEntropy = function (target) {
     if(this.label !== 'softmax'){
         return this.softmax().crossEntropy(target);
     }
@@ -2155,7 +2155,7 @@ globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
         return (this[data_idx]>>BigInt(idx))&this.bit_mask;
     }
 }
-const fn_cache = {einsum:{}};
+const fn_cache = {einsum:{}, slice: {}};
 
 globalThis.range ??= (count = 0)=>{
     return Array(count).fill().map((_, i)=>i);
