@@ -157,6 +157,33 @@ ODA({is: 'oda-code-editor',
                 session.setValue(fn(session.getValue(), { "end_with_newline": true, }));
             }
         });
+
+
+        this.editor.commands.addCommand({
+            name: 'oda-removeline',
+            bindKey: { win: "Ctrl-Y", mac: "Ctrl-y" },
+            exec: () => {
+                this.editor.execCommand('removeline')
+            }
+        });
+
+        this.editor.commands.addCommand({
+            name: 'oda-togglecomment',
+            bindKey: { win: "Ctrl-/", mac: "Ctrl-/" },
+            exec: () => {
+                this.editor.execCommand('togglecomment');
+                this.editor.execCommand('golinedown');
+            }
+        });
+
+        this.editor.commands.addCommand({
+            name: 'oda-replace',
+            bindKey: { win: "Ctrl-R", mac: "Ctrl-r" },
+            exec: () => {
+                this.editor.execCommand('replace');
+            }
+        });
+
         this.editor.session.on('change', (e) => {
             this['#value'] = undefined;
             this.isChanged = this.value !== this.src;

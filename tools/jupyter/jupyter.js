@@ -942,11 +942,6 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         if (e.ctrlKey && e.keyCode === 10){
             this.run();
         }
-        if (e.ctrlKey && e.code === 'KeyR'){
-            e.preventDefault()
-            e.stopPropagation()
-           // this.run();
-        }
     },
     value: '',
     editorValueChanged(e) {
