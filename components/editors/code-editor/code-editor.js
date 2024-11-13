@@ -255,7 +255,7 @@ ODA({is: 'oda-code-editor',
     setBreakpoints(rows) {
         const breakpoints = rows.split(' ');
         breakpoints.map((i) => {
-            this.editor.session.setBreakpoint(i - 1);
+            this.editor?.session?.setBreakpoint(i - 1);
         })
     },
     async exportValue() {

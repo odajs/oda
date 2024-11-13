@@ -1210,7 +1210,8 @@ einops:{
                 code = tensors.map((tensor, i)=>`let val_${i}, data_${i} = t[${i}].data;\n`).join('');
                 const func = $.forward || '('+tensors.map((_, i)=>'v'+i).join(',')+')=>'+tensors.map((_, i)=>'v'+i).join(' * ');
                 let size = output.map(a=>a.d).mul() || 1;
-                code += `let main = t.filter(i=>i.allowGrad)[0];\n`;
+                code += `let using = t.filter(i=>i.allowGrad);\n`;
+                code += `let main = using[0];\n`;
                 code += `let out = main?.getOut(t, '${expression}') || torus.tensor(new Float32Array(${size}))._src(t)._shape(${output.length?output.map(a=>a.d):1})._label('${'einsum: ' + expression}');\n`;
                 code += `let out_data = out.data;\n`;
                 code += `let func = eval(${func});\n`
@@ -1283,7 +1284,7 @@ einops:{
                     code += `  out_data[0] = sum;\n`;
                 }
 
-                code += `if(main) main.setOut(out, t, '${expression}');\n`
+                code += `if(main) main.setOut(out, using, '${expression}');\n`
                 code += 'return out;\n'
             }
             // >code
