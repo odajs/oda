@@ -527,6 +527,8 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         })
                         await this.$render();
                     }
+                    if (autorun !== true)
+                        this.checkBreakpoints();
                     await this.cell.run(this.jupyter);
                     this.focus();
                 } catch (error) {
@@ -542,6 +544,22 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             }, 50)
         })
 
+    },
+    checkBreakpoints() {
+        this.cell.srcWithBreakpoints = '';
+        const session = this.control.session,
+            breakpoints = session?.getBreakpoints();
+        if (this.cell.hideCode || !breakpoints?.length)
+            return;
+        let src = '';
+        session.doc.getAllLines().map((i, idx) => {
+            if (breakpoints[idx]) {
+                src += 'debugger; ' + (i?.trim().startsWith('>') ? ' // ' : '') + i + '\n';
+            } else {
+                src += i + '\n';
+            }
+        })
+        this.cell.srcWithBreakpoints = src;
     },
     scrollToOutput(){
         if (this.control_bottom < (this.jupyter_height + this.jupyter_scroll_top) /*&& this.control_offsetBottom > this.jupyter_scroll_top*/)
@@ -910,7 +928,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         return this.editor?.editor;
     },
     get session(){
-        return this.ace.session;
+        return this.ace?.session;
     },
     focus() {
         this.editor?.focus();
@@ -956,6 +974,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             },
             set(n){
                 this.cell.hideCode = n;
+                this.editor = undefined;
             }
         },
         maxRow:{
@@ -1321,7 +1340,8 @@ class JupyterCell extends ROCKS({
         }
     }
     get code(){
-        let code = this.src.replace(/import\s+([\"|\'])(\S+)([\"|\'])/gm, 'await import($1$2$3)');
+        let src = this.srcWithBreakpoints || this.src;
+        let code = src.replace(/import\s+([\"|\'])(\S+)([\"|\'])/gm, 'await import($1$2$3)');
         code = code.replace(/import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, '__v__ =  $1 = await import($2$3$4); for(let i in __v__) run_context.i = __v__[i]');
         code = code.replace(/(import\s*\()/gm, ' ODA.$1');
         code = code.replace(/^\s*print\s*\((.*)\)/gm, ' log($1)');
