@@ -1630,7 +1630,7 @@ aggregates:{
 }
 convertors:{
 
-    function slice_code_generator(slicers, back = false){
+    function slice_codegenerator(slicers, back = false){
         let space = '   ';
         let shape = [];
         let code = ['let idx=-1;'];
@@ -1681,7 +1681,7 @@ convertors:{
         })
         let size = shape.mul() || 1;
         if(!back){
-            code.unshift(`let out = new tensor.dType(${size})`);
+            code.unshift(`out ??= new tensor.dType(${size})`);
             if(!shape.length)
                 shape = [1];
             code.push(`return torus.tensor(out)._shape(${shape})`);
@@ -1694,22 +1694,24 @@ convertors:{
         let key = '(' + this.shape.toString() + '):  [' + slicers.map(i=>i).join(',')+']';
         let fn = fn_cache.slice?.[key];
         if (!fn){
-            let code = slice_code_generator.call(this, slicers)
-            fn_cache.slice[key] = fn = new Function('tensor', code);
+            let code = slice_codegenerator.call(this, slicers)
+            fn_cache.slice[key] = fn = new Function('tensor', 'out', code);
         }
-        let out =  fn(this);
+        let out = this.getOut(this, key);
+        out = fn(this, out);
         out._label('slice '+key)._src(this);
         if (this.allowGrad){
             out._back = ()=>{
                 let key = '('+ this.shape.toString()+'): ' + slicers.map(i=>i).join(',') + ': back'
                 let fn = fn_cache.slice?.[key];
                 if (!fn){
-                    let code = slice_code_generator.call(this, slicers, true)
+                    let code = slice_codegenerator.call(this, slicers, true)
                     fn_cache.slice[key] = fn = new Function('tensor', 'out', code);
                 }
                 fn(this, out);
             }
         }
+        this.setOut(out, this, key);
         return out;
     }
 
@@ -1726,7 +1728,7 @@ convertors:{
                     this.grad[i] += out.grad[i];
                 }
             }
-            this.setOut(out, shape.toString());
+            this.setOut(out, this, shape.toString());
         }
         out._data(this.data);
         return out;
