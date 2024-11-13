@@ -642,121 +642,6 @@ torus.prototype.set = function(value, ...indeces){
     this.data.set(value.data || torus.flat(value), idx);
 }
 
-torus.prototype.slice = function (...slicers){
-    if (slicers.length>this.dim)
-        throw new Error(`tensor.slice(${slicers}): indexError: too many indices for tensor of dimension ${this.dim}`);
-    let key = '(' + this.shape.toString() + '):  [' + slicers.map(i=>i).join(',')+']';
-    let fn = fn_cache.slice?.[key];
-    if (!fn){
-        let shape = [];
-        let func = ['let idx=-1;'];
-        func.push('let data = tensor.data;');
-        let size, start, end, step, add_shape;
-        for (let d = 0; d < this.dim; d++){
-            let slicer = (slicers[d]?.toString() || '').toString().trim();
-            size = this.shape[d];
-            if (slicer.length && !Number.isNaN(+slicer)){
-                add_shape = false;
-                start = +slicer;
-                if (start<0)
-                    start += size;
-                end = start + 1;
-                step = 1;
-            }
-            else{
-                add_shape = true;
-                slicer = slicer.split(':');
-                start = +(slicer[0]?.trim() || 0);
-                if (start < 0)
-                    start += size;
-                end = +(slicer[1]?.trim() || size);
-                if (end < 0)
-                    end += size;
-                step = +(slicer[2]?.trim() || 1);
-                if (step < 0)
-                    step += size;
-            }
-            if (end > size)
-                end = size
-            size = Math.ceil((end - start)/step);
-            if (size < 0)
-                size = 0;
-            let t = '\t'.repeat(d);
-            func.push(t+`for(let v${d} = ${start}; v${d}<${end}; v${d} += ${step}){`)
-            func.push(t+`\tlet vi${d} = (${(d - 1 < 0) ? 0 :'vi' +  (d-1)} + v${d}) * ${this.shape[d+1] || 1};`);
-            if (add_shape)
-                shape.push(size);
-        }
-        func.push('\t'.repeat(this.dim)+`out[++idx] = data[vi${this.dim-1}];`);
-        this.shape.forEach((_, d)=>{
-            func.push('\t'.repeat(this.dim - d - 1)+`}`);
-        })
-        size = shape.mul();
-        func.unshift(`let out = new tensor.dType(${size})`);
-        func.push(`return tensor.constructor.from(out)._shape(${shape})`);
-        func = func.join('\n');
-        fn_cache.slice ??= Object.create(null);
-        fn_cache.slice[key] = fn = new Function('tensor', func);
-    }
-    let out =  fn(this);
-    out._label('slice '+key)._src(this);
-    if (this.allowGrad){
-        out._back = ()=>{
-            let key = '('+ this.shape.toString()+'): ' + slicers.map(i=>i).join(',') + ': back'
-            let fn = fn_cache.slice?.[key];
-            if (!fn){
-                let shape = [];
-                let func = ['let idx=-1;'];
-                func.push('let grad = tensor.grad;');
-                let size, start, end, step, add_shape;
-                for (let d = 0; d < this.dim; d++){
-                    let slicer = (slicers[d]?.toString() || '').toString().trim();
-                    size = this.shape[d];
-                    if (slicer.length && !Number.isNaN(+slicer)){
-                        add_shape = false;
-                        start = +slicer;
-                        end = start + 1;
-                        step = 1;
-                    }
-                    else{
-                        add_shape = true;
-                        slicer = slicer.split(':');
-                        start = +(slicer[0]?.trim() || 0);
-                        if (start < 0)
-                            start += size;
-                        end = +(slicer[1]?.trim() || size);
-                        if (end < 0)
-                            end += size;
-                        step = +(slicer[2]?.trim() || 1);
-                        if (step < 0)
-                            step += size;
-                    }
-                    if (end > size)
-                        end = size
-                    size = Math.ceil((end - start)/step);
-                    if (size < 0)
-                        size = 0;
-                    let t = '\t'.repeat(d);
-                    func.push(t+`for(let v${d} = ${start}; v${d}<${end}; v${d} += ${step}){`)
-                    func.push(t+`\tlet vi${d} = (${(d - 1 < 0) ? 0 :'vi' +  (d-1)} + v${d}) * ${this.shape[d+1] || 1};`);
-                    if (add_shape)
-                        shape.push(size);
-                }
-                func.push('\t'.repeat(this.dim)+`grad[vi${this.dim-1}] += out[++idx];`);
-                this.shape.forEach((_, d)=>{
-                    func.push('\t'.repeat(this.dim - d - 1)+`}`);
-                })
-                size = shape.mul();
-                func.unshift(`out = out.grad;`);
-                func = func.join('\n');
-                fn_cache.slice ??= Object.create(null);
-                fn_cache.slice[key] = fn = new Function('tensor', 'out', func);
-            }
-            fn(this, out);
-        }
-    }
-    return out;
-}
 
 torus.prototype.log_ = function (){
     let i = this.data.length
@@ -1744,6 +1629,90 @@ aggregates:{
     }
 }
 convertors:{
+
+    function slice_code_generator(slicers, back = false){
+        let space = '   ';
+        let shape = [];
+        let code = ['let idx=-1;'];
+        code.push('let data = tensor.data;');
+        let dim, start, end, step, add_shape;
+        this.strides.forEach((stride, d)=>{
+            let slicer = (slicers[d]?.toString() || '').toString().trim();
+            dim = this.shape[d];
+            if (slicer.length && !Number.isNaN(+slicer)){
+                add_shape = false;
+                start = +slicer;
+                if (start<0)
+                    start += dim;
+                end = start + 1;
+                step = 1;
+            }
+            else{
+                add_shape = true;
+                slicer = slicer.split(':');
+                start = +(slicer[0]?.trim() || 0);
+                if (start < 0)
+                    start += dim;
+                end = +(slicer[1]?.trim() || dim);
+                if (end < 0)
+                    end += dim;
+                step = +(slicer[2]?.trim() || 1);
+                if (step < 0)
+                    step += dim;
+            }
+            if (end > dim)
+                end = dim
+            dim = Math.ceil((end - start)/step);
+            if (dim < 0)
+                dim = 0;
+            let t = space.repeat(d);
+            code.push(t + `for(let d${d} = ${start}, _i${d} = ${start * stride}; d${d}<${end}; d${d} += ${step}, _i${d} += ${step * stride}){`)
+            if (add_shape)
+                shape.push(dim);
+        })
+        if(!back){
+            code.push(space.repeat(this.dim)+`out[++idx] = data[${this.shape.map((_,i)=>'_i'+i).join(' + ')}];`);
+        }
+        else{
+            code.push(space.repeat(this.dim)+`grad[${this.shape.map((_,i)=>'_i'+i).join(' + ')}] = out.grad[++idx];`);
+        }
+        this.shape.forEach((_, d)=>{
+            code.push(space.repeat(this.dim - d - 1)+`}`);
+        })
+        let size = shape.mul() || 1;
+        if(!back){
+            code.unshift(`let out = new tensor.dType(${size})`);
+            if(!shape.length)
+                shape = [1];
+            code.push(`return torus.tensor(out)._shape(${shape})`);
+        }
+        return code.join('\n');
+    }
+    torus.prototype.slice = function (...slicers){
+        if (slicers.length>this.dim)
+            throw new Error(`tensor.slice(${slicers}): indexError: too many indices for tensor of dimension ${this.dim}`);
+        let key = '(' + this.shape.toString() + '):  [' + slicers.map(i=>i).join(',')+']';
+        let fn = fn_cache.slice?.[key];
+        if (!fn){
+            let code = slice_code_generator.call(this, slicers)
+            fn_cache.slice[key] = fn = new Function('tensor', code);
+        }
+        let out =  fn(this);
+        out._label('slice '+key)._src(this);
+        if (this.allowGrad){
+            out._back = ()=>{
+                let key = '('+ this.shape.toString()+'): ' + slicers.map(i=>i).join(',') + ': back'
+                let fn = fn_cache.slice?.[key];
+                if (!fn){
+                    let code = slice_code_generator.call(this, slicers, true)
+                    fn_cache.slice[key] = fn = new Function('tensor', 'out', code);
+                }
+                fn(this, out);
+            }
+        }
+        return out;
+    }
+
     torus.prototype.view = function (...shape) {
         shape = torus.flat(shape);
         if(shape.mul() !== this.size)
