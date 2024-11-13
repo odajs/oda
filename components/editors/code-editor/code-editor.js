@@ -19,6 +19,9 @@ ODA({is: 'oda-code-editor',
             .ace_scrollbar-h {
                 transform: translateY({{scrollCalculate}}px); 
             }
+            .ace_search{
+                position: fixed;
+            }
         </style>
         <div @keydown.stop  style="min-height: 100%; font-size: large;"></div>
     `,

@@ -84,6 +84,11 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         <oda-jupyter-cell @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
         <div style="min-height: 50%"></div>
     `,
+    command_replace(){
+        const el = this.$$('oda-jupyter-cell').find(el => el.cell.id === this.selectedCell.id);
+        el?.control?.editor?.editor?.execCommand?.('replace')
+
+    },
     output_data: [],
     cellSelect(item){
         this['selectedCell'] = item;
@@ -937,6 +942,11 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         if (e.ctrlKey && e.keyCode === 10){
             this.run();
         }
+        if (e.ctrlKey && e.code === 'KeyR'){
+            e.preventDefault()
+            e.stopPropagation()
+           // this.run();
+        }
     },
     value: '',
     editorValueChanged(e) {
@@ -1434,3 +1444,11 @@ window._findErrorPos = async (e) => {
     aceEditor.focus();
     aceEditor.session.selection.setRange(range);
 }
+window.addEventListener('keydown', e => {
+    if (e.code === 'KeyR' && e.ctrlKey) {
+        e.stopPropagation();
+        e.preventDefault();
+        e.target?.command_replace?.();
+    }
+
+}, true)
