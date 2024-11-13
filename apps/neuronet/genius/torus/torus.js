@@ -805,22 +805,31 @@ torus.prototype.crossEntropy = function (target) {
     const size = this.size/step;
     let ys = target.data;
 
-    this.grad = this.data.map(x => - x);
     if (target.size === this.size)
         ys = ys.reduce((r,v,i)=>{
             if(v) r.push(i%step);
             return r;
         }, [])
 
+    let data = this.data;
+    let grad = this.grad;
+    let i = this.size;
+    while(i--){
+        grad[i] = -data[i];
+    }
     let loss = Array.prototype.map.call(ys, (y, i) => {
         let idx = i * step + y;
-        this.grad[idx] += 1;
-        return Math.log(this.data[idx])
+        grad[idx] += 1;
+        return Math.log(data[idx])
     })
     loss = -loss.avg();
-    const out = tensor.from([loss])._src(this)._label('crossEntropy');
-    this._back = ()=>{
-        this.src.forEach(src=>src.grad = this.grad)
+    let out = this.out;
+    if(!out){
+        out = tensor.from([loss])._src(this)._label('crossEntropy');
+        this._back = ()=>{
+            this.src.forEach(src => src.grad.set(grad));
+        }
+        this.out = out;
     }
     return out;
 }
