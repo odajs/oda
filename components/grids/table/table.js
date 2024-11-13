@@ -2296,7 +2296,7 @@ cells: {
 
             _toggleChecked(e) {
                 if (this.allowCheck === 'none') return;
-                if (this.selectByCheck) return this.onSelectRow(e);
+                if (this.selectByCheck) return;// this.onSelectRow(e); //👀
 
                 const checkChildren = (item, clear = false) => {
                     (item.items || []).forEach(i => {
