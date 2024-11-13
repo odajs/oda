@@ -260,7 +260,7 @@ export class tensor/* extends Array*/{
         return 0;
     }
     destroy(recurce = true){
-        this.clearGrad();
+        // this.clearGrad();
         if(this.isParam) return;
         if (!this.data.length) return;
         this.data.buffer.transfer(0);
@@ -269,11 +269,11 @@ export class tensor/* extends Array*/{
         if (!this.src?.length) return
         this.src.forEach(s=>s.destroy(recurce))
     }
-    clearGrad(){
-        if (!this.#grad?.length) return;
-        this.#grad?.buffer.transfer(0);
-        this.#grad = undefined;
-    }
+    // clearGrad(){
+    //     if (!this.#grad?.length) return;
+    //     this.#grad?.buffer.transfer(0);
+    //     this.#grad = undefined;
+    // }
     updateParams(){
         if (!this.isParam) return;
         if (this.dType === BinaryArray){
@@ -351,7 +351,7 @@ export class tensor/* extends Array*/{
             //
             // }
         }
-        this.clearGrad();
+        // this.clearGrad();
     }
     get prev(){
         return this.#prev ??= new Float32Array(this.size);
@@ -376,13 +376,9 @@ export class tensor/* extends Array*/{
             node._back?.();
         })
         topo.forEach((node) => {
-            if (!node.src){
-                node.updateParams();
-            }
+            node.updateParams();
+            node.grad.fill(0);
         })
-        // setTimeout(()=>{
-        //     topo[0]?.destroy();
-        // },0)
     }
 
 
@@ -831,6 +827,7 @@ torus.prototype.crossEntropy = function (target) {
         }
         this.out = out;
     }
+    out.data[0] = loss;
     return out;
 }
 
