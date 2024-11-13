@@ -644,7 +644,7 @@ torus.prototype.set = function(value, ...indeces){
 
 torus.prototype.slice = function (...slicers){
     if (slicers.length>this.dim)
-        throw new Error(`tensor.splice(${slicers}): indexError: too many indices for tensor of dimension ${this.dim}`);
+        throw new Error(`tensor.slice(${slicers}): indexError: too many indices for tensor of dimension ${this.dim}`);
     let key = '(' + this.shape.toString() + '):  [' + slicers.map(i=>i).join(',')+']';
     let fn = fn_cache.slice?.[key];
     if (!fn){
@@ -1081,6 +1081,17 @@ systems:{
                     return {stride, dim, char, idx};
                 }).toReversed();
             })()
+        }
+    })
+    Object.defineProperty(torus.prototype, 'strides', {
+        configurable: true,
+        get(){
+            let m = 1;
+            return this.shape.toReversed().map((dim)=>{
+                let s = m;
+                m *= dim;
+                return s;
+            }).toReversed();
         }
     })
     torus.prototype.check_dim = function (dim){
