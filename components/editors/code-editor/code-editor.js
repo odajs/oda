@@ -218,14 +218,35 @@ ODA({is: 'oda-code-editor',
             if (e.clientX > 25 + target.getBoundingClientRect().left)
                 return;
             const row = e.getDocumentPosition().row;
-            const breakpoints = e.editor.session.getBreakpoints(row, 0);
+            let breakpoints = e.editor.session.getBreakpoints(row, 0);
             if (typeof breakpoints[row] === typeof undefined)
                 e.editor.session.setBreakpoint(row);
             else
                 e.editor.session.clearBreakpoint(row);
             e.stop();
+            breakpoints = e.editor.session.getBreakpoints();
+            let res = '';
+            breakpoints.map((i, idx) => {
+                if (i)
+                    res += idx + 1 + ' ';
+            })
+            this.fire('change-breakpoints', res);
         })
         this.fire('loaded', this.editor);
+    },
+    getBreakpoints() {
+        const breakpoints = this.editor.session.getBreakpoints();
+        let res = '';
+        breakpoints.map((i, idx) => {
+            res += idx + ' ';
+        })
+        return res;
+    },
+    setBreakpoints(rows) {
+        const breakpoints = rows.split(' ');
+        breakpoints.map((i) => {
+            this.editor.session.setBreakpoint(i - 1);
+        })
     },
     async exportValue() {
         await import(componentPath + 'ext-static_highlight.js');

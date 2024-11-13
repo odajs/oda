@@ -754,7 +754,8 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         else{
 
         }
-        this.cell.hideCode = this.cell.hideOutput = n;
+        // this.cell.hideCode = this.cell.hideOutput = n;
+        this.control.hideCode = this.cell.hideOutput = n;
     },
     move(direction){
         let top = this.jupyter.scrollTop;
@@ -897,7 +898,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             }
         </style>
         <div  class="horizontal" :border="!hideCode"  style="min-height: 64px;">
-            <oda-code-editor :scroll-calculate="getScrollCalculate()" :wrap ~if="!hideCode" show-gutter :read-only @change-cursor="on_change_cursor" @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" max-lines="Infinity" @change="editorValueChanged" enable-breakpoints></oda-code-editor>
+            <oda-code-editor :scroll-calculate="getScrollCalculate()" :wrap ~if="!hideCode" show-gutter :read-only @change-cursor="on_change_cursor" @change-breakpoints="on_change_breakpoints" @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" max-lines="Infinity" @change="editorValueChanged" enable-breakpoints></oda-code-editor>
             <div dimmed ~if="hideCode" class="horizontal left content flex" style="cursor: pointer; padding: 8px 4px;" @dblclick="hideCode=false">
                 <oda-icon icon="bootstrap:eye-slash" style="align-self: baseline;"></oda-icon>
                 <span flex  vertical style="margin: 0px 16px; font-size: large; cursor: pointer; text-overflow: ellipsis;" ~html="cell.name +' <u disabled style=\\\'font-size: x-small; right: 0px;\\\'>(Double click to show...)</u>'" ></span>
@@ -911,6 +912,9 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     `,
     on_change_cursor(e){
         // console.log(e)
+    },
+    on_change_breakpoints(e){
+        this.cell.breakpoints = e.detail.value;
     },
     get syntaxError(){
         let error =  this.editor?.editor?.session?.getAnnotations().filter((e)=>{
@@ -980,6 +984,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             set(n){
                 this.cell.hideCode = n;
                 this.editor = undefined;
+                this.setBreakpoints();
             }
         },
         maxRow:{
@@ -1003,6 +1008,15 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         if (value>0)
             value = 0;
         return value
+    },
+    attached() {
+        this.setBreakpoints();
+    }, 
+    setBreakpoints() {
+        this.async(() => {
+            if (this.cell.breakpoints)
+                this.editor?.setBreakpoints(this.cell.breakpoints);
+        }, 700)
     }
 })
 
@@ -1162,6 +1176,13 @@ class JupyterCell extends ROCKS({
         this.notebook.change();
         if (this.type !== 'code') return;
         this.clearTimes();
+    },
+    get breakpoints() {
+        return this.data.breakpoints;
+    },
+    set breakpoints(n) {
+        this.data.breakpoints = n || '';
+        this.notebook.change();
     },
     clearTimes(all = false){
         let clear = all;
