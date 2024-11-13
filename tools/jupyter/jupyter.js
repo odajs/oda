@@ -527,13 +527,15 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         if (code.hideCode && !autorun) continue;
                         if (code.time) continue;
                         await new Promise(async (resolve)=>{
+                            if (autorun !== true)
+                                this.checkBreakpoints(code);
                             await code.run(this.jupyter);
                             this.async(resolve)
                         })
                         await this.$render();
                     }
                     if (autorun !== true)
-                        this.checkBreakpoints();
+                        this.checkBreakpoints(this.cell);
                     await this.cell.run(this.jupyter);
                     this.focus();
                 } catch (error) {
@@ -550,21 +552,26 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         })
 
     },
-    checkBreakpoints() {
-        this.cell.srcWithBreakpoints = '';
-        const session = this.control.session,
-            breakpoints = session?.getBreakpoints();
-        if (this.cell.hideCode || !breakpoints?.length)
+    checkBreakpoints(cell) {
+        cell.srcWithBreakpoints = '';
+        if (cell.hideCode || !cell.breakpoints)
+            return;
+        const control = this.jupyter.$$('oda-jupyter-cell').find(i => i.cell.id == cell.id)?.control,
+            session = control?.session;
+        if (!session)
             return;
         let src = '';
+        const breakpoints = cell.breakpoints.split(' '),
+            obj = {};
+        breakpoints.map(i => obj[i - 1] = true);
         session.doc.getAllLines().map((i, idx) => {
-            if (breakpoints[idx]) {
+            if (obj[idx]) {
                 src += 'debugger; ' + (i?.trim().startsWith('>') ? ' // ' : '') + i + '\n';
             } else {
                 src += i + '\n';
             }
         })
-        this.cell.srcWithBreakpoints = src;
+        cell.srcWithBreakpoints = src;
     },
     scrollToOutput(){
         if (this.control_bottom < (this.jupyter_height + this.jupyter_scroll_top) /*&& this.control_offsetBottom > this.jupyter_scroll_top*/)
