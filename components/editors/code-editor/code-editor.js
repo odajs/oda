@@ -17,7 +17,10 @@ ODA({is: 'oda-code-editor',
                 background-color: lightyellow;
             }
             .ace_scrollbar-h {
-                transform: translateY({{scrollCalculate}}px); 
+                position: sticky;
+                bottom: 0px;
+                top: {{scrollCalculate}}px;
+                width: unset !important;
             }
             .ace_search.right {
                 position: sticky;

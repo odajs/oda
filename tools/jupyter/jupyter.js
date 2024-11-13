@@ -360,7 +360,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 @apply --vertical;
                 @apply --no-flex;
                 position: relative;
-                padding-right: 4px;
+                padding-right: 2px;
                 margin-top: 4px;
                 min-height: 24px;
             }
@@ -1011,10 +1011,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         return exp;
     },
     getScrollCalculate(){
-        let value = this.jupyter_scroll_top + this.jupyter_height -  this.control_bottom;
-        if (value>0)
-            value = 0;
-        return value
+        // let value = this.jupyter_scroll_top + this.jupyter_height -  this.control_bottom;
+        // if (value>0)
+        //     value = 0;
+        return this.jupyter_height - 22 - 14;
     },
     attached() {
         this.setBreakpoints();
