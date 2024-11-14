@@ -1531,7 +1531,25 @@ aggregates:{
     }
 }
 convertors:{
-
+    torus.prototype.dropout = function(probability = 0.5, inplace = false){
+        let out = inplace?this:this.out;
+        if(!out){
+            this.out = out = torus.tensor(this.data.slice(0))._label(`dropout(probability = ${probability}, inplace = ${inplace})`)._src(this)._shape(this);
+            out._back = () =>{
+                this.data.update_grad(out.data);
+            }
+        }
+        let from = this.data;
+        let to = out.data;
+        let i = this.size;
+        while(i--){
+            if(torus.generator()<probability)
+                to[i] = 0;
+            else
+                to[i] = from[i]
+        }
+        return out;
+    }
     function slice_codegenerator(slicers, back = false){
         let space = '   ';
         let shape = [];

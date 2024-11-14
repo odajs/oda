@@ -225,6 +225,14 @@ class Embedding extends Linear{
         return super.forward(input);
     }
 }
+class Dropout extends nn.Module{
+    constructor(probability = 0.5, inplace = false){
+        super(...arguments)
+    }
+    forward(x){
+        return x.dropout(this.probability, this.inplace);
+    }
+}
 class BinLayer extends NeuroModule{
     constructor(dim_in,  dim_out, bias = false) {
         super(arguments);
@@ -483,6 +491,9 @@ function Conv1dBackward(input, grad_output, weight, bias = null, stride = 1, pad
 export const nn = {
     NeuroModule,
     Module: NeuroModule,
+    Dropout(...args){
+        return new Dropout(...args);
+    },
     Linear(...args){
         return new Linear(...args);
     },
