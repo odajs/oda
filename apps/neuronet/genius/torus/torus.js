@@ -1381,7 +1381,30 @@ generators:{
             step = (to - from_or_size) / steps;
 
         }
-        let dType = Float32Array;
+        let dType = (function(from, to, step){
+            to -= step;   //Конечное значение диапазона в последовательность не входит
+            let from_is_integer = Number.isInteger(from);
+            if (from > to) {   //Начало диапазона делаем меньше конца, чтобы дальше было проще сравнивать с границами числовых типов
+                [from, to] = [to, from];
+            }
+            if ( from_is_integer && Number.isInteger(step) ) {   //Если ожидаются целочисленные значения
+                if( from>=-128 && to<=127)
+                    return Int8Array;
+                if( from>=0 && to<=255)
+                    return Uint8Array;
+                if( from>=-32768 && to<=32767)
+                    return Int16Array;
+                if( from>=0 && to<=65535)
+                    return Uint16Array;
+                if( from>=-2147483648 && to<=2147483647)
+                    return Int32Array;
+                if( from>=0 && to<=4294967295)
+                    return Uint32Array;
+            }
+            if( from>=-3.4028234663852886e+38 && to<=3.4028234663852886e+38)
+                return Float32Array;
+            return Float64Array;
+        })(from_or_size, to, step);
         const data = new dType(steps);
         if ( steps ) {
             for ( let i = 0, v = from_or_size; i < steps ; i++, v += step){
@@ -1393,7 +1416,6 @@ generators:{
             return torus.tensor(data)._label(label);
         return torus.tensor(data)._shape(step_or_shape)._label(label);
     }
-
 
 
     torus.eye = (...shape)=>{
