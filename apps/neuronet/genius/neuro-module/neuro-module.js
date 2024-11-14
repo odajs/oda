@@ -105,6 +105,9 @@ nn.Module = nn.NeuroModule = class NeuroModule extends Function{
     back(g){
         return g;
     }
+    get parameters(){
+
+    }
     get __children__(){
         let ch = Object.getOwnPropertyDescriptors(this);
         const result = []
