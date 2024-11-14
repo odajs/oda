@@ -1069,9 +1069,9 @@ einops:{
     }
     torus.einsum = (expression, tensors = [], $ = {})=>{
         tensors = torus.flat(tensors);
+        const shapes = tensors.map(i=>i.shape);
         let key = expression + ': [' + shapes.join(']-[') + '] ' + JSON.stringify($);
         $ = torus.$({forward: '', backward_0: '', turbo: false}, $);
-        const shapes = tensors.map(i=>i.shape);
         let inputs, out_shape, output;
         let fn = fn_cache?.einsum?.[key];
         if (!fn){

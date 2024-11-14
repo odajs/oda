@@ -224,10 +224,6 @@ ODA({is: 'oda-code-editor',
                 return;
             if (!e.editor.isFocused())
                 return;
-            // console.log(e.clientX > 25 + target.getBoundingClientRect().left);
-            // console.log(e.clientX, 25 + target.getBoundingClientRect().left);
-            if (e.clientX > 25 + target.getBoundingClientRect().left)
-                return;
             const row = e.getDocumentPosition().row;
             let breakpoints = e.editor.session.getBreakpoints(row, 0);
             if (typeof breakpoints[row] === typeof undefined)
