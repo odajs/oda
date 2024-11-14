@@ -282,6 +282,9 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
                 user-select: text;
                 overflow-x: auto;
             }
+            label {
+                width: fit-content;
+            }
             label:hover{
                 text-decoration: underline;
                 cursor: pointer !important;
@@ -415,7 +418,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         <div style="margin: 8px;">Hidden {{cell.childrenCount}} cells</div>
                     </div>
                 </div>
-                <div id="outputs" ~if="cell?.outputs?.length || cell?.controls?.length" class="info border" flex>
+                <div id="outputs" ~if="cell?.outputs?.length || cell?.controls?.length" class="info border" flex style="z-index: 1;">
                     <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell ~show="selected"></oda-jupyter-outputs-toolbar>
                     <div class="vertical flex" style="overflow: hidden;">
                         <div flex vertical ~if="!cell?.hideOutput" style="overflow: hidden;">
@@ -570,13 +573,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     while(i[0] === '>') {
                         count += 1;
                         i = i.slice(1);
-                    }
-                    let cm = i.split('//')[0].trim();
-                    let eq = cm.split('=');
-                    if (eq.length > 1) {
-                        i = cm + '; log(' + eq[0].trim() + ');';
-                    } else {
-                        i = '; log(' + cm + ');';
                     }
                 }
                 src += 'debugger; ' + i + '\n';
@@ -912,7 +908,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             oda-code-editor {
                 opacity: 1;
                 filter: unset;
-                z-index: 1; 
+
             }
         </style>
         <div  class="horizontal" :border="!hideCode"  style="min-height: 64px;">
@@ -922,7 +918,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 <span flex  vertical style="margin: 0px 16px; font-size: large; cursor: pointer; text-overflow: ellipsis;" ~html="cell.name +' <u disabled style=\\\'font-size: x-small; right: 0px;\\\'>(Double click to show...)</u>'" ></span>
             </div>
         </div>
-        <div ~if="syntaxError"  border vertical style="padding: 4px;">
+        <div ~if="syntaxError"  border vertical style="padding: 4px; z-index: 1;">
             <div border style="padding: 4px; font-family: monospace; white-space: pre" border error style="white-space: pre-wrap" ~html="syntaxError"></div>
         </div>
         

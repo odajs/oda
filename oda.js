@@ -1621,7 +1621,7 @@ in the <${host.localName}>`);
         pointerDownListen();
         document.oncontextmenu = (e) => {
             e.target.dispatchEvent(new MouseEvent('menu', e));
-            return false;
+            // return false;
         };
         // let sleep = 0;
         if (document.body.firstElementChild) {
