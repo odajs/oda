@@ -194,6 +194,25 @@ ODA({is: 'oda-code-editor',
             }
         });
 
+        this.editor.commands.addCommands([
+            {
+                name: 'undo',
+                bindKey: 'Ctrl-Z',
+                exec: (editor) => {
+                    editor.session.getUndoManager().undo();
+                    this.fire('undo-redo', editor);
+                }
+            },
+            {
+                name: 'redo',
+                bindKey: 'Ctrl-Shift-Z|Ctrl-Y',
+                exec: (editor) => {
+                    editor.session.getUndoManager().redo();
+                    this.fire('undo-redo', editor);
+                }
+            }
+        ]);
+
         this.editor.session.on('change', (e) => {
             this.checkBreakpoints(e);
             this['#value'] = undefined;

@@ -728,7 +728,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
             :host{
                 position: sticky;
                 top: 20px;
-                z-index: 9;
+                z-index: 11;
             }
             .top {
                 @apply --horizontal;
@@ -918,7 +918,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             }
         </style>
         <div  class="horizontal" :border="!hideCode"  style="min-height: 64px;">
-            <oda-code-editor :scroll-calculate="getScrollCalculate()" :wrap ~if="!hideCode" show-gutter :read-only @change-cursor="on_change_cursor" @change-breakpoints="on_change_breakpoints" @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" max-lines="Infinity" @change="editorValueChanged" enable-breakpoints sticky-search></oda-code-editor>
+            <oda-code-editor :scroll-calculate="getScrollCalculate()" :wrap ~if="!hideCode" show-gutter :read-only @change-cursor="on_change_cursor" @change-breakpoints="on_change_breakpoints" @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" max-lines="Infinity" @change="editorValueChanged" @undo-redo="on_undo_redo" enable-breakpoints sticky-search></oda-code-editor>
             <div dimmed ~if="hideCode" class="horizontal left content flex" style="cursor: pointer; padding: 8px 4px;" @dblclick="hideCode=false">
                 <oda-icon icon="bootstrap:eye-slash" style="align-self: baseline;"></oda-icon>
                 <span flex  vertical style="margin: 0px 16px; font-size: large; cursor: pointer; text-overflow: ellipsis;" ~html="cell.name +' <u disabled style=\\\'font-size: x-small; right: 0px;\\\'>(Double click to show...)</u>'" ></span>
@@ -935,6 +935,14 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     },
     on_change_breakpoints(e){
         this.cell.breakpoints = e.detail.value;
+    },
+    on_undo_redo(e) {
+        const selectedRow = this.ace.getSelectionRange().start.row,
+            lineCount = this.session.getScreenLength(),
+            editorHeight = this.$('oda-code-editor').offsetHeight,
+            lineHeight = editorHeight / lineCount,
+            firstRow = Math.max(0, Math.round((this.jupyter.scrollTop - this.domHost.offsetTop) / lineHeight));
+        console.log(firstRow, selectedRow)
     },
     get syntaxError(){
         let error =  this.editor?.editor?.session?.getAnnotations().filter((e)=>{

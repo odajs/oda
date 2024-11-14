@@ -641,9 +641,27 @@ torus.prototype.softmax = function (dim = -1, $ = {}){
     $ = torus.$($);
     const step = this.shape[this.shape.length-1];
     const size = this.size/step;
-    const exps = this.data.map(Math.exp);
     let out = this.out;
-    const data = out?.data || new Float32Array(this.size);
+    if(!out){
+        out =  torus.tensor(new Float32Array(this.size))._src(this)._label('softmax')._shape(this);
+        out._back = ()=>{
+            let data = out.data;
+            for (let x = 0; x<size; x++) {
+                for (let y = 0; y < step; y++) {
+                    let idx = y + step * x;
+                    let d = data[idx];
+                    let sum = data.reduce((r, sj, j) => {
+                        let v = (y === j) ? d * (1 - d) : -d * sj;
+                        return r + v
+                    })
+                    this.data[idx] += sum * out.data[idx];
+                }
+            }
+        }
+        this.out = out;
+    }
+    const data = out.data;
+    const exps = this.data.map(Math.exp);
     for (let x = 0; x<size; x++){
         let sum = 0;
         for (let y = 0; y<step; y++){
@@ -653,23 +671,6 @@ torus.prototype.softmax = function (dim = -1, $ = {}){
             let idx = y + step * x;
             data[idx] = exps[idx]/sum;
         }
-    }
-    if(!out){
-        out =  tensor.from(data)._src(this)._label('softmax')._shape(this);
-        out._back = ()=>{
-            for (let x = 0; x<size; x++) {
-                for (let y = 0; y < step; y++) {
-                    let idx = y + step * x;
-                    let d = data[idx];
-                    let sum = data.reduce((r, sj, j) => {
-                        let v = (y === j) ? d * (1 - d) : -d * sj;
-                        return r + v
-                    })
-                    this.grad[idx] += sum * out.grad[idx];
-                }
-            }
-        }
-        this.out = out;
     }
     return out;
 }
