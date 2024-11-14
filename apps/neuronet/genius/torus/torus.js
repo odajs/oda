@@ -1656,20 +1656,24 @@ convertors:{
             fn_cache.slice[key] = fn = new Function('tensor', 'out', code);
         }
         let out = this.getOut(this, key);
-        out = fn(this, out);
-        out._label('slice '+key)._src(this);
-        if (this.allowGrad){
-            out._back = ()=>{
-                let key = '('+ this.shape.toString()+'): ' + slicers.map(i=>i).join(',') + ': back'
-                let fn = fn_cache.slice?.[key];
-                if (!fn){
-                    let code = slice_codegenerator.call(this, slicers, true)
-                    fn_cache.slice[key] = fn = new Function('tensor', 'out', code);
+        if (!out){
+            out = fn(this);
+            out._label('slice '+key)._src(this);
+            if (this.allowGrad){
+                out._back = ()=>{
+                    let key = '('+ this.shape.toString()+'): ' + slicers.map(i=>i).join(',') + ': back'
+                    let fn = fn_cache.slice?.[key];
+                    if (!fn){
+                        let code = slice_codegenerator.call(this, slicers, true)
+                        fn_cache.slice[key] = fn = new Function('tensor', 'out', code);
+                    }
+                    fn(this, out);
                 }
-                fn(this, out);
             }
+            this.setOut(out, this, key);
         }
-        this.setOut(out, this, key);
+        else
+            out = fn(this, out);
         return out;
     }
 

@@ -245,6 +245,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         await getLoader();
     },
     async printValue() {
+        const scrollTop = this.scrollTop;
         const cellElements = this.jupyter.$$('oda-jupyter-cell');
         this.style.scrollBehavior = 'auto';
         this.scrollTop = this.scrollHeight;
@@ -257,7 +258,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         PrintElements.print([this]);
         // this.ownerDocument.defaultView.print();
         this.ownerDocument.body.classList.remove("pe-preserve-ancestor");
-        this.scrollToCell(this.selectedCell);
+        this.scrollTop = scrollTop;
+        // this.scrollToCell(this.selectedCell);
     },
     setFullscreen() {
         const element = this;
