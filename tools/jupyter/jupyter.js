@@ -564,7 +564,22 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         breakpoints.map(i => obj[i - 1] = true);
         session.doc.getAllLines().map((i, idx) => {
             if (obj[idx]) {
-                src += 'debugger; ' + (i?.trim().startsWith('>') ? ' // ' : '') + i + '\n';
+                if (i?.trim().startsWith('>')) {
+                    i= i.trim();
+                    let count = 0;
+                    while(i[0] === '>') {
+                        count += 1;
+                        i = i.slice(1);
+                    }
+                    let cm = i.split('//')[0].trim();
+                    let eq = cm.split('=');
+                    if (eq.length > 1) {
+                        i = cm + '; log(' + eq[0].trim() + ');';
+                    } else {
+                        i = '; log(' + cm + ');';
+                    }
+                }
+                src += 'debugger; ' + i + '\n';
             } else {
                 src += i + '\n';
             }

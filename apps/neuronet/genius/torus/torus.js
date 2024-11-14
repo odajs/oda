@@ -321,7 +321,7 @@ export class tensor/* extends Array*/{
     }
     update_grad(grad){
         if (!this.isParam){
-            this.data.set(grad); // todo обновление с приращением!!!
+            this.data.set(grad, 0); // todo обновление с приращением!!!
         }
         else{
             let lr = torus.LEARNING_RATE
@@ -350,12 +350,8 @@ export class tensor/* extends Array*/{
         topo.forEach((node, index) => {
             if (!node.src) return;
             node._back?.();
-            if (node.isParam) return;
-            node.data.fill(0);
         })
     }
-
-
 
     static get generator(){
         return torus.__random_generator__;
@@ -1682,13 +1678,6 @@ convertors:{
         if(shape.mul() !== this.size)
             throw new Error(`tensor.view(...shape = [${shape}]): shape is invalid for input of size ${this.size}`)
         let out = this.getOut(this, shape.toString());
-        if(!out){
-            out = torus.from(this.data)._src(this)._label('view')._shape(shape);
-            out._back = ()=>{
-                this.update_grad(out.data)
-            }
-            this.setOut(out, this, shape.toString());
-        }
         out._data(this.data);
         return out;
     }
