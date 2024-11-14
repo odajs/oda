@@ -403,7 +403,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         <div class="horizontal">
             <div class="pe-no-print left-panel vertical" :error-invert="status === 'error'" style="z-index: 2;">
                 <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: 2px; min-height: 50px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
-                    <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run()" :success-invert="cell?.autoRun" style="margin: 4px; border-radius: 50%;"></oda-button>
+                    <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run()" :error="cell?.autoRun" :success="!cell?.time" style="margin: 4px; border-radius: 50%;"></oda-button>
                     <div>{{time}}</div>
                     <div>{{status}}</div>
                     <oda-icon info ~if="lastScrollTop >= 0 && (cell?.outputs?.length || cell?.controls?.length) && !cell?.hideOutput && cell.type === 'code'"  :icon-size icon="icons:expand-less" @tap="scrollToLast" style="margin: 8px; border-radius: 50%;"></oda-icon>
@@ -549,8 +549,10 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     if(autorun !== true)
                         this.notebook?.change();
                     resolve();
-                    if(autorun !== true)
-                        this.scrollToOutput()
+                    if(autorun !== true){
+                        this.scrollToOutput();
+                        this.cell?.next?.clearTimes();
+                    }
                 }
             }, 50)
         })
