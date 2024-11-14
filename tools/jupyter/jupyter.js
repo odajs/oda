@@ -179,7 +179,6 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                         this.selectedCell = this.cells[this.savedIndex];
                         await this.scrollToCell();
                     }
-                    this.lastScrollTop = -1;
                     this.style.visibility = 'visible';
                     this.style.opacity = 1;
                     this.style.scrollBehavior = 'smooth';
@@ -230,8 +229,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 if (n && this.readOnly)
                     this.editMode = false;
             }
-        },
-        lastScrollTop: -1
+        }
     },
     async scrollToCell(cell = this.selectedCell, delta = 0) {
         if (!cell) return;
@@ -402,7 +400,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run()" :success-invert="cell?.autoRun" style="margin: 4px; border-radius: 50%;"></oda-button>
                     <div>{{time}}</div>
                     <div>{{status}}</div>
-                    <oda-icon info ~if="selectedCell === cell && lastScrollTop >= 0 && outputs && !cell?.hideOutput && cell.type === 'code'"  :icon-size icon="icons:expand-less" @tap="scrollToLast" style="margin: 8px; border-radius: 50%;"></oda-icon>
+                    <oda-icon info ~if="lastScrollTop >= 0 && (cell?.outputs?.length || cell?.controls?.length) && !cell?.hideOutput && cell.type === 'code'"  :icon-size icon="icons:expand-less" @tap="scrollToLast" style="margin: 8px; border-radius: 50%;"></oda-icon>
                 </div>
             </div>
             <div class="pe-preserve-print vertical no-flex" style="width: calc(100% - 34px); position: relative;">
@@ -574,20 +572,18 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         cell.srcWithBreakpoints = src;
     },
     scrollToOutput(){
+        this.lastScrollTop = -1;
         if (this.control_bottom < (this.jupyter_height + this.jupyter_scroll_top) /*&& this.control_offsetBottom > this.jupyter_scroll_top*/)
             return;
         if (this.cell?.hideOutput)
             return;
+        this.lastScrollTop = this.jupyter.scrollTop;
         if (this.output_height>this.jupyter_height)
             this.jupyter.scrollTop = this.control_bottom - 64;
         else
-            this.$('#outputs').scrollIntoView({block: "end"});
-
-        // if (!this.cell?.hideOutput && this.outputs) {
-        //     this.lastScrollTop = this.jupyter.scrollTop;
-        //     this.$('#outputs').scrollIntoView();
-        // }
+            this.$('#outputs')?.scrollIntoView({block: "end"});
     },
+    lastScrollTop: -1,
     scrollToLast() {
         if (this.lastScrollTop >= 0) {
             this.jupyter.scrollTop = this.lastScrollTop;
@@ -1011,9 +1007,6 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         return exp;
     },
     getScrollCalculate(){
-        // let value = this.jupyter_scroll_top + this.jupyter_height -  this.control_bottom;
-        // if (value>0)
-        //     value = 0;
         return this.jupyter_height - 22 - 14;
     },
     attached() {
