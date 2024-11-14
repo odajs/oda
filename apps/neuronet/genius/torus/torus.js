@@ -356,6 +356,27 @@ export class tensor/* extends Array*/{
     get prev(){
         return this.#prev ??= new Float32Array(this.size);
     }
+    update_grad(grad){
+        if (!this.isParam){
+            this.data.set(grad);
+            return;
+        }
+        let lr = torus.LEARNING_RATE
+        for(let i = 0; i<this.data.length; i++){
+            let change = grad[i] * lr;// * torus.generator();
+            this.data[i] += change;
+        }
+        //
+        // let gamma = torus.generator();
+        // lr = 1 - gamma;
+        // let i = this.data.length;
+        // while(i--){
+        //     let prev = this.prev[i] * gamma;
+        //     let change = prev + this.grad[i] * lr;
+        //     this.data[i] += change;
+        //     this.prev[i] = change
+        // }
+    }
     back(grad){
         let topo = [];
         let visited = new Set();
@@ -823,7 +844,7 @@ torus.prototype.crossEntropy = function (target) {
     if(!out){
         out = tensor.from([loss])._src(this)._label('crossEntropy');
         this._back = ()=>{
-            this.src.forEach(src => src.grad.set(grad));
+            this.src.forEach(src => src.update_grad(grad));
         }
         this.out = out;
     }
