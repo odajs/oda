@@ -1272,9 +1272,7 @@ einops:{
         catch(e){
             throw new Error(`SubcodeError torus.einsum('${expression}'):\n`+e.message + '\n' + e.stack)
         }
-
         out._back = function (){
-            const out_res = []
             tensors.forEach((t, i)=>{
                 if(!t.allowGrad) return;
                 const in_vars = inputs.map((input, ii)=>{
@@ -1297,10 +1295,8 @@ einops:{
                 })
                 $.forward = $['backward_'+ i]?.toString();
                 let out_back = torus.einsum(expr, sources, $);
-                out_res.push(out_back);
-                this.update_grad(out_back.data);
+                t.update_grad(out_back.data);
             })
-            return out_res;
         }
         return out;
     }
