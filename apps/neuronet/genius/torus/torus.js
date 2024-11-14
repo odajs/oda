@@ -1713,24 +1713,14 @@ convertors:{
         return out;
     }
     torus.prototype.multinomial = function(num_samples = 1, replacement = false, $ = {}){
-        $ = torus.$({generator: null, out: null}, $);
+        $ = torus.$({generator: null}, $);
         const step = this.shape.last;
         if(!$.generator)
             $.generator = torus.generator;
-        let out = $.out || this.out;
+        let out = this.out;
         let steps = this.size / step
         if(!out){
             this.out = out = torus.from(new Uint8Array(steps * num_samples))._shape([steps, num_samples])._label('multinomial');
-            out._back = ()=>{
-                for(let s = 0; s<steps; s++){
-                    let l = s * step;
-                    for(let n = 0; n<num_samples; n++){
-                        let i = l + n
-                        const idx = out.data[i]
-                        this.grad[l + idx] += out.grad[i];
-                    }
-                }
-            }
         }
         let idx = -1
         for (let s = 0; s<steps; s++){
