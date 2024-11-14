@@ -1067,11 +1067,11 @@ einops:{
         })
         return {inputs, output, vars}
     }
-    torus.einsum = (expression, tensors = [], $ = {turbo: false})=>{
+    torus.einsum = (expression, tensors = [], $ = {})=>{
         tensors = torus.flat(tensors);
-        $ = torus.$({forward: '', backward_0: ''}, $);
-        const shapes = tensors.map(i=>i.shape);
         let key = expression + ': [' + shapes.join(']-[') + '] ' + JSON.stringify($);
+        $ = torus.$({forward: '', backward_0: '', turbo: false}, $);
+        const shapes = tensors.map(i=>i.shape);
         let inputs, out_shape, output;
         let fn = fn_cache?.einsum?.[key];
         if (!fn){
@@ -1176,7 +1176,7 @@ einops:{
                 let size = output.map(a=>a.d).mul() || 1;
                 code += `let using = t.filter(i=>i.allowGrad);\n`;
                 code += `let main = using[0];\n`;
-                code += `let out = main?.getOut(using, '${expression}') || torus.tensor(new Float32Array(${size}))._src(t)._shape(${output.length?output.map(a=>a.d):1})._label('${'einsum: ' + expression}');\n`;
+                code += `let out = main?.getOut(using, '${key}') || torus.tensor(new Float32Array(${size}))._src(t)._shape(${output.length?output.map(a=>a.d):1})._label('${'einsum: ' + expression}');\n`;
                 code += `let out_data = out.data;\n`;
                 code += `let func = eval(${func});\n`
 
@@ -1248,7 +1248,7 @@ einops:{
                     code += `  out_data[0] = sum;\n`;
                 }
 
-                code += `if(main) main.setOut(out, using, '${expression}');\n`
+                code += `if(main) main.setOut(out, using, '${key}');\n`
                 code += 'return out;\n'
             }
             // >code
@@ -1678,6 +1678,10 @@ convertors:{
         if(shape.mul() !== this.size)
             throw new Error(`tensor.view(...shape = [${shape}]): shape is invalid for input of size ${this.size}`)
         let out = this.getOut(this, shape.toString());
+        if (!out){
+            out = torus.from(this.data)._label('view to ('+shape+')')._src(this)._shape(shape);
+            this.setOut(out, shape.toString());
+        }
         out._data(this.data);
         return out;
     }

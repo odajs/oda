@@ -195,6 +195,7 @@ ODA({is: 'oda-code-editor',
         });
 
         this.editor.session.on('change', (e) => {
+            this.checkBreakpoints(e);
             this['#value'] = undefined;
             this.isChanged = this.value !== this.src;
             this.fire('change', this.value);
@@ -234,15 +235,46 @@ ODA({is: 'oda-code-editor',
             else
                 e.editor.session.clearBreakpoint(row);
             e.stop();
-            breakpoints = e.editor.session.getBreakpoints();
-            let res = '';
-            breakpoints.map((i, idx) => {
-                if (i)
-                    res += idx + 1 + ' ';
-            })
-            this.fire('change-breakpoints', res);
+            this.fireBreakpoints();
         })
         this.fire('loaded', this.editor);
+    },
+    fireBreakpoints() {
+        const breakpoints = this.editor.session.getBreakpoints();
+        let res = '';
+        breakpoints.map((i, idx) => {
+            if (i)
+                res += idx + 1 + ' ';
+        })
+        this.fire('change-breakpoints', res);
+    },
+    checkBreakpoints(e) {
+        let breakpoints = this.getBreakpoints();
+        if (breakpoints && e.lines.length > 1) {
+            breakpoints = breakpoints.trim().split(' ');
+            let session = this.editor.session,
+                lines = e.lines.length - 1,
+                start = e.start.row,
+                end = e.end.row;
+            breakpoints.map(breakpoint => {
+                breakpoint = +breakpoint;
+                if (e.action === 'insert') {
+                    if (breakpoint > start) {
+                        session.clearBreakpoint(breakpoint);
+                        session.setBreakpoint(breakpoint + lines);
+                    }
+                } else if (e.action === 'remove') {
+                    if (breakpoint > start && breakpoint < end) {
+                        session.clearBreakpoint(breakpoint);
+                    }
+                    if (breakpoint >= end) {
+                        session.clearBreakpoint(breakpoint);
+                        session.setBreakpoint(breakpoint - lines);
+                    }
+                }
+            })
+            this.fireBreakpoints();
+        }
     },
     getBreakpoints() {
         const breakpoints = this.editor.session.getBreakpoints();
