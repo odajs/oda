@@ -193,9 +193,6 @@ export class tensor/* extends Array*/{
     get allowGrad(){
         return (this._back && !!this.src?.some(i=>i.allowGrad)) || this.isParam;
     }
-    get grad(){
-        return this.#grad ??= new Float32Array(this.size);
-    }
     get data(){
         this.#data.__tensor__ = this.label;
         return this.#data;
@@ -260,7 +257,6 @@ export class tensor/* extends Array*/{
         return 0;
     }
     destroy(recurce = true){
-        // this.clearGrad();
         if(this.isParam) return;
         if (!this.data.length) return;
         this.data.buffer.transfer(0);
@@ -269,11 +265,6 @@ export class tensor/* extends Array*/{
         if (!this.src?.length) return
         this.src.forEach(s=>s.destroy(recurce))
     }
-    // clearGrad(){
-    //     if (!this.#grad?.length) return;
-    //     this.#grad?.buffer.transfer(0);
-    //     this.#grad = undefined;
-    // }
     updateParams(){
         if (!this.isParam) return;
         if (this.dType === BinaryArray){
@@ -314,11 +305,6 @@ export class tensor/* extends Array*/{
         else{
 
             let lr = torus.LEARNING_RATE
-            // for(let i = 0; i<this.data.length; i++){
-            //     let change = this.grad[i] * lr * torus.generator();
-            //     this.data[i] += change;
-            // }
-
             let gamma = torus.generator();
             lr = 1 - gamma;
             let i = this.data.length;
@@ -328,54 +314,23 @@ export class tensor/* extends Array*/{
                 this.data[i] += change;
                 this.prev[i] = change
             }
-
-
-            // let lr = torus.LEARNING_RATE || .01
-            // for(let i = 0; i<this.data.length; i++){
-            //     let prev = this.prev[i];
-            //     let change = this.grad[i] * lr + prev * .5;
-            //     this.data[i] += change;
-            //     this.prev[i] = change;
-            // }
-
-
-            //
-
-            // for(let i = 0; i<this.data.length; i++){
-            //     const lr = torus.generator() / 3;
-            //     const lambda = 1 - lr;
-            //     let prev = this.prev[i];
-            //     let change = (this.grad[i] + lambda * prev) * lr;
-            //     this.data[i] += change;
-            //     this.prev[i] = change * lr;
-            //
-            // }
         }
-        // this.clearGrad();
     }
     get prev(){
         return this.#prev ??= new Float32Array(this.size);
     }
     update_grad(grad){
         if (!this.isParam){
-            this.data.set(grad);
-            return;
+            this.data.set(grad); // todo обновление с приращением!!!
         }
-        let lr = torus.LEARNING_RATE
-        for(let i = 0; i<this.data.length; i++){
-            let change = grad[i] * lr;// * torus.generator();
-            this.data[i] += change;
+        else{
+            let lr = torus.LEARNING_RATE
+            let i = this.size;
+            while (i--){
+                let change = grad[i] * lr;
+                this.data[i] += change;
+            }
         }
-        //
-        // let gamma = torus.generator();
-        // lr = 1 - gamma;
-        // let i = this.data.length;
-        // while(i--){
-        //     let prev = this.prev[i] * gamma;
-        //     let change = prev + this.grad[i] * lr;
-        //     this.data[i] += change;
-        //     this.prev[i] = change
-        // }
     }
     back(grad){
         let topo = [];
@@ -395,10 +350,8 @@ export class tensor/* extends Array*/{
         topo.forEach((node, index) => {
             if (!node.src) return;
             node._back?.();
-        })
-        topo.forEach((node) => {
-            node.updateParams();
-            node.grad.fill(0);
+            if (node.isParam) return;
+            node.data.fill(0);
         })
     }
 
@@ -817,7 +770,7 @@ torus.prototype.crossEntropy = function (target) {
     if(this.label !== 'softmax'){
         return this.softmax().crossEntropy(target);
     }
-    target = tensor.from(target);
+    target = torus.tensor(target);
     const step = this.shape.last;
     const size = this.size/step;
     let ys = target.data;
@@ -829,11 +782,7 @@ torus.prototype.crossEntropy = function (target) {
         }, [])
 
     let data = this.data;
-    let grad = this.grad;
-    let i = this.size;
-    while(i--){
-        grad[i] = -data[i];
-    }
+    let grad = data.map(x=>-x);
     let loss = Array.prototype.map.call(ys, (y, i) => {
         let idx = i * step + y;
         grad[idx] += 1;
@@ -842,7 +791,7 @@ torus.prototype.crossEntropy = function (target) {
     loss = -loss.avg();
     let out = this.out;
     if(!out){
-        out = tensor.from([loss])._src(this)._label('crossEntropy');
+        out = torus.tensor([loss])._src(this)._label('crossEntropy');
         this._back = ()=>{
             this.src.forEach(src => src.update_grad(grad));
         }
@@ -1325,7 +1274,6 @@ einops:{
         }
 
         out._back = function (){
-            const grad = torus.from(out.grad)._shape(out);
             const out_res = []
             tensors.forEach((t, i)=>{
                 if(!t.allowGrad) return;
@@ -1344,15 +1292,13 @@ einops:{
                     }));
                 let sources = tensors.map((tt,ii)=>{
                     if(ii === i)
-                        return grad;
+                        return out;
                     return tt;
                 })
                 $.forward = $['backward_'+ i]?.toString();
                 let out_back = torus.einsum(expr, sources, $);
                 out_res.push(out_back);
-                t.grad = t.grad.map((g,i)=>{
-                    return g + out_back.data[i];
-                });
+                this.update_grad(out_back.data);
             })
             return out_res;
         }
@@ -1743,10 +1689,7 @@ convertors:{
         if(!out){
             out = torus.from(this.data)._src(this)._label('view')._shape(shape);
             out._back = ()=>{
-                let i = this.size;
-                while(i--){
-                    this.grad[i] += out.grad[i];
-                }
+                this.update_grad(out.data)
             }
             this.setOut(out, this, shape.toString());
         }
