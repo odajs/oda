@@ -89,6 +89,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         el?.control?.editor?.editor?.execCommand?.('replace')
 
     },
+    use_native_menu: true,
     output_data: [],
     cellSelect(item){
         this['selectedCell'] = item;
@@ -1194,6 +1195,7 @@ class JupyterCell extends ROCKS({
     set breakpoints(n) {
         this.data.breakpoints = n || '';
         this.notebook.change();
+        this.clearTimes();
     },
     clearTimes(all = false){
         let clear = all;
