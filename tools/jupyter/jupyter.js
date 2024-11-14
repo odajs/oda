@@ -678,6 +678,7 @@ ODA({ is: 'oda-jupyter-divider',
                 opacity: {{!visible?0:1}};
                 margin-top: {{last?'12px':'0px'}};
                 position: relative;
+                z-index: 10;
             }
             :host(:hover) {
                 opacity: 1 !important;
@@ -1203,11 +1204,11 @@ class JupyterCell extends ROCKS({
     },
     clearTimes(all = false){
         let clear = all;
-        for (let codeCell of this.notebook.codes){
-            if (codeCell === this)
+        for (let cell of this.notebook.cells){
+            if (cell === this)
                 clear = true;
-            if (clear)
-                codeCell.status = codeCell.time = '';
+            if (clear && cell.type === 'code')
+            cell.status = cell.time = '';
         }
     },
     get collapsed() {

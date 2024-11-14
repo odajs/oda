@@ -17,14 +17,14 @@ ODA({is: 'oda-code-editor',
                 background-color: lightyellow;
             }
             .ace_scrollbar-h {
-                position: sticky;
+                position: {{scrollCalculate?'sticky':'absolute'}};
                 bottom: 0px;
-                top: {{scrollCalculate}}px;
+                top: {{scrollCalculate>0?scrollCalculate+'px':'unset'}};
                 width: unset !important;
             }
             .ace_search.right {
                 position: sticky;
-                top: 20px;
+                top: {{stickySearch?'20px':0}};
                 width: fit-content;
                 margin-left: auto;
             }

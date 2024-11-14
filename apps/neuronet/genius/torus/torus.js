@@ -1592,6 +1592,7 @@ convertors:{
         let space = '   ';
         let shape = [];
         let code = ['let idx=-1;'];
+        code.push('let out_data = out.data;');
         code.push('let data = tensor.data;');
         let dim, start, end, step, add_shape;
         this.strides.forEach((stride, d)=>{
@@ -1629,20 +1630,20 @@ convertors:{
                 shape.push(dim);
         })
         if(!back){
-            code.push(space.repeat(this.dim)+`out[++idx] = data[${this.shape.map((_,i)=>'_i'+i).join(' + ')}];`);
+            code.push(space.repeat(this.dim)+`out_data[++idx] = data[${this.shape.map((_,i)=>'_i'+i).join(' + ')}];`);
         }
         else{
-            code.push(space.repeat(this.dim)+`grad[${this.shape.map((_,i)=>'_i'+i).join(' + ')}] = out.grad[++idx];`);
+            code.push(space.repeat(this.dim)+`data[${this.shape.map((_,i)=>'_i'+i).join(' + ')}] = out_data[++idx];`);
         }
         this.shape.forEach((_, d)=>{
             code.push(space.repeat(this.dim - d - 1)+`}`);
         })
         let size = shape.mul() || 1;
         if(!back){
-            code.unshift(`out ??= new tensor.dType(${size})`);
+            code.unshift(`out ??= torus.tensor(new tensor.dType(${size}))._shape(${shape})._label('slice [${slicers}]')`);
             if(!shape.length)
                 shape = [1];
-            code.push(`return torus.tensor(out)._shape(${shape})`);
+            code.push(`return out`);
         }
         return code.join('\n');
     }
@@ -1658,7 +1659,7 @@ convertors:{
         let out = this.getOut(this, key);
         if (!out){
             out = fn(this);
-            out._label('slice '+key)._src(this);
+            out._src(this);
             if (this.allowGrad){
                 out._back = ()=>{
                     let key = '('+ this.shape.toString()+'): ' + slicers.map(i=>i).join(',') + ': back'
