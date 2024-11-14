@@ -3,9 +3,6 @@ export class tensor/* extends Array*/{
     #data = null;
     dType = Float32Array;
     #src = undefined;
-    #grad = undefined;
-    #prev = undefined;
-    #bins = undefined;
     #type = undefined;
     #shape_multipliers = undefined;
     isParam = false;
@@ -46,10 +43,6 @@ export class tensor/* extends Array*/{
                         data = new $.dType(data);
                 }
                 this['#shape'] = shape;
-            }
-            else if(this.dType === BinaryArray) {
-                if (data?.length)
-                    this['#shape'] = [data?.binLength];
             }
             else{
                 if (data?.length === 1)
@@ -203,17 +196,11 @@ export class tensor/* extends Array*/{
         this.#data = n
         this.dType = this.#data.constructor;
     }
-    set grad(n){
-        this.#grad = n;
-    }
+    // set grad(n){
+    //     this.#grad = n;
+    // }
     get BiTES_PER_ELEMENT(){
         return this.dType.BYTES_PER_ELEMENT * 8;
-    }
-    get bins(){
-        return this.#bins ??= Array.prototype.map.call(this.data, d => d.toBin(this.BiTES_PER_ELEMENT)).join('').slice(0, this.size);
-    }
-    getBit(idx){
-        return this.data.getBit(idx);
     }
     get T(){
         return this.transpose();
@@ -264,60 +251,6 @@ export class tensor/* extends Array*/{
         if (!recurce) return;
         if (!this.src?.length) return
         this.src.forEach(s=>s.destroy(recurce))
-    }
-    updateParams(){
-        if (!this.isParam) return;
-        if (this.dType === BinaryArray){
-            let bins = this.bins;
-            let data = this.data;
-            let idx = 0;
-            let val = '';
-            let i = bins.length;
-            while(i--){
-                const rand = torus.generator();
-                let g = this.grad[i]// * tensor.LEARNING_RATE;
-                let value = bins[i];
-                if (g !== 0){
-                    let p = Math.max(0,Math.min(1,(g + 1)/2));
-                    if (rand > p){
-                        if (value === '1'){
-                            if (p < .5)
-                                value = '0'
-                        }
-                        else{
-                            if (p > .5)
-                                value = '1'
-                        }
-                    }
-                }
-                val += value;
-                if (val.length === 64){
-                    this.data[idx] = BigInt('0b'+val);
-                    val = ''
-                    idx++
-                }
-            }
-            if (val.length){
-                this.data[idx] = BigInt('0b'+val.padEnd(64, '0'));
-            }
-            this.#bins = undefined
-        }
-        else{
-
-            let lr = torus.LEARNING_RATE
-            let gamma = torus.generator();
-            lr = 1 - gamma;
-            let i = this.data.length;
-            while(i--){
-                let prev = this.prev[i] * gamma;
-                let change = prev + this.grad[i] * lr;
-                this.data[i] += change;
-                this.prev[i] = change
-            }
-        }
-    }
-    get prev(){
-        return this.#prev ??= new Float32Array(this.size);
     }
     update_grad(grad){
         if (!this.isParam){
@@ -489,11 +422,7 @@ export class tensor/* extends Array*/{
     get array() {
         if(this.shape.length<2)
             return [this.data];
-        let data;
-        if (this.dType === BinaryArray)
-            data = this.bins.match(/0|1/g).map(i=>i==='1'?1:-1);
-        else
-            data = Array.from(this.data);
+        let data = Array.from(this.data);
         let res = [];
         const shape = Array.from(this.shape);
         let s
@@ -1110,7 +1039,7 @@ einops:{
                             return s;
                         });
                         if(sp !== shape){
-                            subscrs.dots
+                            subscrs.dots.reverse();
                             subs.reverse();
                         }
                         subscrs.inputs[s] = subs;
@@ -1344,14 +1273,6 @@ generators:{
         });
         return new torus(data, Int32Array)._shape(shape)._label(`rand_int ${min_or_max}-${max}`);
     }
-    torus.rand_bin = (...shape) => {
-        const handler = ()=>{
-            let value = torus.generator().toString(2).substring(2);
-            return BigInt('0b' + value.padEnd(64, value))
-        }
-        return torus.fill(...shape, handler, BinaryArray)._label('rand_bin');
-    }
-
     // FINAL
 
 
@@ -2017,95 +1938,7 @@ torus.prototype.pad = function(paddings, mode = 'constant', constant_value = 0) 
     }
     return result;
 }
-BigInt.prototype.toBin = function (dim = 64){
-    return this.toString(2).padStart(dim, '0');
-}
-globalThis.BinaryArray = class BinaryArray extends BigUint64Array{
-    _binSize = 0;
-    #length = 0;
-    #bins = undefined;
-    _self = undefined;
-    bit_mask = BigInt(1);
-    constructor(size) {
-        super(Math.ceil((Array.isArray(size)?size.length:size)/64));
-        if (Array.isArray(size)){
-            let data = size;
-            this.#length = this._binSize = data.length;
-            const str = data.map(i=>i>0?1:0).join('');
-            let step = 0;
-            let v;
-            while (v = str.substr(step * 64, step * 64 + 64)){
-                this[step] = '0b'+v.padEnd(64, '0');
-                step++
-            }
-        }
-        else{
-            this.#length = this._binSize = size;
-        }
-        this._self = this;
-        return new Proxy(this, {
-            get: (target, key, receiver) =>{
-                const v =  target[key];
-                if(typeof v == "function")
-                    return v.bind(target);
-                return v;
-            },
-            set: (target, key, value) => {
-                switch (value?.constructor){
-                    case BigInt:{
-                        target[key] = value;
-                    } break;
-                    case Number:{
-                        target[key] = BigInt(value);
-                    } break;
-                    case Boolean:
-                        value = value?'1':'0';
-                    case String:{
-                        switch (value){
-                            case '1':
-                            case '0':{
-                                key = +key
-                                let idx = (key / 64);
-                                key = Math.floor(idx);
-                                idx = (idx - key) * 64;
-                                let bin = target[key].toBin();
-                                bin = '0b' + bin.substr(0, idx) + value + bin.substr(idx + 1);
-                                target[key] = BigInt(bin);
-                            } break;
-                            default:{
-                                if (value.startsWith('0b'))
-                                    target[key] = BigInt(value);
-                                else
-                                    target[key] = BigInt('0b'+value.padStart(64, '0'));
-                            }
-                        }
-                    } break;
-                }
-                return true;
-            },
-        })
-    }
-    get bins(){
-        return this.#bins ??= Array.prototype.map.call(this.data, d => d.toBin());
-    }
-    get binLength(){
-        return this.#length
-    }
-    get binSize(){
-        return this._binSize;
-    }
-    map(h){
-        return this._self.reduce((res, v, i)=>{
-            res[i] = h(v, i, this._self);
-            return res;
-        }, new BinaryArray(this._binSize))
-    }
-    getBit(idx){
-        const data_idx = idx>>6;
-        idx = 63-(idx&63);
-        return (this[data_idx]>>BigInt(idx))&this.bit_mask;
-    }
-}
+
 const fn_cache = {einsum:{}, slice: {}};
 
 globalThis.range ??= (count = 0)=>{
