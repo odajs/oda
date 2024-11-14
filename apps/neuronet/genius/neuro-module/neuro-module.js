@@ -1,5 +1,6 @@
 import {tensor, torus} from "../torus/torus.js";
-class NeuroModule extends Function{
+export const nn = {};
+nn.Module = nn.NeuroModule = class NeuroModule extends Function{
     #params = Object.create(null);
     #label = undefined;
     losses  = [];
@@ -157,7 +158,7 @@ class NeuroModule extends Function{
         return res
     }
 }
-class Linear extends NeuroModule{
+nn.Linear = class Linear extends nn.Module{
     constructor(shape_in, shape_out, bias = false) {
         if(arguments.length>1){
             if(!Array.isArray(shape_in))
@@ -210,7 +211,7 @@ class Linear extends NeuroModule{
         return output;
     }
 }
-class Embedding extends Linear{
+nn.Embedding = class Embedding extends nn.Linear{
     constructor(shape_in, shape_out, bias = false) {
         super(...arguments);
     }
@@ -225,7 +226,7 @@ class Embedding extends Linear{
         return super.forward(input);
     }
 }
-class Dropout extends nn.Module{
+nn.Dropout = class Dropout extends nn.Module{
     constructor(probability = 0.5, inplace = false){
         super(...arguments)
     }
@@ -233,25 +234,7 @@ class Dropout extends nn.Module{
         return x.dropout(this.probability, this.inplace);
     }
 }
-class BinLayer extends NeuroModule{
-    constructor(dim_in,  dim_out, bias = false) {
-        super(arguments);
-    }
-    __init__(){
-        this.WEIGHTS = tensor.param(tensor.rand_bin([this.dim_in, this.dim_out], BinaryArray));
-        if (this.bias)
-            this.BIAS = tensor.param(tensor.rand_bin([this.dim_out], BinaryArray));
-    }
-    forward(x) {
-        x = tensor.from(x);
-        let axis = (x.shape.length>1)?Array(x.shape.length-1).fill(65).map((v,i)=>String.fromCharCode(v+i)).join(''):'';
-        let out = tensor.einsum(`${axis}i, io -> ${axis}o`, [x, this.WEIGHTS]);
-        if (this.bias)
-            out = out.plus(this.BIAS);
-        return out;
-    }
-}
-class conv1D extends NeuroModule {
+nn.conv1D = class conv1D extends nn.Module {
     constructor(in_channels,
                 out_channels,
                 kernel_size = 4,
@@ -365,7 +348,7 @@ class conv1D extends NeuroModule {
     }
 
 }
-class RMSNorm extends NeuroModule {
+nn.RMSNorm = class RMSNorm extends nn.Module {
     constructor(dim, bias = false) {
         super(arguments);
     }
@@ -486,27 +469,38 @@ function Conv1dBackward(input, grad_output, weight, bias = null, stride = 1, pad
         return [grad_input, grad_weight];
     }
 }
+nn.ReLU = class ReLU extends nn.Module{
+    constructor(){
+        super(...arguments);
+    }
+    forward(x){
+        return x.relu();
+    }
+}
+nn.Sequential = class Sequential extends nn.Module{
+    constructor(...nn_modules){
+        super(...arguments);
+    }
+    __init__(){
+        this.nn_modules = this.nn_modules.map((m, i)=>{
+            if(m instanceof nn.Module)
+                return this[m.constructor.name] = m;
+            else
+                throw new Error(`nn.Sequential: unkcnown class of module ${i+1}`)
+        })
+    }
+    forward(x){
+        for(let module of this.nn_modules){
+            x = module(x);
+        }
+        return x;
+    }
+}
 
-
-export const nn = {
-    NeuroModule,
-    Module: NeuroModule,
-    Dropout(...args){
-        return new Dropout(...args);
-    },
-    Linear(...args){
-        return new Linear(...args);
-    },
-    Embedding(...args){
-        return new Embedding(...args);
-    },
-    BinLayer(...args){
-        return new BinLayer(...args);
-    },
-    Conv1d(...args){
-        return new conv1D(...args);
-    },
-    RMSNorm(...args){
-        return new RMSNorm(...args);
-    },
+for(let module in nn){
+    const ctor = nn[module];
+    if(ctor !== nn.Module)
+        nn[module] = function (){
+            return new ctor(...arguments);
+        }
 }
