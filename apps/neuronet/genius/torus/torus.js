@@ -348,9 +348,6 @@ export class tensor/* extends Array*/{
         }
         return out
     }
-    static cross_entropy(tensor, target) {
-        return tensor.crossEntropy(target);
-    }
 
     static from(data, $){
         if (Object.equal(data?.constructor, tensor))
@@ -692,7 +689,7 @@ torus.prototype.repeat = function (count = 1) {
 }
 
 
-torus.prototype.crossEntropy = function (target) {
+torus.prototype.cross_entropy = torus.prototype.crossEntropy = function (target) {
     if(this.label !== 'softmax'){
         return this.softmax().crossEntropy(target);
     }
