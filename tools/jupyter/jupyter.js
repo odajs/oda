@@ -541,7 +541,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     if (autorun !== true)
                         this.checkBreakpoints(this.cell);
                     await this.cell.run(this.jupyter);
-                    this.focus();
+
                 } catch (error) {
 
                 } finally {
@@ -550,8 +550,8 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         this.notebook?.change();
                     resolve();
                     if(autorun !== true){
-                        this.scrollToOutput();
                         this.cell?.next?.clearTimes();
+                        this.scrollToOutput();
                     }
                 }
             }, 50)
@@ -972,7 +972,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     },
     _keypress(e){
         if (e.ctrlKey && e.keyCode === 10){
-            this.run();
+            this.domHost.run();
         }
     },
     value: '',
