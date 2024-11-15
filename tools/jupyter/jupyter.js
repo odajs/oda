@@ -587,18 +587,20 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         })
         cell.srcWithBreakpoints = src;
     },
-    scrollToOutput(){
-        this.lastScrollTop = -1;
-        if (this.control_bottom < (this.jupyter_height + this.jupyter_scroll_top) /*&& this.control_offsetBottom > this.jupyter_scroll_top*/)
-            return;
-        if (this.cell?.hideOutput)
-            return;
-        this.lastScrollTop = this.jupyter.scrollTop;
-        this.lastRange = this.control?.ace?.getSelectionRange();
-        if (this.output_height>this.jupyter_height)
-            this.jupyter.scrollTop = this.control_bottom - 64;
-        else
-            this.$('#outputs')?.scrollIntoView({block: "end"});
+    scrollToOutput() {
+        this.async(() => {
+            this.lastScrollTop = -1;
+            if (this.control_bottom < (this.jupyter_height + this.jupyter_scroll_top) /*&& this.control_offsetBottom > this.jupyter_scroll_top*/)
+                return;
+            if (this.cell?.hideOutput)
+                return;
+            this.lastScrollTop = this.jupyter.scrollTop;
+            this.lastRange = this.control?.ace?.getSelectionRange();
+            if (this.output_height>this.jupyter_height)
+                this.jupyter.scrollTop = this.control_bottom - 64;
+            else
+                this.$('#outputs')?.scrollIntoView({block: "end"});
+        })
     },
     lastScrollTop: -1,
     scrollToLast() {

@@ -476,6 +476,9 @@ nn.ReLU = class ReLU extends nn.Module{
 }
 nn.Sequential = class Sequential extends nn.Module{
     constructor(...modules){
+        if (modules?.length === 1 && Array.isArray(modules[0])){
+            modules = modules[0];
+        }
         super(...modules);
     }
     __init__(){
