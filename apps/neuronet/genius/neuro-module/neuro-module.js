@@ -8,26 +8,27 @@ nn.Module = nn.NeuroModule = class NeuroModule extends Function{
     destroyTime = 0;
     constructor(argumetns) {
         super();
-        if (argumetns){
-            if (argumetns.length === 1 && argumetns[0].constructor === Object){
-                // const p = Object.assign(this.#params, argumetns[0])
-                this.setModel(argumetns[0]);
-            }
-            else{
-                let expr = this.constructor.toString();
-                expr = expr.replace(/\/\/.*/g, '').replace(/\/\*[^\*\/]*\*\//g, '');
-                const names = expr.match(/(?<=\()(.|(\r?\n))*?(?=\))/g)[0].split(',');
-                for (let i = 0; i<names.length; i++){
-                    let name = names[i]
-                    let [n, d] = name.split('=').map(i=>i.trim());
-                    this[n] = this.#params[n] ??= argumetns[i] ?? (new Function("return "+d))();
-                }
-                this.__init__.call(this.params);
-            }
-            for (let n in this.params){
-                this[n] ??= this.params[n];
-            }
+        if (!argumetns)
+            argumetns = [];
+        if (argumetns.length === 1 && argumetns[0].constructor === Object){
+            // const p = Object.assign(this.#params, argumetns[0])
+            this.setModel(argumetns[0]);
         }
+        else{
+            let expr = this.constructor.toString();
+            expr = expr.replace(/\/\/.*/g, '').replace(/\/\*[^\*\/]*\*\//g, '');
+            const names = expr.match(/(?<=\()(.|(\r?\n))*?(?=\))/g)[0].split(',');
+            for (let i = 0; i<names.length; i++){
+                let name = names[i]
+                let [n, d] = name.split('=').map(i=>i.trim());
+                this[n] = this.#params[n] ??= argumetns[i] ?? (new Function("return "+d))();
+            }
+            this.__init__?.call(this.params);
+        }
+        for (let n in this.params){
+            this[n] ??= this.params[n];
+        }
+
         this.params.losses ??= this.losses;
         return new Proxy(this, {
             get(target, p, receiver) {
@@ -207,7 +208,7 @@ nn.Linear = class Linear extends nn.Module{
 }
 nn.Embedding = class Embedding extends nn.Linear{
     constructor(shape_in, shape_out, bias = false) {
-        super(...arguments);
+        super(arguments);
     }
 
     forward(input) {
@@ -222,7 +223,7 @@ nn.Embedding = class Embedding extends nn.Linear{
 }
 nn.Dropout = class Dropout extends nn.Module{
     constructor(probability = 0.5, inplace = false){
-        super(...arguments)
+        super(arguments)
     }
     forward(x){
         return x.dropout(this.probability, this.inplace);
@@ -465,18 +466,18 @@ function Conv1dBackward(input, grad_output, weight, bias = null, stride = 1, pad
 }
 nn.ReLU = class ReLU extends nn.Module{
     constructor(){
-        super(...arguments);
+        super(arguments);
     }
     forward(x){
         return x.relu();
     }
 }
 nn.Sequential = class Sequential extends nn.Module{
-    constructor(...nn_modules){
-        super(...arguments);
+    constructor(...modules){
+        super(arguments);
     }
     __init__(){
-        this.nn_modules = this.nn_modules.map((m, i)=>{
+        this.modules = this.modules.map((m, i)=>{
             if(m instanceof nn.Module)
                 return this[m.constructor.name] = m;
             else
@@ -484,7 +485,7 @@ nn.Sequential = class Sequential extends nn.Module{
         })
     }
     forward(x){
-        for(let module of this.nn_modules){
+        for(let module of this.modules){
             x = module(x);
         }
         return x;
