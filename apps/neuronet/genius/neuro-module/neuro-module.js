@@ -8,23 +8,25 @@ nn.Module = nn.NeuroModule = class NeuroModule extends Function{
     destroyTime = 0;
     constructor(argumetns) {
         super();
-        if (argumetns.length === 1 && argumetns[0].constructor === Object){
-            // const p = Object.assign(this.#params, argumetns[0])
-            this.setModel(argumetns[0]);
-        }
-        else{
-            let expr = this.constructor.toString();
-            expr = expr.replace(/\/\/.*/g, '').replace(/\/\*[^\*\/]*\*\//g, '');
-            const names = expr.match(/(?<=\()(.|(\r?\n))*?(?=\))/g)[0].split(',');
-            for (let i = 0; i<names.length; i++){
-                let name = names[i]
-                let [n, d] = name.split('=').map(i=>i.trim());
-                this[n] = this.#params[n] ??= argumetns[i] ?? (new Function("return "+d))();
+        if (argumetns){
+            if (argumetns.length === 1 && argumetns[0].constructor === Object){
+                // const p = Object.assign(this.#params, argumetns[0])
+                this.setModel(argumetns[0]);
             }
-            this.__init__.call(this.params);
-        }
-        for (let n in this.params){
-            this[n] ??= this.params[n];
+            else{
+                let expr = this.constructor.toString();
+                expr = expr.replace(/\/\/.*/g, '').replace(/\/\*[^\*\/]*\*\//g, '');
+                const names = expr.match(/(?<=\()(.|(\r?\n))*?(?=\))/g)[0].split(',');
+                for (let i = 0; i<names.length; i++){
+                    let name = names[i]
+                    let [n, d] = name.split('=').map(i=>i.trim());
+                    this[n] = this.#params[n] ??= argumetns[i] ?? (new Function("return "+d))();
+                }
+                this.__init__.call(this.params);
+            }
+            for (let n in this.params){
+                this[n] ??= this.params[n];
+            }
         }
         this.params.losses ??= this.losses;
         return new Proxy(this, {
@@ -32,18 +34,7 @@ nn.Module = nn.NeuroModule = class NeuroModule extends Function{
                 return target[p];
             },
             apply(target, _, args) {
-                const result = target.forward(...args);
-                // setTimeout(()=>{
-                //     if(result instanceof tensor)
-                //         result.destroy?.();
-                //     else if(Array.isArray(result)){
-                //         result.forEach(t=>{
-                //             if(t instanceof tensor)
-                //                 result.destroy?.();
-                //         })
-                //     }
-                // }, target.destroyTime);
-                return result;
+                return target.forward(...args);
             }
         })
     }
