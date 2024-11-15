@@ -20,6 +20,11 @@ nn.Module = nn.NeuroModule = class NeuroModule extends Function{
             const names = expr.match(/(?<=\()(.|(\r?\n))*?(?=\))/g)[0].split(',');
             for (let i = 0; i<names.length; i++){
                 let name = names[i]
+                if (name.startsWith('...')){
+                    name = name.split('.').pop();
+                    this[name] = this.#params[name] ??= argumetns;
+                    break;
+                }
                 let [n, d] = name.split('=').map(i=>i.trim());
                 this[n] = this.#params[n] ??= argumetns[i] ?? (new Function("return "+d))();
             }
