@@ -19,7 +19,7 @@ nn.Module = nn.NeuroModule = class NeuroModule extends Function{
                 let name = names[i]
                 if (name.startsWith('...')){
                     name = name.split('.').pop();
-                    this[name] = this.#params[name] ??= arguments;
+                    this[name] = this.#params[name] ??= Array.from(arguments);
                     break;
                 }
                 let [n, d] = name.split('=').map(i=>i.trim());
@@ -476,7 +476,7 @@ nn.ReLU = class ReLU extends nn.Module{
 }
 nn.Sequential = class Sequential extends nn.Module{
     constructor(...modules){
-        super(...arguments);
+        super(...modules);
     }
     __init__(){
         this.modules = this.modules.map((m, i)=>{
