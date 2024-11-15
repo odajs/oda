@@ -594,6 +594,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         if (this.cell?.hideOutput)
             return;
         this.lastScrollTop = this.jupyter.scrollTop;
+        this.lastRange = this.control?.ace?.getSelectionRange();
         if (this.output_height>this.jupyter_height)
             this.jupyter.scrollTop = this.control_bottom - 64;
         else
@@ -602,9 +603,11 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     lastScrollTop: -1,
     scrollToLast() {
         if (this.lastScrollTop >= 0) {
-            this.jupyter.scrollTop = this.lastScrollTop;
+            // this.jupyter.scrollTop = this.lastScrollTop;
             this.lastScrollTop = -1;
-            this.$('#control')?.editor?.focus();
+            const range = new ace.Range(this.lastRange.start.row, this.lastRange.start.column, this.lastRange.end.row , this.lastRange.end.column);
+            this.control?.ace.session.selection.setRange(range);
+            this.control.editor.fire('change-cursor');
         }
     },
     get output_height() {
@@ -918,7 +921,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             }
         </style>
         <div  class="horizontal" :border="!hideCode"  style="min-height: 64px;">
-            <oda-code-editor :scroll-calculate="getScrollCalculate()" :wrap ~if="!hideCode" show-gutter :read-only @change-cursor="on_change_cursor" @change-breakpoints="on_change_breakpoints" @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" max-lines="Infinity" @change="editorValueChanged" @undo-redo="on_undo_redo" enable-breakpoints sticky-search></oda-code-editor>
+            <oda-code-editor :scroll-calculate="getScrollCalculate()" :wrap ~if="!hideCode" show-gutter :read-only @change-cursor="on_change_cursor" @change-breakpoints="on_change_breakpoints" @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" max-lines="Infinity" @change="editorValueChanged" @pointerdown="on_pointerdown" enable-breakpoints sticky-search></oda-code-editor>
             <div dimmed ~if="hideCode" class="horizontal left content flex" style="cursor: pointer; padding: 8px 4px;" @dblclick="hideCode=false">
                 <oda-icon icon="bootstrap:eye-slash" style="align-self: baseline;"></oda-icon>
                 <span flex  vertical style="margin: 0px 16px; font-size: large; cursor: pointer; text-overflow: ellipsis;" ~html="cell.name +' <u disabled style=\\\'font-size: x-small; right: 0px;\\\'>(Double click to show...)</u>'" ></span>
@@ -930,19 +933,31 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         
 
     `,
-    on_change_cursor(e){
-        // console.log(e)
+    on_pointerdown(e) {
+        this.ace.focus();
+    },
+    on_change_cursor(e) {
+        this.throttle('change_cursor', () => {
+            const row = this.ace.getSelectionRange().start.row,
+                rowsLength = this.session.getScreenLength(),
+                editorHeight = this.$('oda-code-editor').offsetHeight,
+                lineHeight = editorHeight / rowsLength,
+                delta = lineHeight * row,
+                rowTop = this.domHost.offsetTop + delta,
+                screenTop = this.jupyter.scrollTop,
+                screenBottom = screenTop + this.jupyter.offsetHeight - lineHeight * 2,
+                isVisible = rowTop >= screenTop && rowTop <= screenBottom;
+            if (isVisible)
+                return;
+            if (rowTop < screenTop)
+                this.jupyter.scrollToCell(this.cell, delta - lineHeight);
+            else
+                this.jupyter.scrollToCell(this.cell, delta - this.jupyter.offsetHeight + lineHeight * 2);
+            this.ace.focus();
+        }, 100)
     },
     on_change_breakpoints(e){
         this.cell.breakpoints = e.detail.value;
-    },
-    on_undo_redo(e) {
-        const selectedRow = this.ace.getSelectionRange().start.row,
-            lineCount = this.session.getScreenLength(),
-            editorHeight = this.$('oda-code-editor').offsetHeight,
-            lineHeight = editorHeight / lineCount,
-            firstRow = Math.max(0, Math.round((this.jupyter.scrollTop - this.domHost.offsetTop) / lineHeight));
-        console.log(firstRow, selectedRow)
     },
     get syntaxError(){
         let error =  this.editor?.editor?.session?.getAnnotations().filter((e)=>{
@@ -1456,14 +1471,15 @@ window._findCodeEntry = async (e) => {
     // const row = aceEditor.session.doc.$lines.findIndex(r=>r.trim().startsWith(text))
     const row = aceEditor.session.doc.$lines.findIndex(r=>r.trim().startsWith('>') && r.includes(text));
     const range = new ace.Range(row, 1000, row, 0);
-    const length = aceEditor.session.doc.getAllLines().length;
-    const height = codeEditor.offsetHeight;
-    const delta = (height / length) * row - 30;
-    if (cellElement.jupyter.scrollTop>codeEditor.domHost.domHost.offsetTop + delta)
-        cellElement.jupyter.scrollToCell(cellElement.cell, delta);
-    aceEditor.moveCursorTo(row, 0);
-    aceEditor.focus();
+    // const length = aceEditor.session.doc.getAllLines().length;
+    // const height = codeEditor.offsetHeight;
+    // const delta = (height / length) * row - 30;
+    // if (cellElement.jupyter.scrollTop>codeEditor.domHost.domHost.offsetTop + delta)
+    //     cellElement.jupyter.scrollToCell(cellElement.cell, delta);
+    // aceEditor.moveCursorTo(row, 0);
+    // aceEditor.focus();
     aceEditor.session.selection.setRange(range);
+    codeEditor.fire('change-cursor');
 }
 window._findErrorPos = async (e) => {
     const row = +e.getAttribute('row');
@@ -1477,14 +1493,15 @@ window._findErrorPos = async (e) => {
     const codeEditor = cellElement.control?.$('oda-code-editor') || cellElement.$('oda-code-editor');
     const aceEditor = codeEditor.editor;
     const range = new ace.Range(row, 0, row, column);
-    const length = aceEditor.session.doc.getAllLines().length;
-    const height = codeEditor.offsetHeight;
-    const delta = (height / length) * row - 30;
-    if (cellElement.jupyter.scrollTop>codeEditor.domHost.domHost.offsetTop + delta)
-        cellElement.jupyter.scrollToCell(cellElement.cell, delta);
-    aceEditor.moveCursorTo(row, column);
-    aceEditor.focus();
+    // const length = aceEditor.session.doc.getAllLines().length;
+    // const height = codeEditor.offsetHeight;
+    // const delta = (height / length) * row - 30;
+    // if (cellElement.jupyter.scrollTop>codeEditor.domHost.domHost.offsetTop + delta)
+    //     cellElement.jupyter.scrollToCell(cellElement.cell, delta);
+    // aceEditor.moveCursorTo(row, column);
+    // aceEditor.focus();
     aceEditor.session.selection.setRange(range);
+    codeEditor.fire('change-cursor');
 }
 window.addEventListener('keydown', e => {
     if (e.code === 'KeyR' && e.ctrlKey) {
