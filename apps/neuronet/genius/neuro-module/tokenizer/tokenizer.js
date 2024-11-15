@@ -3,7 +3,7 @@ import {nn} from "../neuro-module.js";
 export class Tokenizer  extends nn.NeuroModule{
     _size = undefined;
     constructor(dim = 1024, char_step = 0, win_size = 8, negative_size = 3) {
-        super(arguments);
+        super(...arguments);
     }
     get targetSize(){
         return this._targetSize ??= this.win_size * (this.negative_size + 1);

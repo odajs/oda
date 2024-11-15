@@ -6,13 +6,10 @@ nn.Module = nn.NeuroModule = class NeuroModule extends Function{
     losses  = [];
     _listeners = [];
     destroyTime = 0;
-    constructor(argumetns) {
+    constructor() {
         super();
-        if (!argumetns)
-            argumetns = [];
-        if (argumetns.length === 1 && argumetns[0].constructor === Object){
-            // const p = Object.assign(this.#params, argumetns[0])
-            this.setModel(argumetns[0]);
+        if (arguments.length === 1 && arguments[0].constructor === Object){
+            this.setModel(arguments[0]);
         }
         else{
             let expr = this.constructor.toString();
@@ -22,11 +19,11 @@ nn.Module = nn.NeuroModule = class NeuroModule extends Function{
                 let name = names[i]
                 if (name.startsWith('...')){
                     name = name.split('.').pop();
-                    this[name] = this.#params[name] ??= argumetns;
+                    this[name] = this.#params[name] ??= arguments;
                     break;
                 }
                 let [n, d] = name.split('=').map(i=>i.trim());
-                this[n] = this.#params[n] ??= argumetns[i] ?? (new Function("return "+d))();
+                this[n] = this.#params[n] ??= arguments[i] ?? (new Function("return "+d))();
             }
             this.__init__?.call(this.params);
         }
@@ -168,7 +165,7 @@ nn.Linear = class Linear extends nn.Module{
             arguments[0] = shape_in;
             arguments[1] = shape_out;
         }
-        super(arguments);
+        super(...arguments);
     }
     __init__() {
         this.size_in = this.shape_in.mul();
@@ -213,7 +210,7 @@ nn.Linear = class Linear extends nn.Module{
 }
 nn.Embedding = class Embedding extends nn.Linear{
     constructor(shape_in, shape_out, bias = false) {
-        super(arguments);
+        super(...arguments);
     }
 
     forward(input) {
@@ -228,7 +225,7 @@ nn.Embedding = class Embedding extends nn.Linear{
 }
 nn.Dropout = class Dropout extends nn.Module{
     constructor(probability = 0.5, inplace = false){
-        super(arguments)
+        super(...arguments)
     }
     forward(x){
         return x.dropout(this.probability, this.inplace);
@@ -244,7 +241,7 @@ nn.conv1D = class conv1D extends nn.Module {
                 dilation = 1,
                 groups = 1,
                 bias = true) {
-        super(arguments);
+        super(...arguments);
     }
     __init__() {
         if (this.in_channels%this.groups)
@@ -350,7 +347,7 @@ nn.conv1D = class conv1D extends nn.Module {
 }
 nn.RMSNorm = class RMSNorm extends nn.Module {
     constructor(dim, bias = false) {
-        super(arguments);
+        super(...arguments);
     }
     __init__() {
         this.W = tensor.param(tensor.rand(this.dim))._label('RMSNorm - W');
@@ -471,7 +468,7 @@ function Conv1dBackward(input, grad_output, weight, bias = null, stride = 1, pad
 }
 nn.ReLU = class ReLU extends nn.Module{
     constructor(){
-        super(arguments);
+        super(...arguments);
     }
     forward(x){
         return x.relu();
@@ -479,7 +476,7 @@ nn.ReLU = class ReLU extends nn.Module{
 }
 nn.Sequential = class Sequential extends nn.Module{
     constructor(...modules){
-        super(arguments);
+        super(...arguments);
     }
     __init__(){
         this.modules = this.modules.map((m, i)=>{
