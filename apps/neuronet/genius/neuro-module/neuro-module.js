@@ -12,18 +12,20 @@ nn.Module = nn.NeuroModule = class NeuroModule extends Function{
             this.setModel(arguments[0]);
         }
         else{
-            let expr = this.constructor.toString();
-            expr = expr.replace(/\/\/.*/g, '').replace(/\/\*[^\*\/]*\*\//g, '');
-            const names = expr.match(/(?<=\()(.|(\r?\n))*?(?=\))/g)[0].split(',');
-            for (let i = 0; i<names.length; i++){
-                let name = names[i]
-                if (name.startsWith('...')){
-                    name = name.split('.').pop();
-                    this[name] = this.#props[name] ??= Array.from(arguments);
-                    break;
+            if(arguments.length){
+                let expr = this.constructor.toString();
+                expr = expr.replace(/\/\/.*/g, '').replace(/\/\*[^\*\/]*\*\//g, '');
+                const names = expr.match(/(?<=\()(.|(\r?\n))*?(?=\))/g)[0].split(',');
+                for (let i = 0; i<names.length; i++){
+                    let name = names[i]
+                    if (name.startsWith('...')){
+                        name = name.split('.').pop();
+                        this[name] = this.#props[name] ??= Array.from(arguments);
+                        break;
+                    }
+                    let [n, d] = name.split('=').map(i=>i.trim());
+                    this[n] = this.#props[n] ??= arguments[i] ?? (new Function("return "+d))();
                 }
-                let [n, d] = name.split('=').map(i=>i.trim());
-                this[n] = this.#props[n] ??= arguments[i] ?? (new Function("return "+d))();
             }
             this.__init__?.call(this.props);
         }
@@ -99,8 +101,34 @@ nn.Module = nn.NeuroModule = class NeuroModule extends Function{
     back(g){
         return g;
     }
-    get parameters(){
-
+    parameters(){
+        const params = [];
+        for(let p in this.props){
+            const param = this.props[p];
+            if(param instanceof torus){
+                if(param.isParam)
+                    params.push(param)
+            }
+            else if(param instanceof nn.Module){
+                params.push(...param.parameters())
+            }
+            else if(Array.isArray(param)){
+                let arr = param.map(a =>{
+                    if(a instanceof torus){
+                        if(a.isParam)
+                            return a;
+                    }
+                    else if(param instanceof nn.Module){
+                        return a.parameters();
+                    }
+                }).flat().filter(Boolean);
+                params.push(...arr);
+            }
+        }
+        return params;
+    }
+    get param_count(){
+        return this.parameters().reduce((r,tensor)=>r+tensor.size, 0)
     }
     get __children__(){
         let ch = Object.getOwnPropertyDescriptors(this);
