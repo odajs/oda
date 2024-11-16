@@ -283,13 +283,13 @@ export class tensor/* extends Array*/{
             else if(grad.length && grad.length === topo[0].size)
                 topo[0].update_grad(grad);
             else
-                throw Error(`Unknown value ${grad} for gradients```)
+                throw Error(`Unknown value ${grad} for gradients```);
         }
         topo.forEach((node, index) => {
             if (!node.src) return;
             node._back?.();
         })
-        return topo.last;
+        return topo.filter(t=>t.allowGrad).last;
     }
     backward(grad){
         return this.back(grad);

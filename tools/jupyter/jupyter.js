@@ -971,7 +971,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             return '    '+err.text + ` <u row="${err.row}" column="${err.column}" onclick="_findErrorPos(this)" style="cursor: pointer; color: -webkit-link">(${err.row+1}:${err.column})</u>`
         }).join('\n');
         if(error)
-            error = '<span bold style="padding: 2px; font-size: large; margin-bottom: 4px;">SyntaxError:</span><br>'+error;
+            error = '<span bold style="padding: 2px; font-size: large; margin-bottom: 4px; white-space: pre-wrap;">SyntaxError:</span><br>'+error;
         return error;
     },
     get editor(){
@@ -1395,7 +1395,7 @@ class JupyterCell extends ROCKS({
             }
         }
         catch (e){
-            let error = '<span bold style=\'padding: 2px; font-size: large; margin-bottom: 4px;\'>'+e.toString()+'</span>';
+            let error = '<span bold style=\'padding: 2px; font-size: large; margin-bottom: 4px; white-space: pre-wrap;\'>'+e.toString()+'</span>';
             jupyter.output_data.push('<div style="padding: 4px;" border error>'+error+'</div>');
             this.status = 'error';
             this.time = '0 ms';
