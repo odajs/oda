@@ -859,7 +859,6 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
     clearOutputs() {
         this.cell.hideOutput = false;
         this.cell.outputs = [];
-        this.jupyter.scrollToCell(this.cell);
     }
 })
 

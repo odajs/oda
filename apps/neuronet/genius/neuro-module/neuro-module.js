@@ -1,7 +1,7 @@
 import {tensor, torus} from "../torus/torus.js";
 export const nn = {};
 nn.Module = nn.NeuroModule = class NeuroModule extends Function{
-    #params = Object.create(null);
+    #props = Object.create(null);
     #label = undefined;
     losses  = [];
     _listeners = [];
@@ -19,19 +19,19 @@ nn.Module = nn.NeuroModule = class NeuroModule extends Function{
                 let name = names[i]
                 if (name.startsWith('...')){
                     name = name.split('.').pop();
-                    this[name] = this.#params[name] ??= Array.from(arguments);
+                    this[name] = this.#props[name] ??= Array.from(arguments);
                     break;
                 }
                 let [n, d] = name.split('=').map(i=>i.trim());
-                this[n] = this.#params[n] ??= arguments[i] ?? (new Function("return "+d))();
+                this[n] = this.#props[n] ??= arguments[i] ?? (new Function("return "+d))();
             }
-            this.__init__?.call(this.params);
+            this.__init__?.call(this.props);
         }
-        for (let n in this.params){
-            this[n] ??= this.params[n];
+        for (let n in this.props){
+            this[n] ??= this.props[n];
         }
 
-        this.params.losses ??= this.losses;
+        this.props.losses ??= this.losses;
         return new Proxy(this, {
             get(target, p, receiver) {
                 return target[p];
@@ -54,12 +54,12 @@ nn.Module = nn.NeuroModule = class NeuroModule extends Function{
         })
     }
     get model(){
-        return JSON.stringify(this.params, undefined, 2)
+        return JSON.stringify(this.props, undefined, 2)
     }
     setModel(model){
         for (let n in model){
             const item = model[n];
-            this[n] = this.#params[n] = ((item)=>{
+            this[n] = this.#props[n] = ((item)=>{
                 function recurse (obj){
                     if (Array.isArray(obj)){
                         return obj.map(i=> {
@@ -83,8 +83,8 @@ nn.Module = nn.NeuroModule = class NeuroModule extends Function{
             })(item)
         }
     }
-    get params(){
-        return this.#params;
+    get props(){
+        return this.#props;
     }
     forward(x, target, backward = true){
         return x;
@@ -139,11 +139,11 @@ nn.Module = nn.NeuroModule = class NeuroModule extends Function{
         return this;
     }
     get label(){
-        return this.#label ??= `${this.constructor.name} (${Object.keys(this.params).filter(p=>typeof this.params[p] !== "object").map(p => p+': ' + this.params[p]).join(', ')})`;
+        return this.#label ??= `${this.constructor.name} (${Object.keys(this.props).filter(p=>typeof this.props[p] !== "object").map(p => p+': ' + this.props[p]).join(', ')})`;
     }
     toJSON(){
         const props = Object.getOwnPropertyDescriptors(this);
-        const res = Object.assign({$: this.constructor.name},this.params);
+        const res = Object.assign({$: this.constructor.name},this.props);
         for(let key in props){
             const obj = props[key];
             if (!obj.enumerable) continue;
@@ -184,7 +184,7 @@ nn.Linear = class Linear extends nn.Module{
 
         if (new_shape.sum() <= this.shape_out.sum())
             return;
-        this.shape_out = this.params.shape_out = new_shape;
+        this.shape_out = this.props.shape_out = new_shape;
         let data = new this.W.dType(this.shape_in.mul() * this.shape_out.mul());
         data = data.map((_,i)=>{
             return this.W.data[i] ?? (Math.random()-.5) * .1;
