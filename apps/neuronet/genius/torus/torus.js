@@ -413,7 +413,7 @@ export class tensor/* extends Array*/{
         else
             result += `${this.dType.name}, ${this.backs.join(',')}\n${tab}(${data.replaceAll('[', '').replaceAll(']', '').trim()})`;
         if (this.isParam)
-            result = tab + 'Parameter containing:\n'+result;
+            result = tab + 'PARAM: '+result;
         return result + '\n';
     }
     get array() {
