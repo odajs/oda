@@ -1447,14 +1447,19 @@ class JupyterCell extends ROCKS({
         code = `with (context) {try{
 ${code}
         }catch(e){
-            let stack = e.stack;
-            stack = stack.split('<anonymous>:')[1] || '';
-            stack = stack.split(')')[0] || ''
-            stack = stack.split(':');
-            let row = (stack[0] || 0) - 3;
-            let column = stack[1];
-            let mess = e.message + \` <u row="\$\{row-1\}" column="\$\{column\}" onclick="_findErrorPos(this)" style="cursor: pointer; color: -webkit-link">(\$\{row\}:\$\{column\})</u>\`
-            throw new Error(mess)
+            let idx = e.stack.indexOf('<anonymous>:');
+            if(idx>-1){
+                  let stack = e.stack;
+                stack = stack.split('<anonymous>:')[1] || '';
+                stack = stack.split(')')[0] || ''
+                stack = stack.split(':');
+                let row = (stack[0] || 0) - 3;
+                let column = stack[1];
+                let mess = e.message + \` <u row="\$\{row-1\}" column="\$\{column\}" onclick="_findErrorPos(this)" style="cursor: pointer; color: -webkit-link">(\$\{row\}:\$\{column\})</u>\`
+                throw new Error(mess)
+            }
+            throw new Error(e.stack)
+     
         }}`;
         return code;
     }
