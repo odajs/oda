@@ -409,7 +409,7 @@ export class tensor/* extends Array*/{
         let tab = ('  ').repeat(step)
         let result  = tab + this.type + ` ${this.label}: `;
         if (this.dim)
-            result += `shape(${this.shape}), size(${this.size.toLocaleString()}), ${this.dType.name}, ${this.backs.join(',')}\n${tab}(${data})`;
+            result += `shape(${this.shape}), size(${this.size.toLocaleString()}), ${this.dType.name}, ${this.backs.join(',')}\n${tab}[${data}]`;
         else
             result += `${this.dType.name}, ${this.backs.join(',')}\n${tab}(${data.replaceAll('[', '').replaceAll(']', '').trim()})`;
         if (this.isParam)
