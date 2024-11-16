@@ -1459,7 +1459,6 @@ ${code}
                 throw new Error(mess)
             }
             throw new Error(e.stack)
-     
         }}`;
         return code;
     }

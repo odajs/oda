@@ -561,7 +561,7 @@ torus.prototype.pow = function (other){
     return this._element_wise_operator(other, {forward:  '(x, y) => x ** y', backward_0: '(g, y) => y * (g ** (y - 1))', backward_1: '(x, g) => x ** g * Math.log(x)'});
 }
 torus.$ = function (...$){
-    return Object.assign({keepdim: false, dType: Float32Array, out: null}, ...$)
+    return Object.assign({keepdim: false, dType: Float32Array}, ...$)
 }
 torus.prototype.softmax = function (dim = -1, $ = {}){
     $ = torus.$($);
@@ -1681,7 +1681,7 @@ convertors:{
         }
         return out;
     }
-    torus.cat = torus.concat  = (tensors = [], dim=-1, $ = {out: null}) => {
+    torus.cat = torus.concat  = (tensors = [], dim=-1, $ = {}) => {
         const first = tensors.first;
         dim = first.check_dim(dim);
         let out = first.getOut(tensors, dim);
@@ -1694,7 +1694,7 @@ convertors:{
                     const old = r[i] || 0;
                     if(i === dim)
                         return old + s;
-                    if(old && old != s)
+                    if(old && old !== s)
                         throw new Error(`torus.concat(): incorrect dim ${i} on tensor №${t} have size ${s} but must be ${old}`);
                     return s;
                 })
