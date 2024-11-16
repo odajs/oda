@@ -198,10 +198,10 @@ nn.Linear = class Linear extends nn.Module{
     __init__() {
         this.size_in = this.shape_in.mul();
         this.size_out = this.shape_out.mul();
-        let w = tensor.empty(this.shape_in, this.shape_out);
+        let w = tensor.rand_init(this.shape_in, this.shape_out);
         this.weight = tensor.param(w._label(w.label + ': Weights'));
         if(this.bias){
-            let b = tensor.empty(this.shape_out);
+            let b = tensor.rand_init(this.shape_out);
             this.B = tensor.param(b._label(b.label + ': Bias'));
         }
 

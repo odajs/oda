@@ -283,7 +283,7 @@ export class tensor/* extends Array*/{
             else if(grad.length && grad.length === topo[0].size)
                 topo[0].update_grad(grad);
             else
-                throw Error(`Unknown value ${grad} for gradients```);
+                throw Error(`Unknown value ${grad} for gradients`);
         }
         topo.forEach((node, index) => {
             if (!node.src) return;
@@ -1002,13 +1002,13 @@ einops:{
         })
         return {inputs, output, vars}
     }
-    torus.einsum = (expression, tensors = [], $ = {})=>{
+    torus.einsum = (expression, tensors = [], $ = {}, single_back = '')=>{
         tensors = torus.flat(tensors);
         const shapes = tensors.map(i=>i.shape);
+        $ = torus.$({turbo: false}, $);
         let key = expression + ': [' + shapes.join(']-[') + '] ' + JSON.stringify($);
-        $ = torus.$({forward: '', backward_0: '', turbo: false}, $);
         let inputs, out_shape, output;
-        let fn = fn_cache?.einsum?.[key];
+        let fn = fn_cache?.einsum?.[key+single_back];
         if (!fn){
             const subscrs = torus._einops_parse(expression);
             if(subscrs.inputs.length > tensors.length)
@@ -1127,23 +1127,26 @@ einops:{
                     let tab = ' '.repeat(axes.length * 2);
                     let s1 = '';
                     inputs.forEach((input, i)=>input
-                    .forEach(a=>{
-                        if(a.n === out.n)
-                            s1 += `, _${a.n}${i} = 0`;
-                    }))
+                        .forEach(a=>{
+                            if(a.n === out.n)
+                                s1 += `, _${a.n}${i} = 0`;
+                        }))
                     let s2 = '';
                     inputs.forEach((input, i)=>input
-                    .forEach(a=>{
-                        if(a.n === out.n)
-                            s2 += `, _${a.n}${i} += ${a.s/* || 1*/}`;
-                    }))
+                        .forEach(a=>{
+                            if(a.n === out.n)
+                                s2 += `, _${a.n}${i} += ${a.s/* || 1*/}`;
+                        }))
 
                     let expr = tab + `for(let ${out.n} = 0, ${out.n}_ = 0${s1}; ${out.n}<${out.d}; ${out.n}++, ${out.n}_ += ${out.s}${s2}){\n`;
                     return expr;
                 }).join('');
 
                 let tab = ' '.repeat(axes.length * 2);
-                code += tab + `  let sum = 0;\n`;
+                if(!single_back)
+                    code += tab + `  let sum = 0;\n`;
+                else
+                    code += tab + `  let sum = out_data[${output.map(ax=>ax.n+'_').join(' + ')}];\n`;
                 inputs.forEach((input, i)=>{
                     input.forEach(inp=>{
                         if(axes.includes(inp.n)) return;
@@ -1151,44 +1154,54 @@ einops:{
                         let tab = ' '.repeat(axes.length * 2);
                         let s1 = ''
                         inputs.forEach((input, i)=>input
-                        .forEach(a=>{
-                            if(a.n === inp.n)
-                                s1 += `, _${a.n}${i} = 0`;
+                            .forEach(a=>{
+                                if(a.n === inp.n)
+                                    s1 += `, _${a.n}${i} = 0`;
 
-                        }))
+                            }))
                         let s2 = '';
                         inputs.forEach((input, i)=>input
-                        .forEach(a=>{
-                            if(a.n === inp.n)
-                                s2 += `, _${a.n}${i} += ${a.s/* || 1*/}`;
-                        }))
+                            .forEach(a=>{
+                                if(a.n === inp.n)
+                                    s2 += `, _${a.n}${i} += ${a.s/* || 1*/}`;
+                            }))
                         code += tab + `for(let ${inp.n} = 0 ${s1}; ${inp.n}<${inp.d}; ${inp.n}++ ${s2}){\n`;
                     })
                     let tab = ' '.repeat(axes.length * 2);
                 })
                 tab = ' '.repeat(axes.length * 2);
-                inputs.forEach((input, i)=>{
-                    code += tab + `  val_${i} = data_${i}[${input.map(ax=>'_'+ax.n+i).join(' + ')}];\n`;
-                })
-                code += tab + `  sum += func(${inputs.map((_,i)=>'val_'+i).join(', ')});\n`;
+                if(single_back){
+                    code += tab + `  data_${0}[${inputs[0].map(ax=>'_'+ax.n+0).join(' + ')}] += sum;\n`;
+                }
+                else{
+                    inputs.forEach((input, i)=>{
+                        code += tab + `  val_${i} = data_${i}[${input.map(ax=>'_'+ax.n+i).join(' + ')}];\n`;
+                    })
+                    code += tab + `  sum += func(${inputs.map((_,i)=>'val_'+i).join(', ')});\n`;
+                }
+
 
                 axes.forEach((out, o)=>{
                     let idx = axes.length - o;
-                    if(idx === output.length)
+                    if(idx === output.length && !single_back){
                         code += ' '.repeat(2 * idx) + `  out_data[${output.map(ax=>ax.n+'_').join(' + ')}] = sum;\n`;
+                    }
                     code +=' '.repeat(2 * idx)+`}\n`
                 });
 
-                if(!output.length){
+                if(!output.length && !$.single_back){
                     code += `  out_data[0] = sum;\n`;
                 }
 
                 code += `if(main) main.setOut(out, using, '${key}');\n`
-                code += 'return out;\n'
+                if(single_back)
+                    code += 'return main;\n'
+                else
+                    code += 'return out;\n'
             }
             // >code
             fn = new Function('t', code);
-            fn = (fn_cache.einsum[key] = {fn, out_shape, inputs, output}).fn;
+            fn = (fn_cache.einsum[key+single_back] = {fn, out_shape, inputs, output}).fn;
         }
         else{
             out_shape = fn.out_shape;
@@ -1204,29 +1217,38 @@ einops:{
             throw new Error(`SubcodeError torus.einsum('${expression}'):\n`+e.message + '\n' + e.stack)
         }
         out._back = function (){
+            let expr, sources, single = tensors.length === 1;
             tensors.forEach((t, i)=>{
                 if(!t.allowGrad) return;
-                const in_vars = inputs.map((input, ii)=>{
-                    if(ii === i)
-                        return output.map(ax=>ax.n).join('');
-                    return input.map(ax=>ax.n).join('');
-                })
-                let out_vars = inputs[i].map(i=>i.n);
-                // let adds = inputs[i].filter(ax=>!in_vars.some(i => i.includes(ax.n)))
-                let expr = in_vars.join(',')  + '->' + out_vars.join('');
-                // if (adds.length)
-                //     expr += JSON.stringify(adds.map(a=>{
-                //         delete a.used;
-                //         return a;
-                //     }));
-                let sources = tensors.map((tt,ii)=>{
-                    if(ii === i)
-                        return out;
-                    return tt;
-                })
-                $.forward = $['backward_'+ i]?.toString();
-                let out_back = torus.einsum(expr, sources, $);
-                t.update_grad(out_back.data);
+                if(!single){
+                    const in_vars = inputs.map((input, ii)=>{
+                        if(ii === i)
+                            return output.map(ax=>ax.n).join('');
+                        return input.map(ax=>ax.n).join('');
+                    })
+                    let out_vars = inputs[i].map(i=>i.n);
+                    // let adds = inputs[i].filter(ax=>!in_vars.some(i => i.includes(ax.n)))
+                    expr = in_vars.join(',')  + '->' + out_vars.join('');
+                    // if (adds.length)
+                    //     expr += JSON.stringify(adds.map(a=>{
+                    //         delete a.used;
+                    //         return a;
+                    //     }));
+                    sources = tensors.map((tt,ii)=>{
+                        if(ii === i)
+                            return out;
+                        return tt;
+                    })
+                    $.forward = $['backward_'+ i]?.toString();
+                }
+                else{
+                    expr = expression;
+                    sources = tensors;
+                }
+
+                let out_back = torus.einsum(expr, sources, $, single);
+                if(!single)
+                    t.update_grad(out_back.data);
             })
         }
         return out;
@@ -1386,6 +1408,20 @@ generators:{
         }
         return torus.tensor(new Int32Array(size))._label('zeros')._shape(shape);
     }
+    torus.rand_init = (...shape)=>{
+        shape = torus.flat(shape);
+        let size = shape.mul();
+        if(!size){
+            size = 1;
+            shape = [1]
+        }
+        let k = 2/size;
+        const data = new Float32Array(size);
+        while(size--)
+            data[size] = (torus.generator() - .5) * k;
+        return torus.tensor(data)._label('rand_init')._shape(shape);
+    }
+
     torus.empty = (...shape)=>{
         shape = torus.flat(shape);
         let size = shape.mul();
