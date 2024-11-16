@@ -125,7 +125,7 @@ nn.Module = nn.NeuroModule = class NeuroModule extends Function{
                 params.push(...arr);
             }
         }
-        return params;
+        return params.flat();
     }
     get param_count(){
         return this.parameters().reduce((r,tensor)=>r+tensor.size, 0)
