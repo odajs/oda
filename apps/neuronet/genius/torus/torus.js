@@ -1204,13 +1204,13 @@ einops:{
                     return input.map(ax=>ax.n).join('');
                 })
                 let out_vars = inputs[i].map(i=>i.n);
-                let adds = inputs[i].filter(ax=>!in_vars.some(i => i.includes(ax.n)))
+                // let adds = inputs[i].filter(ax=>!in_vars.some(i => i.includes(ax.n)))
                 let expr = in_vars.join(',')  + '->' + out_vars.join('');
-                if (adds.length)
-                    expr += JSON.stringify(adds.map(a=>{
-                        delete a.used;
-                        return a;
-                    }));
+                // if (adds.length)
+                //     expr += JSON.stringify(adds.map(a=>{
+                //         delete a.used;
+                //         return a;
+                //     }));
                 let sources = tensors.map((tt,ii)=>{
                     if(ii === i)
                         return out;
