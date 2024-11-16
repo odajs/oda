@@ -1063,7 +1063,7 @@ einops:{
                 let input = shape.map((d, i)=>{
                     const n = subs[i];
                     const old = subscrs.axes[n];
-                    if(old && old != d)
+                    if(old && old != d && old !== 1 && d !== 1)
                         throw new Error(`torus.einsum('${expression}'): subscript '${n}' has size ${d} for tensor ${s} which does not broadcast with previously seen size ${old}`);
                     subscrs.axes[n] = d;
                     return {n, d}
