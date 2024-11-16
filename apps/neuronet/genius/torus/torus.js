@@ -278,14 +278,21 @@ export class tensor/* extends Array*/{
         build_topo(this);
         topo.reverse();
         if(grad){
-            topo[0].grad = grad;
+            if(grad instanceof Number)
+                topo[0].data.fill(grad);
+            else if(grad.length && grad.length === topo[0].size)
+                topo[0].update_grad(grad);
+            else
+                throw Error(`Unknown value ${grad} for gradients```)
         }
         topo.forEach((node, index) => {
             if (!node.src) return;
             node._back?.();
         })
     }
-
+    backward(grad){
+        return this.back(grad);
+    }
     static get generator(){
         return torus.__random_generator__;
     }
