@@ -278,7 +278,7 @@ export class tensor/* extends Array*/{
         build_topo(this);
         topo.reverse();
         if(grad){
-            if(grad instanceof Number)
+            if(grad.constructor === Number)
                 topo[0].data.fill(grad);
             else if(grad.length && grad.length === topo[0].size)
                 topo[0].update_grad(grad);
@@ -289,6 +289,7 @@ export class tensor/* extends Array*/{
             if (!node.src) return;
             node._back?.();
         })
+        return topo.last;
     }
     backward(grad){
         return this.back(grad);
