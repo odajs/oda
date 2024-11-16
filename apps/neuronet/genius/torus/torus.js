@@ -913,27 +913,21 @@ systems:{
     torus.prototype._element_wise_operator = function (other, $ = {forward: '', backward_0: '', backward_1: ''}){
         $ = torus.$($);
         other = torus.from(other);
-        let max_d = Math.max(this.dim, other.dim);
-        const t_vars = torus.genVarsArray(this.dim);
-        const o_vars = torus.genVarsArray(other.dim, true);
-        const t_shape = this.shape.toReversed();
-        const o_shape = other.shape.toReversed();
-        const outs = [];
-        for(let i = 0; i<max_d; i++){
-            let t_axis = t_vars[i] || '';
-            let o_axis = o_vars[i] || '';
-            let t_dim = t_shape[i] || 0;
-            let o_dim = o_shape[i] || 0;
-            let axis = t_axis || o_axis;
-            if(t_dim === o_dim)
-                o_vars[i] = axis;
-            else if(t_dim > o_dim)
-                axis = t_axis;
-            else
-                axis = o_axis;
-            outs.push(axis);
+        let expr = ''
+        if(this.dim<other.dim){
+            expr = torus.genVarsArray(this.dim).join('');
+            let out = '...' + expr;
+            expr += ', ' + out + '->' +out;
         }
-        let expr = (t_vars.reverse().join('') || '$') + ', ' + (o_vars.reverse().join('') || '$') + ' -> ' + outs.reverse().join('');
+        else if(this.dim>other.dim){
+            expr = torus.genVarsArray(other.dim).join('');
+            let out = '...' + expr;
+            expr = out + ', ' + expr + '->' +out;
+        }
+        else{
+            expr = torus.genVarsArray(other.dim).join('');
+            expr = expr + ', ' + expr + '->' + expr;
+        }
         const out = torus.einsum(expr,  [this, other], $);
         out._label(label_from_error() + ' ('+expr+')');
         return out;
@@ -1546,20 +1540,14 @@ aggregates:{
     torus.prototype.var = function(dims = [], $ = {}){
         $ = torus.$($, {correction: 1});
         const avg = this.mean(dims, $);
-        let s1 = this.shape_info;
-        let s2 = avg.shape_info;
-        s1 = s1.map((v1, i)=>{
-            let v2 = s2[i];
-            if(v2 === undefined || v2.dim === v1.dim)
-                return v1.char;
-            return v1.char.toUpperCase();
-        }).join('')
-        s2 = s2.map(v2=>v2.char).join('');
-        let expr = s1+','+s2+'->'+ s2;
+        let s = this.shape_info.map(v2=>v2.char).join('');
+        let expr = s+','+s+'->'+ s;
         $.forward = '(x, y)=>(x - y) ** 2';
+        $.backward_0 = '(x, y)=>2 * (x - y)';
+        $.backward_1 = '(x, y)=>(-2 * (x - y))';
         const sum = torus.einsum(expr, [this, avg], $);
         const multiplier = 1/Math.max(0, this.size / avg.size - $.correction);
-        const out = sum.multiply(multiplier);
+        const out = sum.mul(multiplier);
         out._label(`var(dims=[${dims}], ${JSON.stringify($)}):\'${expr}\'`);
         return out;
     }
