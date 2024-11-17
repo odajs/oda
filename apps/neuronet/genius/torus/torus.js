@@ -1002,7 +1002,7 @@ einops:{
         $ = torus.$({turbo: false}, $);
         let key = expression + ': [' + shapes.join(']-[') + '] ' + JSON.stringify($);
         let inputs, out_shape, output;
-        let fn = fn_cache?.einsum?.[key+single_back];
+        let fn = torus.fn_cache?.einsum?.[key+single_back];
         if (!fn){
             const subscrs = torus._einops_parse(expression);
             if(subscrs.inputs.length > tensors.length)
@@ -1056,9 +1056,10 @@ einops:{
                 let m = 1;
                 let input = shape.map((d, i)=>{
                     const n = subs[i];
-                    const old = subscrs.axes[n];
-                    if(old && old != d && old !== 1 && d !== 1)
+                    const old = subscrs.axes[n] || 1;
+                    if(old && old !== d && old !== 1 && d !== 1)
                         throw new Error(`torus.einsum('${expression}'): subscript '${n}' has size ${d} for tensor ${s} which does not broadcast with previously seen size ${old}`);
+                    d = Math.max(old, d);
                     subscrs.axes[n] = d;
                     return {n, d}
                 }).toReversed().map((ax)=>{
@@ -1195,7 +1196,7 @@ einops:{
             }
             // >code
             fn = new Function('t', code);
-            fn = (fn_cache.einsum[key+single_back] = {fn, out_shape, inputs, output}).fn;
+            fn = (torus.fn_cache.einsum[key+single_back] = {fn, out_shape, inputs, output}).fn;
         }
         else{
             out_shape = fn.out_shape;
@@ -1532,8 +1533,9 @@ aggregates:{
     }
     torus.prototype.mean = function(dims = [], $ = {}){
         $ = torus.$($);
-        let sum = this.sum(...arguments);
-        let out = sum.divide(this.size / sum.size);
+        let sum = this.sum(dims, $);
+        let devider = this.size / sum.size;
+        let out = sum.divide(devider);
         out._label(sum.label.replace('sum', 'mean'))
         return out;
     }
@@ -1642,10 +1644,10 @@ convertors:{
         if (slicers.length>this.dim)
             throw new Error(`tensor.slice(${slicers}): indexError: too many indices for tensor of dimension ${this.dim}`);
         let key = '(' + this.shape.toString() + '):  [' + slicers.map(i=>i).join(',')+']';
-        let fn = fn_cache.slice?.[key];
+        let fn = torus.fn_cache.slice?.[key];
         if (!fn){
             let code = slice_codegenerator.call(this, slicers)
-            fn_cache.slice[key] = fn = new Function('tensor', 'out', code);
+            torus.fn_cache.slice[key] = fn = new Function('tensor', 'out', code);
         }
         let out = this.getOut(this, key);
         if (!out){
@@ -1654,10 +1656,10 @@ convertors:{
             if (this.allowGrad){
                 out._back = ()=>{
                     let key = '('+ this.shape.toString()+'): ' + slicers.map(i=>i).join(',') + ': back'
-                    let fn = fn_cache.slice?.[key];
+                    let fn = torus.fn_cache.slice?.[key];
                     if (!fn){
                         let code = slice_codegenerator.call(this, slicers, true)
-                        fn_cache.slice[key] = fn = new Function('tensor', 'out', code);
+                        torus.fn_cache.slice[key] = fn = new Function('tensor', 'out', code);
                     }
                     fn(this, out);
                 }
@@ -1986,7 +1988,7 @@ torus.prototype.pad = function(paddings, mode = 'constant', constant_value = 0) 
     return result;
 }
 
-const fn_cache = {einsum:{}, slice: {}};
+torus.fn_cache = {einsum:{}, slice: {}};
 
 globalThis.range ??= (count = 0)=>{
     return Array(count).fill().map((_, i)=>i);
