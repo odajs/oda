@@ -929,13 +929,13 @@ systems:{
             expr = expr + ', ' + expr + '->' + expr;
         }
         const out = torus.einsum(expr,  [this, other], $);
-        out._label(label_from_error() + ' ('+expr+')');
+        out._label(label_from_error(1) + ' ('+expr+')');
         return out;
     }
     torus.prototype._element_wise_function = function ($ = {forward: '', backward_0: ''}){
         $ = torus.$($);
         const forward = eval($.forward);
-        let label = label_from_error();
+        let label = label_from_error(1);
         let out = $.out || this.getOut(this, label);
         if(out){
             let i = this.size;
@@ -2004,7 +2004,6 @@ for (let n in descr){
         return d.value.call(tensor, ...params);
     }
 }
-
-function label_from_error(){
-    return new Error().stack.split('at torus.')?.[1].split(' ')?.[0] || 'torus';
+function label_from_error(deep = 0){
+    return new Error().stack.split('at torus.')?.[1 + deep].split(' ')?.[0] || 'torus';
 }
