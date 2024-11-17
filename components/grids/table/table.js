@@ -253,7 +253,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
          * @param {TableCellInfo} v
         */
         set focusedCell(v) {
-            if (!v || v.column.$flex) return;
+            if (!v || v.column.$flex || !this.body) return;
 
             const elem = this.body.findCellByCoordinates(v);
 
