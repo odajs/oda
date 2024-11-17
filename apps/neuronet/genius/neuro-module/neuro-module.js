@@ -101,31 +101,22 @@ nn.Module = nn.NeuroModule = class NeuroModule extends Function{
     back(g){
         return g;
     }
-    parameters(){
-        const params = [];
-        for(let p in this.props){
-            const param = this.props[p];
-            if(param instanceof torus){
-                if(param.isParam)
-                    params.push(param)
+    parameters(items = Object.values(this.props)){
+        let props = items.map(prop=>{
+            if(prop instanceof torus){
+                if(prop.isParam)
+                    return prop;
             }
-            else if(param instanceof nn.Module){
-                params.push(...param.parameters())
+            else if(prop instanceof nn.Module){
+                return prop.parameters();
             }
-            else if(Array.isArray(param)){
-                let arr = param.map(a =>{
-                    if(a instanceof torus){
-                        if(a.isParam)
-                            return a;
-                    }
-                    else if(param instanceof nn.Module){
-                        return a.parameters();
-                    }
-                }).flat().filter(Boolean);
-                params.push(...arr);
+            else if(Array.isArray(prop)){
+                return this.parameters(prop);
             }
-        }
-        return params.flat();
+        })
+        while(props.some(p=>Array.isArray(p)))
+            props = props.flat();
+        return props.filter(Boolean);
     }
     get param_count(){
         return this.parameters().reduce((r,tensor)=>r+tensor.size, 0)
@@ -141,7 +132,7 @@ nn.Module = nn.NeuroModule = class NeuroModule extends Function{
             else if (prop.value instanceof tensor){
                 result.push({[n]:prop.value})
             }
-            else if (Array.isArray(prop.value) && prop.value[0]  instanceof  NeuroModule ){
+            else if (Array.isArray(prop.value) && prop.value.some(v => v instanceof NeuroModule || v instanceof tensor)){
                 result.push({[n]:prop.value.map(i=>i)})
             }
         }
