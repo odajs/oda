@@ -580,7 +580,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         i = i.slice(1);
                     }
                 }
-                src += 'debugger; ' + i + '\n';
+                src += 'debugger;\n' + i + '\n';
             } else {
                 src += i + '\n';
             }
@@ -1413,8 +1413,9 @@ class JupyterCell extends ROCKS({
         code = code.replace(/import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, '__v__ =  $1 = await import($2$3$4); for(let i in __v__) run_context.i = __v__[i]');
         code = code.replace(/(import\s*\()/gm, ' ODA.$1');
         code = code.replace(/^\s*print\s*\((.*)\)/gm, ' log($1)');
-        code = code.split('\n').map(s=>{
-            s = s.trim();
+        code = code.split('\n').map(row =>{
+
+            let s = row.trim();
             if (s[0] === '[' || s[0] === '{')
                 s = ';' + s;
             let cnt = 0;
@@ -1440,9 +1441,9 @@ class JupyterCell extends ROCKS({
                         s = s.substring(0, cnt);
                     s = 'log(\"<label bold onclick=\'_findCodeEntry(this)\' style=\'text-decoration: underline; padding: 2px; font-size: large; margin-bottom: 4px; cursor: pointer; color: -webkit-link\'>'+s.replaceAll('"', '\\\"')+'</label>\\\n\", '+s+')';
                 }
-
+                row = s;
             }
-            return s;
+            return row;
         }).join('\n');
         code = `with (context) {try{
 ${code}

@@ -562,7 +562,7 @@ torus.prototype.minus = function (other){
 torus.prototype.mul = torus.prototype.multiply = function (other){
     return this._element_wise_operator(other, {forward:  '(x, y) => x * y', backward_0: '(g, y) => g * y', backward_1: '(x, g) => x * g'});
 }
-torus.prototype.divide = function (other){
+torus.prototype.div = torus.prototype.divide = function (other){
     return this._element_wise_operator(other, {forward: '(x, y) => x / y', backward_0: '(g, y) => g / y', backward_1: '(x, g) => -x / (g ** 2)'});
 }
 torus.prototype.pow = function (other){
