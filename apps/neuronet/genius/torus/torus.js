@@ -50,7 +50,7 @@ export class tensor/* extends Array*/{
                 else if (data?.length)
                     this['#shape'] = [data?.length]
                 else if (!data?.buffer){
-                    this['#shape'] = [1];
+                    // this['#shape'] = [1];
                     data = new this.dType([data])
                 }
 
@@ -159,7 +159,7 @@ export class tensor/* extends Array*/{
         shape = torus.flat(...shape);
         if(Object.equal(shape[0]?.constructor, tensor))
             shape = shape[0].shape;
-        const size = shape.mul()
+        const size = shape.mul() || 1;
         if (size !== this.size)
             throw new Error(`_shape(${this.shape}) to (${shape}) not allow.`);
         this.#shape_multipliers = undefined;
