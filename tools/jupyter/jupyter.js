@@ -403,7 +403,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run()" :error="cell?.autoRun" :success="!cell?.time" style="margin: 4px; border-radius: 50%;"></oda-button>
                     <div>{{time}}</div>
                     <div>{{status}}</div>
-                    <oda-icon info ~if="lastScrollTop >= 0 && (cell?.outputs?.length || cell?.controls?.length) && !cell?.hideOutput && cell.type === 'code'"  :icon-size icon="icons:expand-less" @tap="scrollToLast" style="margin: 8px; border-radius: 50%;"></oda-icon>
+                    <oda-icon info ~if="lastRange" :icon-size icon="carbon:3d-cursor-alt" @tap="scrollToLast" style="margin: 8px; border-radius: 50%;"></oda-icon>
                 </div>
             </div>
             <div class="pe-preserve-print vertical no-flex" style="width: calc(100% - 34px); position: relative;">
@@ -586,24 +586,18 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     },
     scrollToOutput() {
         this.async(() => {
-            this.lastScrollTop = -1;
             if (this.control_bottom < (this.jupyter_height + this.jupyter_scroll_top) /*&& this.control_offsetBottom > this.jupyter_scroll_top*/)
                 return;
             if (this.cell?.hideOutput)
                 return;
-            this.lastScrollTop = this.jupyter.scrollTop;
-            this.lastRange = this.control?.ace?.getSelectionRange();
             if (this.output_height>this.jupyter_height)
                 this.jupyter.scrollTop = this.control_bottom - 64;
             else
                 this.$('#outputs')?.scrollIntoView({block: "end"});
         })
     },
-    lastScrollTop: -1,
     scrollToLast() {
-        if (this.lastScrollTop >= 0) {
-            // this.jupyter.scrollTop = this.lastScrollTop;
-            this.lastScrollTop = -1;
+        if (this.lastRange) {
             const range = new ace.Range(this.lastRange.start.row, this.lastRange.start.column, this.lastRange.end.row , this.lastRange.end.column);
             this.control?.ace.session.selection.setRange(range);
             this.control.editor.fire('change-cursor');
@@ -619,6 +613,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         return this.offsetHeight;
     },
     $pdp: {
+        lastRange: undefined,
         get control_bottom(){
             return this.offsetTop + this.control_height;
         },
@@ -936,6 +931,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     },
     on_change_cursor(e) {
         this.throttle('change_cursor', () => {
+            this.lastRange = this.ace?.getSelectionRange();
             const row = this.ace.getSelectionRange().start.row,
                 rowsLength = this.session.getScreenLength(),
                 editorHeight = this.$('oda-code-editor').offsetHeight,
