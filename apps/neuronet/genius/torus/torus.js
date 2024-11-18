@@ -1382,7 +1382,7 @@ generators:{
 
     torus.eye = (...shape)=>{
         shape = torus.flat(shape);
-        if (shape.length === 1)   //Если укана только одна ось, то создаётся вторая того же размера. Тензор приводится к 2-D.
+        if (shape.length === 1)   //Если указана только одна ось, то создаётся вторая того же размера. Тензор приводится к 2-D.
             shape[1] = shape[0];
         const columns = shape[shape.length - 1] ?? 0;
         const rows = shape[shape.length - 2] ?? 0;
