@@ -81,8 +81,9 @@ export class tensor/* extends Array*/{
         if(!this.allowGrad) return;
         const key = label_from_error()+ '.' + (src.map?.(t=>t.id).join('.') || src.id) + ' ' + add_key;
         const out = this.out_map[key];
-        out?.to_fwd_state = true;
-        return out
+        if(out)
+            out.to_fwd_state = true;
+        return out;
     }
     set out(n){
         this.setOut(n);
