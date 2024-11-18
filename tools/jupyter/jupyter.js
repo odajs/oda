@@ -395,9 +395,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     width: 100%!important;
                 }
             }
-            #control {
-                margin-left: {{cell?.type==='text'?'-8px':0}};
-            }
         </style>
 
         <div class="horizontal">
