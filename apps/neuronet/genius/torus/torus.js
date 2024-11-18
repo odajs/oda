@@ -1008,9 +1008,9 @@ einops:{
     torus.einsum = (expression, tensors = [], $ = {}, single_back = '')=>{
         tensors = torus.flat(tensors);
         const shapes = tensors.map(i=>i.shape);
-        $ = torus.$({turbo: torus.TURBO}, $);
+        $ = torus.$({turbo: false}, $);
         let key = expression + ': [' + shapes.join(']-[') + '] ' + JSON.stringify($);
-    // >key
+        // >key
         let inputs, out_shape, output;
         let fn = torus.fn_cache?.einsum?.[key+single_back];
         if (!fn){
@@ -1194,13 +1194,16 @@ einops:{
                     code +=  tab + `}\n`;
                 });
 
+                if(!output.length){
+                    code +=  `out_data[0] = sum;\n`;
+                }
                 code += `\nif(main) main.setOut(out, using, key);\n`
                 if(single_back)
                     code += 'return main;\n'
                 else
                     code += 'return out;\n'
             }
-        // >code
+            // >code
             fn = new Function('t', code);
             fn = (torus.fn_cache.einsum[key+single_back] = {fn, out_shape, inputs, output}).fn;
         }

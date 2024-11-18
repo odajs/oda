@@ -403,7 +403,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run()" :error="cell?.autoRun" :success="!cell?.time" style="margin: 4px; border-radius: 50%;"></oda-button>
                     <div>{{time}}</div>
                     <div>{{status}}</div>
-                    <oda-icon info ~if="lastRange" :icon-size icon="carbon:3d-cursor-alt" @tap="scrollToLast" style="margin: 8px; border-radius: 50%;"></oda-icon>
+                    <oda-icon ~if="lastRange" :icon-size :icon="lastRange?.run?'bootstrap:bookmark':'bootstrap:bookmark-check'" @tap="scrollToMarked" style="margin: 8px; color: blue" title="scroll to marked"></oda-icon>
                 </div>
             </div>
             <div class="pe-preserve-print vertical no-flex" style="width: calc(100% - 34px); position: relative;">
@@ -548,7 +548,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     resolve();
                     if(autorun !== true){
                         this.cell?.next?.clearTimes();
-                        this.scrollToOutput();
+                        this.scrollToRunOutputs();
                     }
                 }
             }, 50)
@@ -584,8 +584,10 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         })
         cell.srcWithBreakpoints = src;
     },
-    scrollToOutput() {
+    scrollToRunOutputs() {
         this.async(() => {
+            this.lastRange = this.control?.ace?.getSelectionRange() || { start: { row: 0, column: 0 }, end: { row: 0, column: 0 } };
+            this.lastRange.run = true; 
             if (this.control_bottom < (this.jupyter_height + this.jupyter_scroll_top) /*&& this.control_offsetBottom > this.jupyter_scroll_top*/)
                 return;
             if (this.cell?.hideOutput)
@@ -596,10 +598,11 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 this.$('#outputs')?.scrollIntoView({block: "end"});
         })
     },
-    scrollToLast() {
+    scrollToMarked() {
         if (this.lastRange) {
             const range = new ace.Range(this.lastRange.start.row, this.lastRange.start.column, this.lastRange.end.row , this.lastRange.end.column);
             this.control?.ace.session.selection.setRange(range);
+            this.isScrollToMarked = true;
             this.control.editor.fire('change-cursor');
         }
     },
@@ -614,6 +617,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     },
     $pdp: {
         lastRange: undefined,
+        isScrollToMarked: false,
         get control_bottom(){
             return this.offsetTop + this.control_height;
         },
@@ -931,6 +935,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     },
     on_change_cursor(e) {
         this.throttle('change_cursor', () => {
+            this.ace.focus();
             this.lastRange = this.ace?.getSelectionRange();
             const row = this.ace.getSelectionRange().start.row,
                 rowsLength = this.session.getScreenLength(),
@@ -941,24 +946,32 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 screenTop = this.jupyter.scrollTop,
                 screenBottom = screenTop + this.jupyter.offsetHeight - lineHeight * 2,
                 isVisible = rowTop >= screenTop && rowTop <= screenBottom;
-            if (isVisible)
+            if (this.isScrollToMarked) {
+                this.jupyter.scrollToCell(this.cell, delta - lineHeight * 4);
+            }
+            if (isVisible || this.isScrollToMarked) {
+                this.isScrollToMarked = false;
                 return;
+            }
+            this.isScrollToMarked = false;
             if (rowTop < screenTop)
                 this.jupyter.scrollToCell(this.cell, delta - lineHeight);
             else
                 this.jupyter.scrollToCell(this.cell, delta - this.jupyter.offsetHeight + lineHeight * 2);
-            this.ace.focus();
         }, 100)
     },
     on_change_breakpoints(e){
         this.cell.breakpoints = e.detail.value;
     },
     get syntaxError(){
-        let error =  this.editor?.editor?.session?.getAnnotations().filter((e)=>{
+        let error =  this.editor?.editor?.session?.getAnnotations();
+        error = error?.filter((e, i)=>{
             if(e.type !== 'error') return false;
             if(e.text.startsWith('Expected an identifier and instead saw \'>')) return false;
             if(e.text.startsWith('Unexpected early end of program.')) return false;
             if(e.text.startsWith('Missing ";" before statement')) return false;
+            if(e.text.startsWith(`Expected an identifier and instead saw '='.`) && error[i+1]?.text.startsWith(`Unexpected '{a}'.`)) return false;
+            if(e.text.startsWith(`Unexpected '{a}'.`) && error[i-1]?.text.startsWith(`Expected an identifier and instead saw '='.`)) return false;
             return true;
         }).map(err =>{
             return '    '+err.text + ` <u row="${err.row}" column="${err.column}" onclick="_findErrorPos(this)" style="cursor: pointer; color: -webkit-link">(${err.row+1}:${err.column})</u>`
