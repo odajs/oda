@@ -1021,14 +1021,14 @@ einops:{
         })
         return {inputs, output, vars}
     }
-    torus.einsum = (expression, tensors = [], $ = {}, single_back = '')=>{
+    torus.einsum = (expression, tensors = [], $ = {})=>{
         tensors = torus.flat(tensors);
         const shapes = tensors.map(i=>i.shape);
         $ = torus.$({turbo: false}, $);
         let key = expression + ': [' + shapes.join(']-[') + '] ' + JSON.stringify($);
         // >key
         let inputs, out_shape, output;
-        let fn = torus.fn_cache?.einsum?.[key+single_back];
+        let fn = torus.fn_cache?.einsum?.[key];
         if (!fn){
             const subscrs = torus._einops_parse(expression);
             if(subscrs.inputs.length > tensors.length)
@@ -1073,6 +1073,9 @@ einops:{
                         const idx = subscrs.inputs[s].indexOf('.');
                         subscrs.inputs[s].splice(idx, 1, ...subscrs.dots);
                     }
+                }
+                else if(subs.length === 0 && shape.mul()<2){
+                    //nothihg
                 }
                 else if(shape.length != subs.length){
                     throw new Error(`torus.einsum('${expression}'): number of tensors in '${subs}' (${subs.length}), must be equal to the number of dimentions [${shape}] (${tensors.length})`);
@@ -1134,7 +1137,8 @@ einops:{
             }
             else{
 
-                code = tensors.map((tensor, i)=>`let val_${i} = t[${i}].data[0], data_${i} = t[${i}].data;\n`).join('');
+                code = tensors.map((tensor, i)=>`let data_${i} = t[${i}].data;\n`).join('');
+                code += tensors.map((tensor, i)=>`let val_${i} = data_${i}[0];\n`).join('');
                 const func = $.forward || '('+tensors.map((_, i)=>'v'+i).join(',')+')=>'+tensors.map((_, i)=>'v'+i).join(' * ');
                 let size = output.map(a=>a.d).mul() || 1;
                 code += `let using = t.filter(i=>i.allowGrad);\n`;
@@ -1142,7 +1146,7 @@ einops:{
                 code += `let key = '${key}';\n`;
                 code += `let out = main?.getOut(using, key) || torus.tensor(new Float32Array(${size}))._src(t)._shape(${output.length?output.map(a=>a.d):1})._label('${'einsum: ' + expression}');\n`;
                 code += `let out_data = out.data;\n`;
-                code += `let sum = 0;\n`
+                code += `let sum = out_data[0];\n`
                 code += `let func = eval(${func});\n\n`
 
 
@@ -1163,6 +1167,7 @@ einops:{
                     axis.r *= -1;
                     return axo;
                 }).toReversed();//.filter(a=>!subscrs.vars[a.n]);
+                axes = axes.filter(a=>a.n);
                 axes = axes.sort((a,b)=>a.r<b.r?-1:1).map((axis, i)=>{
                     let tab = ' '.repeat(i * 2);
                     let adds = Object.keys(axis.s);
@@ -1175,10 +1180,7 @@ einops:{
                         subscrs.output.splice(idx, 1);
                         if(!subscrs.output.length){
                             axis.is_out_data = true;
-                            if(single_back)
-                                code += tab + `  let sum = func(out_data[${output.map(ax=>ax.n+'_').join(' + ') || 0}]);\n`;
-                            else
-                                code += tab + `  let sum = 0;\n`;
+                            code += tab + `  let sum = 0;\n`;
                         }
                     }
                     subscrs.inputs.map((input, t)=>{
@@ -1187,10 +1189,7 @@ einops:{
                         if(idx>-1){
                             input.splice(idx, 1);
                             if(!input.length){
-                                if(single_back)
-                                    code += tab + `  data_${t}[${inputs[t].map(a=>a.n+t).join(' + ')}] += sum;\n`;
-                                else
-                                    code += tab + `  let val_${t} = data_${t}[${inputs[t].map(a=>a.n+t).join(' + ')}];\n`;
+                                code += tab + `  let val_${t} = data_${t}[${inputs[t].map(a=>a.n+t).join(' + ')}];\n`;
                             }
                         }
                     })
@@ -1199,12 +1198,11 @@ einops:{
 
 
                 let tab = ' '.repeat(axes.length * 2);
-                if(!single_back)
-                    code +=  tab +  `sum += func(${inputs.map((_,i)=>'val_'+i).join(', ')});\n`;
+                code +=  tab +  `sum += func(${inputs.map((_,i)=>'val_'+i).join(', ')});\n`;
 
                 axes.toReversed().forEach((axis, i)=>{
                     let tab = ' '.repeat(2 * (axes.length - i - 1));
-                    if(!single_back && axis.is_out_data){
+                    if(axis.is_out_data){
                         code +=  tab +  `  out_data[${output.map(ax=>ax.n+'_').join(' + ') || 0}] = sum;\n`;
                     }
                     code +=  tab + `}\n`;
@@ -1214,14 +1212,11 @@ einops:{
                     code +=  `out_data[0] = sum;\n`;
                 }
                 code += `\nif(main) main.setOut(out, using, key);\n`
-                if(single_back)
-                    code += 'return main;\n'
-                else
-                    code += 'return out;\n'
+                code += 'return out;\n'
             }
             // >code
             fn = new Function('t', code);
-            fn = (torus.fn_cache.einsum[key+single_back] = {fn, out_shape, inputs, output}).fn;
+            fn = (torus.fn_cache.einsum[key] = {fn, out_shape, inputs, output}).fn;
         }
         else{
             out_shape = fn.out_shape;
@@ -1237,35 +1232,26 @@ einops:{
             throw new Error(`SubcodeError torus.einsum('${expression}'):\n`+e.message + '\n' + e.stack)
         }
         out._back = function (){
-            let expr, sources, single = tensors.length === 1;
             tensors.forEach((t, i)=>{
                 if(!t.allowGrad) return;
-                if(!single){
-                    const in_vars = inputs.map((input, ii)=>{
-                        if(ii === i)
-                            return output.map(ax=>ax.n).join('');
-                        return input.map(ax=>ax.n).join('');
-                    })
-                    let out_vars = inputs[i].map(i=>i.n);
-                    let adds = inputs[i].filter(ax=>!in_vars.some(i => i.includes(ax.n)))
-                    expr = in_vars.join(',')  + '->' + out_vars.join('');
-                    if (adds.length)
-                        expr += ':' + adds.map(a=>a.n+'='+a.d).join(',');
-                    sources = tensors.map((tt,ii)=>{
-                        if(ii === i)
-                            return out;
-                        return tt;
-                    })
-                    $.forward = $['backward_'+ i]?.toString();
-                }
-                else{
-                    expr = expression;
-                    sources = tensors;
-                }
-
-                let out_back = torus.einsum(expr, sources, $, single);
-                if(!single)
-                    t.update_grad(out_back.data);
+                const in_vars = inputs.map((input, ii)=>{
+                    if(ii === i)
+                        return output.map(ax=>ax.n).join('');
+                    return input.map(ax=>ax.n).join('');
+                })
+                let out_vars = inputs[i].map(i=>i.n);
+                let adds = inputs[i].filter(ax=>!in_vars.some(i => i.includes(ax.n)))
+                let expr = in_vars.join(',')  + '->' + out_vars.join('');
+                if (adds.length)
+                    expr += ':' + adds.map(a=>a.n+'='+a.d).join(',');
+                let sources = tensors.map((tt,ii)=>{
+                    if(ii === i)
+                        return out;
+                    return tt;
+                })
+                $.forward = $['backward_'+ i]?.toString();
+                let out_back = torus.einsum(expr, sources, $);
+                t.update_grad(out_back.data);
             })
         }
         return out;
@@ -1542,7 +1528,6 @@ aggregates:{
         to = !to.length?to:from.filter(a=>!to.includes(a))
 
         let expr = from.join('') + '->' + to.join('');
-
         $.forward ??= x => x;
         $.backward_0 ??= g => g;
         let out = torus.einsum(expr, this, $)
@@ -1553,6 +1538,7 @@ aggregates:{
             })
             out._shape(shape);
         }
+        out._expr = expr;
         out._label(`sum(dims=[${dims}], ${JSON.stringify($)}):\'${expr}\'`);
         return out;
     }
@@ -1562,20 +1548,30 @@ aggregates:{
         let devider = this.size / sum.size;
         let out = sum.divide(devider);
         out._label(sum.label.replace('sum', 'mean'))
+        out._expr = sum._expr;
         return out;
     }
     torus.prototype.var = function(dims = [], $ = {}){
         $ = torus.$($, {correction: 1});
-        const avg = this.mean(dims, $);
-        let s = this.shape_info.map(v2=>v2.char).join('');
-        let expr = s+','+s+'->'+ s;
+        const mean = this.mean(dims, $);
+        // >mean
+        let expr = mean._expr.split('->');
+        expr = expr[0]+','+expr[1]+'->'+expr[1];
         $.forward = '(x, y)=>(x - y) ** 2';
         $.backward_0 = '(x, y)=>2 * (x - y)';
         $.backward_1 = '(x, y)=>(-2 * (x - y))';
-        const sum = torus.einsum(expr, [this, avg], $);
-        const multiplier = 1/Math.max(0, this.size / avg.size - $.correction);
+        const sum = torus.einsum(expr, [this, mean], $);
+        // >sum
+        const multiplier = 1/Math.max(0, this.size / mean.size - $.correction);
         const out = sum.mul(multiplier);
         out._label(`var(dims=[${dims}], ${JSON.stringify($)}):\'${expr}\'`);
+        if($.keepdim){
+            let dims_info = this.dims_info(dims)
+            const shape = this.shape_info.map((v, i)=>{
+                return !dims_info.length || dims_info.includes(v)?1:v.dim;
+            })
+            out._shape(shape);
+        }
         return out;
     }
     torus.prototype.std = function(dim = [], $ = {}){
