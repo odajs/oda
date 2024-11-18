@@ -404,6 +404,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <div>{{time}}</div>
                     <div>{{status}}</div>
                     <oda-icon ~if="lastRange" :icon-size :icon="lastRange?.run?'bootstrap:bookmark':'bootstrap:bookmark-check'" @tap="scrollToMarked" style="margin: 8px; color: blue" title="scroll to marked"></oda-icon>
+                    <oda-icon no-flex ~if="cell?.breakpoints" :icon-size icon="bootstrap:code" @tap="goToBreakPoint" style="margin: 8px; color: red;" title="debugger"></oda-icon>
                 </div>
             </div>
             <div class="pe-preserve-print vertical no-flex" style="width: calc(100% - 34px); position: relative;">
@@ -583,6 +584,32 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             }
         })
         cell.srcWithBreakpoints = src;
+    },
+    goToBreakPoint(e) {
+        let breakpoints = this.cell.breakpoints.split(' ');
+        breakpoints = breakpoints.filter(i => i).sort((a, b) => a - b);
+        let row = this._currentBreakPoints,
+            isChange = false;
+        if (!this._currentBreakPoints || breakpoints.length === 1) {
+            row = +breakpoints[0];
+        } else {
+            for (let i = 0; i < breakpoints.length; i++) {
+                const p = breakpoints[i];
+                if (p > row) {
+                    row = +p;
+                    isChange = true;
+                    break;
+                }
+            } if (!isChange) {
+                row = +breakpoints[0];
+            }
+        }
+        this._currentBreakPoints = row;
+        row -= 1;
+        const range = new ace.Range(row, 1000, row, 0);
+        this.control?.ace.session.selection.setRange(range);
+        this.isScrollToMarked = true;
+        this.control.editor.fire('change-cursor');
     },
     scrollToRunOutputs() {
         this.async(() => {
@@ -934,8 +961,8 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         this.ace.focus();
     },
     on_change_cursor(e) {
+        this.ace.focus();
         this.throttle('change_cursor', () => {
-            this.ace.focus();
             this.lastRange = this.ace?.getSelectionRange();
             const row = this.ace.getSelectionRange().start.row,
                 rowsLength = this.session.getScreenLength(),
