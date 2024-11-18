@@ -80,15 +80,18 @@ export class tensor/* extends Array*/{
     getOut(src = this, add_key = ''){
         if(!this.allowGrad) return;
         const key = label_from_error()+ '.' + (src.map?.(t=>t.id).join('.') || src.id) + ' ' + add_key;
-        return  this.out_map[key];
+        const out = this.out_map[key];
+        out?.to_fwd_state = true;
+        return out
     }
     set out(n){
         this.setOut(n);
     }
-    setOut(n, src = this, add_key = ''){
-        if(!this.allowGrad) return;
+    setOut(out, src = this, add_key = ''){
+        if(!this.allowGrad || !out) return;
         const key = label_from_error()+ '.' + (src.map?.(t=>t.id).join('.') || src.id) + ' ' + add_key;
-        this.out_map[key] = n;
+        out.to_fwd_state = true;
+        this.out_map[key] = out;
     }
     getPath(level = 0){
         let tab = '|'.repeat(level) + '|- '
@@ -253,7 +256,16 @@ export class tensor/* extends Array*/{
     }
     update_grad(grad){
         if (!this.isParam){
-            this.data.set(grad, 0); // todo обновление с приращением!!!
+            if (this.to_fwd_state){
+                this.to_fwd_state = false;
+                this.data.set(grad, 0); //превращаем data в grads
+            }
+            else{
+                let i = this.size;
+                while (i--){  //добавляем grads
+                    this.data[i] += grad[i];
+                }
+            }
         }
         else{
             let lr = torus.LEARNING_RATE
