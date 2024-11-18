@@ -1047,25 +1047,31 @@ einops:{
                         const idx = subscrs.inputs[s].indexOf('.');
                         subscrs.inputs[s].splice(idx, 1, ...subscrs.dots);
                     }
-
-
                 }
-                else if(shape.length != subs.length)
+                else if(shape.length != subs.length){
                     throw new Error(`torus.einsum('${expression}'): number of tensors in '${subs}' (${subs.length}), must be equal to the number of dimentions [${shape}] (${tensors.length})`);
-
+                }
                 let m = 1;
-                let input = shape.map((d, i)=>{
+                subs.reverse();
+                let input = shape.toReversed().map((d, i)=>{
                     const n = subs[i];
-                    const old = subscrs.axes[n] || 1;
+                    const old = subscrs.axes[n]?.d || 1;
                     if(old && old !== d && old !== 1 && d !== 1)
                         throw new Error(`torus.einsum('${expression}'): subscript '${n}' has size ${d} for tensor ${s} which does not broadcast with previously seen size ${old}`);
-                    d = Math.max(old, d);
-                    subscrs.axes[n] = d;
-                    return {n, d}
-                }).toReversed().map((ax)=>{
-                    ax.s = m;
-                    m *= ax.d;
-                    return ax;
+                    if(!subscrs.axes[n]){
+                        subscrs.axes[n] = {n, r: shape.length, s:{}, sc:{}};
+                    }
+
+                    subscrs.axes[n].d = Math.max(old, d);
+                    let stride = m;
+                    m *= d;
+                    subscrs.axes[n].r *= d;
+                    subscrs.axes[n].r -= 1;
+                    if(i === 0 && d === 1 && shape.length === 1)
+                        subscrs.axes[n].sc[n+s] = true; // scalar
+                    else
+                        subscrs.axes[n].s[n+s] = stride;
+                    return {n, d, s: stride}
                 }).toReversed();
                 return input
             })
@@ -1077,7 +1083,7 @@ einops:{
                 let idx = subscrs.output.indexOf('.');
                 subscrs.output.splice(idx, 1, ...subscrs.dots);
             }
-            output = subscrs.output.map(n=>({n, d: subscrs.axes[n] || subscrs.vars[n]}));
+            output = subscrs.output.map(n=>({n, d: subscrs.axes[n]?.d || subscrs.vars[n]}));
             // let out_expr = subscrs.output.join('');
             let code = '';
             let ins = inputs.flat().reduce((r,a)=>{
@@ -1101,100 +1107,90 @@ einops:{
                 code += `return torus.einsum('${expr}', [${inputs.map((_,i)=>'out'+i).join(',')}], ${JSON.stringify($)});\n`
             }
             else{
-                code = tensors.map((tensor, i)=>`let val_${i}, data_${i} = t[${i}].data;\n`).join('');
+
+                code = tensors.map((tensor, i)=>`let val_${i} = t[${i}].data[0], data_${i} = t[${i}].data;\n`).join('');
                 const func = $.forward || '('+tensors.map((_, i)=>'v'+i).join(',')+')=>'+tensors.map((_, i)=>'v'+i).join(' * ');
                 let size = output.map(a=>a.d).mul() || 1;
                 code += `let using = t.filter(i=>i.allowGrad);\n`;
                 code += `let main = using[0];\n`;
-                code += `let out = main?.getOut(using, '${key}') || torus.tensor(new Float32Array(${size}))._src(t)._shape(${output.length?output.map(a=>a.d):1})._label('${'einsum: ' + expression}');\n`;
+                code += `let key = '${key}';\n`;
+                code += `let out = main?.getOut(using, key) || torus.tensor(new Float32Array(${size}))._src(t)._shape(${output.length?output.map(a=>a.d):1})._label('${'einsum: ' + expression}');\n`;
                 code += `let out_data = out.data;\n`;
-                code += `let func = eval(${func});\n`
+                code += `let sum = 0;\n`
+                code += `let func = eval(${func});\n\n`
 
-                const axes = [];
+
+
+
+
+                let axes = Object.values(subscrs.axes);
+                for(let n in subscrs.vars){
+                    let d = subscrs.vars[n];
+                    axes.push({n, d, r:0, s:{[n+'_']:d}, sc: []})
+                }
                 m = 1;
                 output = output.toReversed().map(axo=>{
+                    let axis = axes.find(a=>a.n === axo.n);
                     axo.s = m;
-                    m *= subscrs.axes[axo.n] || subscrs.vars[axo.n];
+                    m *= axis.d// || subscrs.vars[axo.n];
+                    axis.s[axo.n+'_'] = axo.s;
+                    axis.r *= -1;
                     return axo;
-                }).toReversed().filter(a=>!subscrs.vars[a.n]);
-                code += output.map((out, o)=>{
-                    axes.push(out.n);
-                    let tab = ' '.repeat(axes.length * 2);
-                    let s1 = '';
-                    inputs.forEach((input, i)=>input
-                        .forEach(a=>{
-                            if(a.n === out.n)
-                                s1 += `, _${a.n}${i} = 0`;
-                        }))
-                    let s2 = '';
-                    inputs.forEach((input, i)=>input
-                        .forEach(a=>{
-                            if(a.n === out.n)
-                                s2 += `, _${a.n}${i} += ${a.s/* || 1*/}`;
-                        }))
+                }).toReversed();//.filter(a=>!subscrs.vars[a.n]);
+                axes = axes.sort((a,b)=>a.r<b.r?-1:1).map((axis, i)=>{
+                    let tab = ' '.repeat(i * 2);
+                    let adds = Object.keys(axis.s);
+                    let s1 = adds.map(n => n + ' = 0').join(', ');
+                    let s2 = adds.map(n => n + ' += ' + axis.s[n]).join(', ');
+                    let key = adds[0];
+                    code += tab + `for (let ${s1}; ${key} < ${axis.d * axis.s[key]}; ${s2}){\n`;
+                    let idx = subscrs.output.indexOf(axis.n);
+                    if(idx>-1){
+                        subscrs.output.splice(idx, 1);
+                        if(!subscrs.output.length){
+                            axis.is_out_data = true;
+                            if(single_back)
+                                code += tab + `  let sum = func(out_data[${output.map(ax=>ax.n+'_').join(' + ') || 0}]);\n`;
+                            else
+                                code += tab + `  let sum = 0;\n`;
+                        }
+                    }
+                    subscrs.inputs.map((input, t)=>{
+                        if(axis.sc[axis.n+t]) return;
+                        idx = input.indexOf(axis.n);
+                        if(idx>-1){
+                            input.splice(idx, 1);
+                            if(!input.length){
+                                if(single_back)
+                                    code += tab + `  data_${t}[${inputs[t].map(a=>a.n+t).join(' + ')}] += sum;\n`;
+                                else
+                                    code += tab + `  let val_${t} = data_${t}[${inputs[t].map(a=>a.n+t).join(' + ')}];\n`;
+                            }
+                        }
+                    })
+                    return axis;
+                })
 
-                    let expr = tab + `for(let ${out.n} = 0, ${out.n}_ = 0${s1}; ${out.n}<${out.d}; ${out.n}++, ${out.n}_ += ${out.s}${s2}){\n`;
-                    return expr;
-                }).join('');
 
                 let tab = ' '.repeat(axes.length * 2);
                 if(!single_back)
-                    code += tab + `  let sum = 0;\n`;
-                else
-                    code += tab + `  let sum = out_data[${output.map(ax=>ax.n+'_').join(' + ')}];\n`;
-                inputs.forEach((input, i)=>{
-                    input.forEach(inp=>{
-                        if(axes.includes(inp.n)) return;
-                        axes.push(inp.n);
-                        let tab = ' '.repeat(axes.length * 2);
-                        let s1 = ''
-                        inputs.forEach((input, i)=>input
-                            .forEach(a=>{
-                                if(a.n === inp.n)
-                                    s1 += `, _${a.n}${i} = 0`;
+                    code +=  tab +  `sum += func(${inputs.map((_,i)=>'val_'+i).join(', ')});\n`;
 
-                            }))
-                        let s2 = '';
-                        inputs.forEach((input, i)=>input
-                            .forEach(a=>{
-                                if(a.n === inp.n)
-                                    s2 += `, _${a.n}${i} += ${a.s/* || 1*/}`;
-                            }))
-                        code += tab + `for(let ${inp.n} = 0 ${s1}; ${inp.n}<${inp.d}; ${inp.n}++ ${s2}){\n`;
-                    })
-                    let tab = ' '.repeat(axes.length * 2);
-                })
-                tab = ' '.repeat(axes.length * 2);
-                if(single_back){
-                    code += tab + `  data_${0}[${inputs[0].map(ax=>'_'+ax.n+0).join(' + ')}] += sum;\n`;
-                }
-                else{
-                    inputs.forEach((input, i)=>{
-                        code += tab + `  val_${i} = data_${i}[${input.map(ax=>'_'+ax.n+i).join(' + ')}];\n`;
-                    })
-                    code += tab + `  sum += func(${inputs.map((_,i)=>'val_'+i).join(', ')});\n`;
-                }
-
-
-                axes.forEach((out, o)=>{
-                    let idx = axes.length - o;
-                    if(idx === output.length && !single_back){
-                        code += ' '.repeat(2 * idx) + `  out_data[${output.map(ax=>ax.n+'_').join(' + ')}] = sum;\n`;
+                axes.toReversed().forEach((axis, i)=>{
+                    let tab = ' '.repeat(2 * (axes.length - i - 1));
+                    if(!single_back && axis.is_out_data){
+                        code +=  tab +  `  out_data[${output.map(ax=>ax.n+'_').join(' + ') || 0}] = sum;\n`;
                     }
-                    code +=' '.repeat(2 * idx)+`}\n`
+                    code +=  tab + `}\n`;
                 });
 
-                if(!output.length && !$.single_back){
-                    code += `  out_data[0] = sum;\n`;
-                }
-
-                code += `if(main) main.setOut(out, using, '${key}');\n`
+                code += `\nif(main) main.setOut(out, using, key);\n`
                 if(single_back)
                     code += 'return main;\n'
                 else
                     code += 'return out;\n'
             }
-            // >code
+        // >code
             fn = new Function('t', code);
             fn = (torus.fn_cache.einsum[key+single_back] = {fn, out_shape, inputs, output}).fn;
         }
