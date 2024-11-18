@@ -232,8 +232,11 @@ export class tensor/* extends Array*/{
                     return `scalar`;
                 }
 
-                case 1:
+                case 1:{
+                    if(this.shape.mul()<2)
+                        return `scalar`;
                     return `vector`;
+                }
                 case 2:
                     return `matrix`;
                 default:
@@ -443,7 +446,7 @@ export class tensor/* extends Array*/{
         data = data.join('\n');
         let tab = ('  ').repeat(step)
         let result  = tab + this.type + ` ${this.label}: `;
-        if (this.dim)
+        if (this.shape.mul()>1)
             result += `shape(${this.shape}), size(${this.size.toLocaleString()}), ${this.dType.name}, ${this.backs.join(',')}\n${tab}[${data}]`;
         else
             result += `${this.dType.name}, ${this.backs.join(',')}\n${tab}(${data.replaceAll('[', '').replaceAll(']', '').trim()})`;
