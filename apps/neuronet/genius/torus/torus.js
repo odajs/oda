@@ -1,4 +1,3 @@
-globalThis.LEARNING_RATE = 0.1;
 export class tensor/* extends Array*/{
     #data = null;
     dType = Float32Array;
@@ -294,6 +293,21 @@ export class tensor/* extends Array*/{
     backward(grad){
         return this.back(grad);
     }
+
+    static get LEARNING_RATE(){
+        return globalThis.LEARNING_RATE || .1;
+    }
+    static set LEARNING_RATE(n){
+        globalThis.LEARNING_RATE  = n;
+    }
+    static get TURBO(){
+        return globalThis.TURBO || false;
+    }
+    static set TURBO(n){
+        globalThis.TURBO  = n;
+    }
+
+
     static get generator(){
         return torus.__random_generator__;
     }
@@ -442,13 +456,8 @@ export class tensor/* extends Array*/{
         return data.flat();
 
     }
-    static get LEARNING_RATE() {
-        return globalThis.LEARNING_RATE
-    }
-    static set LEARNING_RATE(n) {
-        globalThis.LEARNING_RATE = n
-    }
 }
+
 export const tt = tensor;
 export const torus = tensor;
 torus.__random_generator__ = Math.random;
@@ -999,8 +1008,9 @@ einops:{
     torus.einsum = (expression, tensors = [], $ = {}, single_back = '')=>{
         tensors = torus.flat(tensors);
         const shapes = tensors.map(i=>i.shape);
-        $ = torus.$({turbo: false}, $);
+        $ = torus.$({turbo: torus.TURBO}, $);
         let key = expression + ': [' + shapes.join(']-[') + '] ' + JSON.stringify($);
+    // >key
         let inputs, out_shape, output;
         let fn = torus.fn_cache?.einsum?.[key+single_back];
         if (!fn){
@@ -1093,17 +1103,17 @@ einops:{
             if(subscrs.inputs.length > 1 && ins.length>output.length && $.turbo){
                 const exprs = [];
                 code += inputs.map((input, i)=>{
-                    let out_expr = subscrs.output.filter(o=>input.some(ai=>o === ai.n)).join('');
+                    let out_expr = subscrs.output.join('');
                     exprs.push(out_expr);
                     let expr = input.map(a=>a.n).join('')+'->'+out_expr;
-                    // let over = output.filter(ao=>!input.some(ai=>ai.n === ao.n));
-                    // if(over.length){
-                    //     expr+=':'+over.map(a=>a.n+'='+a.d).join(',');
-                    // }
+                    let over = output.filter(ao=>!input.some(ai=>ai.n === ao.n));
+                    if(over.length){
+                        expr+=':'+over.map(a=>a.n+'='+a.d).join(',');
+                    }
                     return `let out${i} = torus.einsum('${expr}', t[${i}]);\n`
                 }).join('');
                 let expr = exprs.join(',')+'->'+output.map(a=>a.n).join('');
-                $.turbo = true;
+                $.turbo = false;
                 code += `return torus.einsum('${expr}', [${inputs.map((_,i)=>'out'+i).join(',')}], ${JSON.stringify($)});\n`
             }
             else{
@@ -1218,13 +1228,10 @@ einops:{
                         return input.map(ax=>ax.n).join('');
                     })
                     let out_vars = inputs[i].map(i=>i.n);
-                    // let adds = inputs[i].filter(ax=>!in_vars.some(i => i.includes(ax.n)))
+                    let adds = inputs[i].filter(ax=>!in_vars.some(i => i.includes(ax.n)))
                     expr = in_vars.join(',')  + '->' + out_vars.join('');
-                    // if (adds.length)
-                    //     expr += JSON.stringify(adds.map(a=>{
-                    //         delete a.used;
-                    //         return a;
-                    //     }));
+                    if (adds.length)
+                        expr += ':' + adds.map(a=>a.n+'='+a.d).join(',');
                     sources = tensors.map((tt,ii)=>{
                         if(ii === i)
                             return out;
