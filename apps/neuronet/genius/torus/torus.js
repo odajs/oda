@@ -1393,21 +1393,24 @@ generators:{
 
     torus.ones = (...shape) => {
         shape = torus.flat(shape);
+        let data = 1;
         let size = shape.mul();
-        if(!size){
-            size = 1;
-            shape = [1]
-        }
-        return torus.tensor(new Int32Array(size).fill(1))._label('ones')._shape(shape);
+        if(size)
+            data = new Int32Array(size).fill(1)
+        else
+            shape = [];
+        return torus.tensor(data)._label('ones')._shape(shape);
     }
     torus.zeros = (...shape) => {
         shape = torus.flat(shape);
+
+        let data = 0;
         let size = shape.mul();
-        if(!size){
-            size = 1;
-            shape = [1]
-        }
-        return torus.tensor(new Int32Array(size))._label('zeros')._shape(shape);
+        if(size)
+            data = new Int32Array(size)
+        else
+            shape = [];
+        return torus.tensor(data)._label('zeros')._shape(shape);
     }
     torus.rand_init = (...shape)=>{
         shape = torus.flat(shape);
