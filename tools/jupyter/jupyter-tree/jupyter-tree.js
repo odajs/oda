@@ -35,6 +35,18 @@ ODA({is: 'oda-jupyter-tree-cell', extends: 'this, oda-table-cell',
             return this.item?.status === 'error'
         }
     },
+    warning:{
+        $attr: true,
+        get(){
+            return this.item?.hideCode;
+        }
+    },
+    successInvert:{
+        $attr: true,
+        get(){
+            return this.item?.autoRun;
+        }
+    },
     get icon(){
         let icon = this.item.icon;
         if (!icon){
