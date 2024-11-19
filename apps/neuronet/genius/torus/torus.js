@@ -995,7 +995,7 @@ einops:{
                 subs = subs.replace('..', '.');
             while(subs.includes(' '))
                 subs = subs.replace(' ', '');
-            let expr = side === 'vars' ? /([a-zA-Z]=\d*,?)+/g : /([a-zA-Z]+)|\.?/g;
+            let expr = side === 'vars' ? /(([a-zA-Z]|.|_|$)=\d*,?)+/g : /([a-zA-Z]+)|(.|_|$)?/g;
             if(subs.length && !subs.match(expr))
                 throw new Error(`torus.einops_parse('${expression}'): invalid ${side} subscript '${subs}' given in the equation string, subscripts must be in ${expr}`);
             return subs;
