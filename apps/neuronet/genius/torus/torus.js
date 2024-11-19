@@ -1016,7 +1016,7 @@ systems:{
                         data[i] = backward(this.data[i], data[i]) * out.data[i];
                     }
                     this.update_grad(data);
-                    data.buffer.transfer(0);
+                    // data.buffer.transfer(0);
 
                 }
             }
