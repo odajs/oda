@@ -574,7 +574,7 @@ torus.prototype.allclose = function(other, rtol = 1e-05, atol = 1e-08, equal_nan
 }
 
 torus.prototype.masked_fill = function(other, value = 0, mask = 0){
-    const h = `(x,y) => y === ${mask}?${value}:x`;
+    const h = `(x,y) => (y === ${mask}?${value}:x)`;
     return this._element_wise_operator(other, h);
 }
 
@@ -877,6 +877,23 @@ systems:{
             })
         })
     }
+    torus.prototype.gen_chars = function(dims = []){
+        dims = torus.flat(dims);
+        let chars = this.shape.map((_, i)=>{
+            return String.fromCharCode(i + 97);
+        }).toReversed();
+        if(dims.length){
+            dims = dims.map(d=>{
+                return this.check_dim(d);
+            })
+            chars = chars.map((ch,d)=>{
+                if(dims.includes(d))
+                    return ch;
+
+            }).filter(Boolean)
+        }
+        return chars;
+    }
     Object.defineProperty(torus.prototype, 'shape_info', {
         configurable: true,
         get(){
@@ -1098,7 +1115,7 @@ einops:{
                     subscrs.axes[n].r -= 1;
                     if(i === 0 && d === 1 && shape.length === 1)
                         subscrs.axes[n].sc[n+s] = true; // scalar
-                    else
+                    else if(d>1)
                         subscrs.axes[n].s[n+s] = stride;
                     return {n, d, s: stride}
                 }).toReversed();
@@ -1189,7 +1206,9 @@ einops:{
                         if(idx>-1){
                             input.splice(idx, 1);
                             if(!input.length){
-                                code += tab + `  let val_${t} = data_${t}[${inputs[t].map(a=>a.n+t).join(' + ')}];\n`;
+                                let indeces = inputs[t].filter(a=>a.d>1).map(a=>a.n+t).join(' + ');
+                                if(indeces.length)
+                                    code += tab + `  let val_${t} = data_${t}[${indeces}];\n`;
                             }
                         }
                     })
@@ -1521,24 +1540,24 @@ aggregates:{
     }
     torus.prototype.sum = function (dims = [], $ = {}){
         $ = torus.$($);
-        let shape_info = this.shape_info;
-        const from = shape_info.map(i=>i.char);
-        let dims_info = this.dims_info(dims)
-        let to = dims_info.map(i=>i.char);
-        to = !to.length?to:from.filter(a=>!to.includes(a))
-
-        let expr = from.join('') + '->' + to.join('');
+        let chars = this.gen_chars();
+        let ins = chars.join('')
+        dims = this.gen_chars(dims);
+        let outs;
+        if($.keepdim){
+            chars = chars.map(ch=>{
+                if(dims.includes(ch))
+                    ch = ch.toUpperCase();
+                return ch;
+            })
+            outs = chars.join('') + ':' + dims.map(d => d.toUpperCase()+'=1').join(',')
+        }
+        else
+            outs = chars.filter(ch=>!dims.includes(ch)).join('');
+        let expr = ins + '->' + outs;
         $.forward ??= x => x;
         $.backward_0 ??= g => g;
         let out = torus.einsum(expr, this, $)
-
-        if($.keepdim){
-            const shape = this.shape_info.map((v, i)=>{
-                return !dims_info.length || dims_info.includes(v)?1:v.dim;
-            })
-            out._shape(shape);
-        }
-        out._expr = expr;
         out._label(`sum(dims=[${dims}], ${JSON.stringify($)}):\'${expr}\'`);
         return out;
     }
@@ -1548,33 +1567,41 @@ aggregates:{
         let devider = this.size / sum.size;
         let out = sum.divide(devider);
         out._label(sum.label.replace('sum', 'mean'))
-        out._expr = sum._expr;
         return out;
     }
     torus.prototype.var = function(dims = [], $ = {}){
         $ = torus.$($, {correction: 1});
+        let keepdim = $.keepdim;
+        $.keepdim = true;
         const mean = this.mean(dims, $);
         // >mean
-        let expr = mean._expr.split('->');
-        if($.keepdim)
-            expr = expr[0]+','+expr[0]+'->'+expr[1];
-        else
-            expr = expr[0]+','+expr[1]+'->'+expr[1];
         $.forward = '(x, y)=>(x - y) ** 2';
         $.backward_0 = '(x, y)=>2 * (x - y)';
         $.backward_1 = '(x, y)=>(-2 * (x - y))';
+
+        let chars = this.gen_chars();
+        let ins = chars.join('')
+        dims = this.gen_chars(dims);
+        let outs;
+        if(keepdim){
+            chars = chars.map(ch=>{
+                if(dims.includes(ch))
+                    ch = ch.toUpperCase();
+                return ch;
+            })
+            outs = chars.join('') + ':' + dims.map(d => d.toUpperCase()+'=1').join(',')
+        }
+        else
+            outs = chars.filter(ch=>!dims.includes(ch)).join('');
+        let expr = ins + ',' + ins + '->' + outs;
+
+
+
         const sum = torus.einsum(expr, [this, mean], $);
         // >sum
         const multiplier = 1/Math.max(0, this.size / mean.size - $.correction);
         const out = sum.mul(multiplier);
         out._label(`var(dims=[${dims}], ${JSON.stringify($)}):\'${expr}\'`);
-        if($.keepdim){
-            let dims_info = this.dims_info(dims)
-            const shape = this.shape_info.map((v, i)=>{
-                return !dims_info.length || dims_info.includes(v)?1:v.dim;
-            })
-            out._shape(shape);
-        }
         return out;
     }
     torus.prototype.std = function(dim = [], $ = {}){
