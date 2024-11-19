@@ -574,8 +574,8 @@ torus.prototype.allclose = function(other, rtol = 1e-05, atol = 1e-08, equal_nan
 }
 
 torus.prototype.masked_fill = function(other, value = 0, mask = 0){
-    const h = `(x,y) => (y === ${mask}?${value}:x)`;
-    return this._element_wise_operator(other, h);
+    const forward = `(x,y) => (y === ${mask}?${value}:x)`;
+    return this._element_wise_operator(other, {forward});
 }
 
 torus.prototype.plus = function (other){

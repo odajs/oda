@@ -232,11 +232,16 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             }
         }
     },
-    async scrollToCell(cell = this.selectedCell, delta = 0) {
+    async scrollToCell(cell = this.selectedCell, delta = 0, toMarked) {
         if (!cell) return;
         const cellElements = this.jupyter.$$('oda-jupyter-cell');
         const cellElement = cellElements.find(el => el.cell.id === cell.id);
         if (!cellElement) return;
+        if (toMarked) {
+            delta = cellElement.control.deltaMarked || 0;
+            if (cellElement.control.deltaMarked)
+                this.async(() => cellElement.control.ace?.focus(), 0);
+        }
         this.jupyter.scrollTop = cellElement.offsetTop + delta
         await new Promise(resolve => this.async(resolve, 100));
 
@@ -971,8 +976,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             screenTop = this.jupyter.scrollTop,
             screenBottom = screenTop + this.jupyter.offsetHeight - lineHeight * 2,
             isVisible = rowTop >= screenTop && rowTop <= screenBottom;
+            this.deltaMarked = delta - lineHeight * 4;
         if (isScrollToMarked) {
-            this.async(() => this.jupyter.scrollToCell(this.cell, delta - lineHeight * 4));
+            this.async(() => this.jupyter.scrollToCell(this.cell, this.deltaMarked));
+            // return;
         }
         if (isVisible) {
             return;

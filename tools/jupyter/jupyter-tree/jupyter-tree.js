@@ -6,7 +6,7 @@ ODA({ is: 'oda-jupyter-tree', imports: '@oda/tree', extends: 'oda-tree',
     cellTemplate: 'oda-jupyter-tree-cell',
     onTapRows(e) {
         this.$super('oda-table', 'onTapRows', e);
-        this.scrollToCell?.(e.target.item);
+        this.scrollToCell?.(e.target.item, 0, true);
     },
     autoFixRows : true,
     hideRoot: true
