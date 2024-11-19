@@ -1556,7 +1556,10 @@ aggregates:{
         const mean = this.mean(dims, $);
         // >mean
         let expr = mean._expr.split('->');
-        expr = expr[0]+','+expr[1]+'->'+expr[1];
+        if($.keepdim)
+            expr = expr[0]+','+expr[0]+'->'+expr[1];
+        else
+            expr = expr[0]+','+expr[1]+'->'+expr[1];
         $.forward = '(x, y)=>(x - y) ** 2';
         $.backward_0 = '(x, y)=>2 * (x - y)';
         $.backward_1 = '(x, y)=>(-2 * (x - y))';
