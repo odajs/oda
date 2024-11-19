@@ -460,7 +460,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                     return col;
                 }
             };
-            return this.groupColPaths.map(p => getColByPath(this.columns, p));
+            return this.groupColPaths.map(p => getColByPath(this.columns, p)).filter(Boolean);
         },
         pivotLabels: [],
         get filters() {
