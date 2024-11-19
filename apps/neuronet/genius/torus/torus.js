@@ -800,22 +800,38 @@ if (!Array.prototype.toTensorString) {
     } )
 }
 let max = 8;
+// function num2text(x, float_type = false){
+
+//     let num = Math.abs(x) > 10000 ?x.toExponential((Math.abs(x) >= 10000000000)?1:2):x.toString();
+//     let repeat = (num[0] === '-')?1:2;
+//     if (!Number.isFinite(x))
+//         num = num.substring(0, 5 - repeat)
+//     num = ' '.repeat(repeat) + num;
+//     if (!Number.isInteger(x) && !Number.isNaN(x) && Number.isFinite(x))
+//         num = num.substring(0, max).padEnd(max, '0');
+//     else{
+//         if (Number.isInteger(x) && float_type)
+//             num+='.';
+//         num = num.padStart(max, ' ');
+//     }
+
+//     return num
+// }
+
 function num2text(x, float_type = false){
+    const showAsExponential = Math.abs(x) >= 100000 || (Math.abs(x) < 0.01 && x!==0);
 
-    let num = Math.abs(x) > 10000 ?x.toExponential((Math.abs(x) >= 10000000000)?1:2):x.toString();
+    let num = showAsExponential ? x.toExponential((Math.abs(x) >= 10000000000 || Math.abs(x) <= 0.0000000001)?1:2):x.toString();
     let repeat = (num[0] === '-')?1:2;
-    if (!Number.isFinite(x))
-        num = num.substring(0, 5 - repeat)
     num = ' '.repeat(repeat) + num;
-    if (!Number.isInteger(x) && !Number.isNaN(x) && Number.isFinite(x))
-        num = num.substring(0, max).padEnd(max, '0');
-    else{
-        if (Number.isInteger(x) && float_type)
-            num+='.';
-        num = num.padStart(max, ' ');
-    }
-
-    return num
+    if (!Number.isFinite(x))
+        num = num.substring(0, 5)
+    else if (!showAsExponential)
+            if (!Number.isInteger(x))
+                num = num.substring(0, max).padEnd(max, '0');
+            else if (float_type)
+                    num+='.';
+    return num.padStart(max, ' ');
 }
 
 function genId(){
