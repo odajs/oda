@@ -995,23 +995,29 @@ systems:{
         const forward = eval($.forward);
         let label = label_from_error(1);
         let out = $.out || this.getOut(this, label);
+        let data;
         if(out){
             let i = this.size;
+            data = out.data;
             while(i--){
-                out.data[i] = forward(this.data[i])
+                data[i] = forward(this.data[i])
             }
         }
         else{
-            const data = this.data.map(forward);
+            data = this.data.map(forward);
             out = torus.from(data)._src(this)._shape(this);
             out._label(label+' ('+out.shape+')');
             if (this.allowGrad && $.backward_0){
                 out._back = ()=>{
+                    data = data.slice(0);
                     const backward = eval($.backward_0);
                     let i = this.size;
                     while(i--){
-                        this.grad[i] += backward(this.data[i], out.data[i]) * out.grad[i];
+                        data[i] = backward(this.data[i], data[i]) * out.data[i];
                     }
+                    this.update_grad(data);
+                    data.buffer.transfer(0);
+
                 }
             }
             this.setOut(out, this, label);
