@@ -403,8 +403,8 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run()" :error="cell?.autoRun" :success="!cell?.time" style="margin: 4px; border-radius: 50%;"></oda-button>
                     <div>{{time}}</div>
                     <div>{{status}}</div>
-                    <oda-icon ~if="lastRange" :icon-size :icon="lastRange?.run?'bootstrap:bookmark':'bootstrap:bookmark-check'" @tap="scrollToMarked" style="margin: 8px; color: blue" title="scroll to marked"></oda-icon>
-                    <oda-icon no-flex ~if="cell?.breakpoints" :icon-size icon="bootstrap:code" @tap="goToBreakPoint" style="margin: 8px; color: red;" title="debugger"></oda-icon>
+                    <oda-icon ~if="lastRange" :icon-size icon="box:s-edit-alt" @tap="scrollToMarked" style="margin: 8px;" title="scroll to marked"></oda-icon>
+                    <oda-icon no-flex ~if="cell?.breakpoints" :icon-size icon="icons:label-outline" @tap="goToBreakPoint" style="margin: 8px;" title="debugger"></oda-icon>
                 </div>
             </div>
             <div class="pe-preserve-print vertical no-flex" style="width: calc(100% - 34px); position: relative;">
@@ -606,10 +606,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         }
         this._currentBreakPoints = row;
         row -= 1;
-        const range = new ace.Range(row, 1000, row, 0);
-        this.control?.ace.session.selection.setRange(range);
-        this.isScrollToMarked = true;
-        this.control.editor.fire('change-cursor');
+        this.control.change_cursor(false, row, true);
     },
     scrollToRunOutputs() {
         this.async(() => {
@@ -627,10 +624,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     },
     scrollToMarked() {
         if (this.lastRange) {
-            const range = new ace.Range(this.lastRange.start.row, this.lastRange.start.column, this.lastRange.end.row , this.lastRange.end.column);
-            this.control?.ace.session.selection.setRange(range);
-            this.isScrollToMarked = true;
-            this.control.editor.fire('change-cursor');
+            this.control.change_cursor(true, this.lastRange.start.row, true);
         }
     },
     get output_height() {
@@ -644,7 +638,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     },
     $pdp: {
         lastRange: undefined,
-        isScrollToMarked: false,
         get control_bottom(){
             return this.offsetTop + this.control_height;
         },
@@ -961,31 +954,33 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         this.ace.focus();
     },
     on_change_cursor(e) {
-        this.ace.focus();
         this.throttle('change_cursor', () => {
             this.lastRange = this.ace?.getSelectionRange();
-            const row = this.ace.getSelectionRange().start.row,
-                rowsLength = this.session.getScreenLength(),
-                editorHeight = this.$('oda-code-editor').offsetHeight,
-                lineHeight = editorHeight / rowsLength,
-                delta = lineHeight * row,
-                rowTop = this.domHost.offsetTop + delta,
-                screenTop = this.jupyter.scrollTop,
-                screenBottom = screenTop + this.jupyter.offsetHeight - lineHeight * 2,
-                isVisible = rowTop >= screenTop && rowTop <= screenBottom;
-            if (this.isScrollToMarked) {
-                this.jupyter.scrollToCell(this.cell, delta - lineHeight * 4);
-            }
-            if (isVisible || this.isScrollToMarked) {
-                this.isScrollToMarked = false;
-                return;
-            }
-            this.isScrollToMarked = false;
-            if (rowTop < screenTop)
-                this.jupyter.scrollToCell(this.cell, delta - lineHeight);
-            else
-                this.jupyter.scrollToCell(this.cell, delta - this.jupyter.offsetHeight + lineHeight * 2);
+            this.change_cursor(true);
         }, 100)
+    },
+    change_cursor(focus = false, row = 0, isScrollToMarked = false) {
+        if (focus)
+            this.ace.focus();
+        row = row || this.ace.getSelectionRange().start.row;
+        const rowsLength = this.session.getScreenLength(),
+            editorHeight = this.$('oda-code-editor').offsetHeight,
+            lineHeight = editorHeight / rowsLength,
+            delta = lineHeight * row,
+            rowTop = this.domHost.offsetTop + delta,
+            screenTop = this.jupyter.scrollTop,
+            screenBottom = screenTop + this.jupyter.offsetHeight - lineHeight * 2,
+            isVisible = rowTop >= screenTop && rowTop <= screenBottom;
+        if (isScrollToMarked) {
+            this.async(() => this.jupyter.scrollToCell(this.cell, delta - lineHeight * 4));
+        }
+        if (isVisible) {
+            return;
+        }
+        if (rowTop < screenTop)
+            this.jupyter.scrollToCell(this.cell, delta - lineHeight);
+        else
+            this.jupyter.scrollToCell(this.cell, delta - this.jupyter.offsetHeight + lineHeight * 2);
     },
     on_change_breakpoints(e){
         this.cell.breakpoints = e.detail.value;
@@ -1507,18 +1502,9 @@ window._findCodeEntry = async (e) => {
     const cellElement = e.parentElement.domHost
     const codeEditor = cellElement.control?.$('oda-code-editor');
     const aceEditor = codeEditor.editor;
-    // const row = aceEditor.session.doc.$lines.findIndex(r=>r.trim().startsWith(text))
     const row = aceEditor.session.doc.$lines.findIndex(r=>r.trim().startsWith('>') && r.includes(text));
     const range = new ace.Range(row, 1000, row, 0);
-    // const length = aceEditor.session.doc.getAllLines().length;
-    // const height = codeEditor.offsetHeight;
-    // const delta = (height / length) * row - 30;
-    // if (cellElement.jupyter.scrollTop>codeEditor.domHost.domHost.offsetTop + delta)
-    //     cellElement.jupyter.scrollToCell(cellElement.cell, delta);
-    // aceEditor.moveCursorTo(row, 0);
-    // aceEditor.focus();
     aceEditor.session.selection.setRange(range);
-    codeEditor.fire('change-cursor');
 }
 window._findErrorPos = async (e) => {
     const row = +e.getAttribute('row');
@@ -1532,15 +1518,7 @@ window._findErrorPos = async (e) => {
     const codeEditor = cellElement.control?.$('oda-code-editor') || cellElement.$('oda-code-editor');
     const aceEditor = codeEditor.editor;
     const range = new ace.Range(row, 0, row, column);
-    // const length = aceEditor.session.doc.getAllLines().length;
-    // const height = codeEditor.offsetHeight;
-    // const delta = (height / length) * row - 30;
-    // if (cellElement.jupyter.scrollTop>codeEditor.domHost.domHost.offsetTop + delta)
-    //     cellElement.jupyter.scrollToCell(cellElement.cell, delta);
-    // aceEditor.moveCursorTo(row, column);
-    // aceEditor.focus();
     aceEditor.session.selection.setRange(range);
-    codeEditor.fire('change-cursor');
 }
 window.addEventListener('keydown', e => {
     if (e.code === 'KeyR' && e.ctrlKey) {
