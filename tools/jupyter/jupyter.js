@@ -408,8 +408,8 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run()" :error="cell?.autoRun" :success="!cell?.time" style="margin: 4px; border-radius: 50%;"></oda-button>
                     <div>{{time}}</div>
                     <div>{{status}}</div>
-                    <oda-icon ~if="lastRange" :icon-size icon="box:s-edit-alt" @tap="scrollToMarked" style="margin: 8px;" title="scroll to marked"></oda-icon>
-                    <oda-icon no-flex ~if="cell?.breakpoints" :icon-size icon="icons:label-outline" @tap="goToBreakPoint" style="margin: 8px;" title="debugger"></oda-icon>
+                    <oda-icon id="go-marked" ~if="!cell?.hideCode && lastRange" :icon-size icon="box:s-edit-alt" @tap="scrollToMarked" style="margin: 8px;" title="scroll to marked"></oda-icon>
+                    <oda-icon id="go-breakpoint" no-flex ~if="!cell?.hideCode && cell?.breakpoints" :icon-size icon="icons:label-outline" @tap="goToBreakPoint" style="margin: 8px;" title="debugger"></oda-icon>
                 </div>
             </div>
             <div class="pe-preserve-print vertical no-flex" style="width: calc(100% - 34px); position: relative;">
@@ -611,7 +611,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         }
         this._currentBreakPoints = row;
         row -= 1;
-        this.control.change_cursor(false, row, true);
+        this.control.change_cursor(false, row, true, '#go-breakpoint');
     },
     scrollToRunOutputs() {
         this.async(() => {
@@ -629,7 +629,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     },
     scrollToMarked() {
         if (this.lastRange) {
-            this.control.change_cursor(true, this.lastRange.start.row, true);
+            this.control.change_cursor(true, this.lastRange.start.row, true, '#go-marked');
         }
     },
     get output_height() {
@@ -956,7 +956,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
 
     `,
     on_pointerdown(e) {
-        this.ace.focus();
+        this.ace?.focus();
     },
     on_change_cursor(e) {
         this.throttle('change_cursor', () => {
@@ -964,10 +964,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             this.change_cursor(true);
         }, 100)
     },
-    change_cursor(focus = false, row = 0, isScrollToMarked = false) {
+    change_cursor(focus = false, row = 0, isScrollToMarked = false, id = '#go-marked') {
         if (focus)
-            this.ace.focus();
-        row = row || this.ace.getSelectionRange().start.row;
+            this.ace?.focus();
+        row = row || this.ace?.getSelectionRange().start.row;
         const rowsLength = this.session.getScreenLength(),
             editorHeight = this.$('oda-code-editor').offsetHeight,
             lineHeight = editorHeight / rowsLength,
@@ -976,7 +976,8 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             screenTop = this.jupyter.scrollTop,
             screenBottom = screenTop + this.jupyter.offsetHeight - lineHeight * 2,
             isVisible = rowTop >= screenTop && rowTop <= screenBottom;
-            this.deltaMarked = delta - lineHeight * 4;
+            let btnTop = this.domHost.$(id)?.offsetTop;
+            this.deltaMarked = delta - lineHeight - btnTop + 3;
         if (isScrollToMarked) {
             this.async(() => this.jupyter.scrollToCell(this.cell, this.deltaMarked));
             // return;
