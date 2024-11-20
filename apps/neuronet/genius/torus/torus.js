@@ -1014,14 +1014,14 @@ systems:{
             out._label(label+' ('+out.shape+')');
             if (this.allowGrad && $.backward_0){
                 out._back = ()=>{
-                    data = data.slice(0);
+                    let old_data = data.slice(0);
                     const backward = eval($.backward_0);
                     let i = this.size;
                     while(i--){
-                        data[i] = backward(this.data[i], data[i]) * out.data[i];
+                        old_data[i] = backward(this.data[i], old_data[i]) * out.data[i];
                     }
-                    this.update_grad(data);
-                    // data.buffer.transfer(0);
+                    this.update_grad(old_data);
+                    old_data.buffer.transfer(0);
 
                 }
             }
