@@ -397,11 +397,8 @@ export class tensor/* extends Array*/{
     }
     static param(src){
         src = tensor.from(src);
-        if(src.dType !== Float32Array){
-            const data = new Float32Array(src.data.length);
-            data.set(src.data)
-            src.data = data;
-        }
+        if(src.dType !== Float32Array)
+            src.data = new Float32Array(src.data);
         src.isParam = true;
         src.isSerializable = true;
         return src;
@@ -1377,30 +1374,33 @@ generators:{
         else {   //Если указана форма тензора
             steps = step_or_shape.mul();
             step = (to - from_or_size) / steps;
-
         }
         let dType = (function(from, to, step){
             to -= step;   //Конечное значение диапазона в последовательность не входит
-            let from_is_integer = Number.isInteger(from);
+            const from_is_integer = Number.isInteger(from);
             if (from > to) {   //Начало диапазона делаем меньше конца, чтобы дальше было проще сравнивать с границами числовых типов
                 [from, to] = [to, from];
             }
             if ( from_is_integer && Number.isInteger(step) ) {   //Если ожидаются целочисленные значения
-                if( from>=-128 && to<=127)
+                if( from>=-(2**(Int8Array.BYTES_PER_ELEMENT*8-1)) && to<2**(Int8Array.BYTES_PER_ELEMENT*8-1) )   //-128 ... 127
                     return Int8Array;
-                if( from>=0 && to<=255)
+                if( from>=0 && to<2**(Uint8Array.BYTES_PER_ELEMENT*8))   // 0 ... 255
                     return Uint8Array;
-                if( from>=-32768 && to<=32767)
+                if( from>=-(2**(Int16Array.BYTES_PER_ELEMENT*8-1)) && to<2**(Int16Array.BYTES_PER_ELEMENT*8-1))   //-32768 ... 32767
                     return Int16Array;
-                if( from>=0 && to<=65535)
+                if( from>=0 && to<2**(Uint16Array.BYTES_PER_ELEMENT*8))   // 0 ... 65535
                     return Uint16Array;
-                if( from>=-2147483648 && to<=2147483647)
+                if( from>=-(2**(Int32Array.BYTES_PER_ELEMENT*8-1)) && to<2**(Int32Array.BYTES_PER_ELEMENT*8-1))   //-2147483648 ... 2147483647
                     return Int32Array;
-                if( from>=0 && to<=4294967295)
+                if( from>=0 && to<2**(Uint32Array.BYTES_PER_ELEMENT*8))   // 0 ... 4294967295
                     return Uint32Array;
             }
-            if( from>=-3.4028234663852886e+38 && to<=3.4028234663852886e+38)
-                return Float32Array;
+            const max_float32 = 0b111111111111111111111111 * 2**(127-23);   // 3.4028234663852886e+38
+            const min_float32 = 2**(-149);   // 1.401298464324817e-45
+            if( from>=-max_float32 && to<=max_float32)   //Попадает в диапазон Float32Array
+                //Попадает в минимальные значения Float32Array
+                if( (Math.abs(from)>=min_float32 || from===0) && (Math.abs(to)>=min_float32 || to===0) && Math.abs(step)>=min_float32)
+                    return Float32Array;
             return Float64Array;
         })(from_or_size, to, step);
         const data = new dType(steps);
@@ -1424,18 +1424,12 @@ generators:{
         const rows = shape[shape.length - 2] ?? 0;
         const steps = Math.min( rows, columns);
         const step = columns + 1;
-        let data = [];
-        let repeat = 1;
-        if (shape.length > 2) {
-            repeat = shape.slice(0, -2).mul();
-        }
-        if( repeat ) {   //Если передано более 2-х осей, и среди них нет осей с нулевой длинной
-            data = Array(rows * columns).fill(0);
-            for (let i = 0, idx = 0; i<steps; i++, idx+=step){
+        const repeat = shape.length < 3 ? 1: shape.slice(0, -2).mul();
+        const stride = rows * columns;
+        const data = new Int8Array(shape.mul() || [1]);
+        for (let i=0, target=0; i<repeat ; i++, target+=stride)  //Заполнение старших размерностей
+            for (let j=0, idx=target; j<steps; j++, idx+=step)   //Заполнение матрицы
                 data[idx] = 1;
-            }
-            data = new Int8Array(Array(repeat).fill(data).flat());
-        }
         return torus.from(data)._shape(shape)._label('eye');
     }
 
