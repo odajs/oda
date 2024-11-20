@@ -34,6 +34,9 @@ ODA({is: 'oda-code-editor',
         </style>
         <div @keydown.stop  style="min-height: 100%; font-size: large;"></div>
     `,
+    get lineHeight(){
+        return this.editor?.container.querySelector('.ace_gutter-cell').offsetHeight;
+    },
     $public: {
         scrollCalculate: 0,
         stickySearch: false,
