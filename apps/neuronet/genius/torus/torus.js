@@ -397,6 +397,11 @@ export class tensor/* extends Array*/{
     }
     static param(src){
         src = tensor.from(src);
+        if(src.dType !== Float32Array){
+            const data = new Float32Array(src.data.length);
+            data.set(src.data)
+            src.data = data;
+        }
         src.isParam = true;
         src.isSerializable = true;
         return src;
