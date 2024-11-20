@@ -82,7 +82,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         </style>
         <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
         <oda-jupyter-cell @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
-        <div style="min-height: 50%"></div>
+        <div style="min-height: 100%"></div>
     `,
     command_replace(){
         const el = this.$$('oda-jupyter-cell').find(el => el.cell.id === this.selectedCell.id);
@@ -237,7 +237,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         const cellElements = this.jupyter.$$('oda-jupyter-cell');
         const cellElement = cellElements.find(el => el.cell.id === cell.id);
         if (!cellElement) return;
-        if (toMarked) {
+        if (toMarked && !cell.hideCode) {
             delta = cellElement.control.deltaMarked || 0;
             if (cellElement.control.deltaMarked)
                 this.async(() => cellElement.control.ace?.focus(), 0);
@@ -977,7 +977,8 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             screenBottom = screenTop + this.jupyter.offsetHeight - lineHeight * 2,
             isVisible = rowTop >= screenTop && rowTop <= screenBottom;
             let btnTop = this.domHost.$(id)?.offsetTop;
-            this.deltaMarked = delta - lineHeight - btnTop + 3;
+            this.deltaMarked = (delta - lineHeight * 2.6 - (btnTop - 44));
+            // console.log(btnTop, this.deltaMarked)
         if (isScrollToMarked) {
             this.async(() => this.jupyter.scrollToCell(this.cell, this.deltaMarked));
             // return;
