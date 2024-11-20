@@ -272,6 +272,7 @@ export class tensor/* extends Array*/{
             }
         }
         else{
+            this.to_fwd_state = false;
             let lr = torus.LEARNING_RATE
             let i = this.size;
             while (i--){
