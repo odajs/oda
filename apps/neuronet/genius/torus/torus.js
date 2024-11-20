@@ -259,6 +259,8 @@ export class tensor/* extends Array*/{
         this.src.forEach(s=>s.destroy(recurce))
     }
     update_grad(grad){
+        if(grad.length !== this.size)
+            throw new Error(`update_grad(grad): size of grad (${grad.length}) does not match tensor size (${this.size})`)
         if (!this.isParam){
             if (this.to_fwd_state){
                 this.to_fwd_state = false;
