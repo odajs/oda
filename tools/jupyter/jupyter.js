@@ -82,7 +82,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         </style>
         <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
         <oda-jupyter-cell @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
-        <div style="min-height: 100%"></div>
+        <div style="min-height: 50%"></div>
     `,
     command_replace(){
         const el = this.$$('oda-jupyter-cell').find(el => el.cell.id === this.selectedCell.id);
