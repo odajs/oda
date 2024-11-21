@@ -945,7 +945,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         <div  class="horizontal" :border="!hideCode"  style="min-height: 64px;">
             <oda-code-editor :scroll-calculate="getScrollCalculate()" :wrap ~if="!hideCode" show-gutter :read-only @change-cursor="on_change_cursor" @change-breakpoints="on_change_breakpoints" @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" max-lines="Infinity" @change="editorValueChanged" @pointerdown="on_pointerdown" enable-breakpoints sticky-search></oda-code-editor>
             <div dimmed ~if="hideCode" class="horizontal left content flex" style="cursor: pointer; padding: 8px 4px;" @dblclick="hideCode=false">
-                <oda-icon icon="bootstrap:eye-slash" style="align-self: baseline;"></oda-icon>
+                <oda-icon icon="bootstrap:eye-slash" style="align-self: baseline; cursor: pointer;" @tap="hideCode = false"></oda-icon>
                 <h1 flex  vertical style="margin: 0px 16px; font-size: large; cursor: pointer; text-overflow: ellipsis;" ~html="cell.name +'... <u disabled style=\\\'font-size: x-small; right: 0px;\\\'>(Double click to show...)</u>'" ></h1>
             </div>
         </div>
