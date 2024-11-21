@@ -21,7 +21,7 @@ ODA({is: 'oda-jupyter-tree-cell', extends: 'this, oda-table-cell',
                 transform: scale(.7);
             }
         </style>
-        <oda-icon :icon></oda-icon>
+        <oda-icon ~if="icon" :icon></oda-icon>
     `,
     bold:{
         $attr: true,
@@ -61,7 +61,7 @@ ODA({is: 'oda-jupyter-tree-cell', extends: 'this, oda-table-cell',
                     return 'box:i-code-alt';
             }
             if (this.item.h)
-                return 'bootstrap:type-h'+this.item.h
+                return '';
             return 'bootstrap:text-left';
         }
         return icon;

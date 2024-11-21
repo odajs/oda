@@ -2099,7 +2099,7 @@ cells: {
             <oda-icon
                 ~if="showExpander"
                 ~style="_style"
-                style="cursor: pointer"
+                style="cursor: pointer;"
                 class="no-flex expander"
                 :icon
                 :icon-size
@@ -2114,7 +2114,7 @@ cells: {
             return this.item?.__level__ !== -1 && !this.item?.$forceExpanded;
         },
         get _style() {
-            return { opacity: this.icon ? (this.item?.disabled ? .5 : 1) : 0 };
+            return { opacity: this.icon ? (this.item?.disabled ? .2 : .5) : 0 };
         },
         get hideIcon() {
             return this.item.hideExpander || (!this.item.items?.length && !this.item.$hasChildren);
