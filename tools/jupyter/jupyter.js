@@ -72,16 +72,17 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 padding-top: 14px;
                 opacity: 0;
                 transition: opacity 1s;
-                background-color: var(--content-background);
+                /*background-color: var(--content-background);*/
                 scroll-behavior: smooth;
                 position: relative;
+                @apply --light;
             }
             @media print {
                 .pe-preserve-print::-webkit-scrollbar { width: 0px; height: 0px; }
             }
         </style>
         <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
-        <oda-jupyter-cell @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item" ~show="!$for.item.hidden"></oda-jupyter-cell>
+        <oda-jupyter-cell content @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item" ~show="!$for.item.hidden"></oda-jupyter-cell>
         <div style="min-height: 90%"></div>
     `,
     command_replace(){
