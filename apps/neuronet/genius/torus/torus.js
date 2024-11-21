@@ -2102,6 +2102,7 @@ torus.prototype.pad = function(paddings, mode = 'constant', constant_value = 0) 
 torus.fn_cache = {einsum:{}, slice: {}};
 
 globalThis.range ??= (count = 0)=>{
+    count = Math.floor(count)
     return Array(count).fill().map((_, i)=>i);
 }
 
