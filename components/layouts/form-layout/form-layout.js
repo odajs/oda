@@ -80,7 +80,7 @@ ODA({
         }
         {{''}}
     </style>
-    <div id="titleBar" @mouseenter="_in" @mouseleave="_out" class="pe-no-print " style="padding-top: 4px">
+    <div id="titleBar" @mouseenter="_in" @mouseleave="_out" class="pe-no-print">
         <oda-icon ~if="title && icon" :icon :sub-icon style="margin-left: 8px;"></oda-icon>
         <slot class="horizontal" style="flex-shrink: 1" name="title-bar"></slot>
         <label ~if="title" ~html="title" style="margin-left: 8px; align-self: center; overflow: hidden; text-overflow: ellipsis;"></label>

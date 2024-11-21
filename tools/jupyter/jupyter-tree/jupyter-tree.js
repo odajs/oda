@@ -9,7 +9,8 @@ ODA({ is: 'oda-jupyter-tree', imports: '@oda/tree', extends: 'oda-tree',
         this.scrollToCell?.(e.target.item, 0, true);
     },
     autoFixRows : true,
-    hideRoot: true
+    hideRoot: true,
+    hideTop: true,
  });
 ODA({is: 'oda-jupyter-tree-cell', extends: 'this, oda-table-cell',
     template: /*html*/`
