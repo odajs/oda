@@ -7,6 +7,7 @@ ODA({is: 'oda-circles',
                 background-color: black;
                 animation: fadeIn 1 1s ease-out;
                 overflow: hidden;
+                
             }    
             i {
                 position: absolute;
@@ -42,5 +43,11 @@ ODA({is: 'oda-circles',
         if (this.st[k + i] !== undefined) return this.st[k + i];
         this.st[k + i] = min + Math.random() * (max - min);
         return this.st[k + i];
+    },
+    attached(){
+        document.body.style.overflow = 'hidden'
+        // setInterval(()=>{
+        //     this.count ++;
+        // }, 5000)
     }
 })

@@ -81,8 +81,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             }
         </style>
         <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
-        <oda-jupyter-cell @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item"  ~show="!$for.item.hidden"></oda-jupyter-cell>
-        <div style="min-height: 50%"></div>
+        <oda-jupyter-cell @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item" ~show="!$for.item.hidden"></oda-jupyter-cell>
+        <div style="min-height: 90%"></div>
     `,
     command_replace(){
         const el = this.$$('oda-jupyter-cell').find(el => el.cell.id === this.selectedCell.id);
@@ -232,19 +232,36 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             }
         }
     },
-    async scrollToCell(cell = this.selectedCell, delta = 0, toMarked) {
+    async scrollToCell(cell = this.selectedCell, row = 0, delta = 0, toLastRange = false) {
         if (!cell) return;
         const cellElements = this.jupyter.$$('oda-jupyter-cell');
         const cellElement = cellElements.find(el => el.cell.id === cell.id);
         if (!cellElement) return;
-        if (toMarked && !cell.hideCode) {
-            delta = cellElement.control.deltaMarked || 0;
-            if (cellElement.control.deltaMarked)
-                this.async(() => cellElement.control.ace?.focus(), 0);
+        const screenTop = this.jupyter.scrollTop,
+            screenBottom = screenTop + this.jupyter.offsetHeight;
+        if (cell.type === 'code' && !cell.hideCode) {
+            if (toLastRange && cellElement.lastRange) {
+                row = cellElement.lastRange.start.row;
+                this.async(() => {
+                    cellElement.control.ace.focus();
+                }, 100)
+            }
+            const lineHeight = cellElement.control.editor.lineHeight,
+                rowTop = cellElement.offsetTop + lineHeight * row,
+                isVisible = rowTop >= screenTop && rowTop <= screenBottom - lineHeight * 2;
+            if (isVisible && !delta)
+                return;
+            if (rowTop < screenTop || delta || toLastRange)
+                delta = lineHeight * (row) - delta;
+            else
+                delta = lineHeight * (row + 2) - this.jupyter.offsetHeight - delta;
+        } else {
+            if (cellElement.offsetTop >= screenTop && cellElement.offsetTop  <= screenBottom) {
+                return;
+            }
         }
-        this.jupyter.scrollTop = cellElement.offsetTop + delta
+        this.jupyter.scrollTop = cellElement.offsetTop + delta;
         await new Promise(resolve => this.async(resolve, 100));
-
     },
     async attached() {
         await getLoader();
@@ -408,7 +425,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run()" :error="cell?.autoRun" :success="!cell?.time" style="margin: 4px; border-radius: 50%;"></oda-button>
                     <div>{{time}}</div>
                     <div>{{status}}</div>
-                    <oda-icon id="go-marked" ~if="!cell?.hideCode && lastRange" :icon-size icon="box:s-edit-alt" @tap="scrollToMarked" style="margin: 8px;" title="scroll to marked"></oda-icon>
+                    <oda-icon id="go-lastrange" ~if="!cell?.hideCode && lastRange" :icon-size icon="box:s-edit-alt" @tap="scrollToLastRange" style="margin: 8px;" title="scroll to marked"></oda-icon>
                     <oda-icon id="go-breakpoint" no-flex ~if="!cell?.hideCode && cell?.breakpoints" :icon-size icon="icons:label-outline" @tap="goToBreakPoint" style="margin: 8px;" title="debugger"></oda-icon>
                 </div>
             </div>
@@ -611,12 +628,17 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         }
         this._currentBreakPoints = row;
         row -= 1;
-        this.control.change_cursor(false, row, true, '#go-breakpoint');
+        const delta = this.$('#go-breakpoint').offsetTop + 10;
+        this.jupyter.scrollToCell(this.cell, row, delta);
+    },
+    scrollToLastRange() {
+        if (this.lastRange) {
+            const delta = this.$('#go-lastrange').offsetTop + 10;
+            this.jupyter.scrollToCell(this.cell, this.lastRange.start.row, delta, true);
+        }
     },
     scrollToRunOutputs() {
         this.async(() => {
-            this.lastRange = this.control?.ace?.getSelectionRange() || { start: { row: 0, column: 0 }, end: { row: 0, column: 0 } };
-            this.lastRange.run = true; 
             if (this.control_bottom < (this.jupyter_height + this.jupyter_scroll_top) /*&& this.control_offsetBottom > this.jupyter_scroll_top*/)
                 return;
             if (this.cell?.hideOutput)
@@ -626,11 +648,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             else
                 this.$('#outputs')?.scrollIntoView({block: "end"});
         })
-    },
-    scrollToMarked() {
-        if (this.lastRange) {
-            this.control.change_cursor(true, this.lastRange.start.row, true, '#go-marked');
-        }
     },
     get output_height() {
         return this.cell_height - this.control_height;
@@ -961,35 +978,8 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     on_change_cursor(e) {
         this.throttle('change_cursor', () => {
             this.lastRange = this.ace?.getSelectionRange();
-            this.change_cursor(true);
+            this.jupyter.scrollToCell(this.cell, this.lastRange.start.row)
         }, 100)
-    },
-    change_cursor(focus = false, row = 0, isScrollToMarked = false, id = '#go-marked') {
-        if (focus)
-            this.ace?.focus();
-        row = row || this.ace?.getSelectionRange().start.row;
-        const rowsLength = this.session.getScreenLength(),
-            editorHeight = this.$('oda-code-editor').offsetHeight,
-            lineHeight = editorHeight / rowsLength,
-            delta = lineHeight * row,
-            rowTop = this.domHost.offsetTop + delta,
-            screenTop = this.jupyter.scrollTop,
-            screenBottom = screenTop + this.jupyter.offsetHeight - lineHeight * 2,
-            isVisible = rowTop >= screenTop && rowTop <= screenBottom;
-            let btnTop = this.domHost.$(id)?.offsetTop;
-            this.deltaMarked = (delta - lineHeight * 2.6 - (btnTop - 44));
-            // console.log(btnTop, this.deltaMarked)
-        if (isScrollToMarked) {
-            this.async(() => this.jupyter.scrollToCell(this.cell, this.deltaMarked));
-            // return;
-        }
-        if (isVisible) {
-            return;
-        }
-        if (rowTop < screenTop)
-            this.jupyter.scrollToCell(this.cell, delta - lineHeight);
-        else
-            this.jupyter.scrollToCell(this.cell, delta - this.jupyter.offsetHeight + lineHeight * 2);
     },
     on_change_breakpoints(e){
         this.cell.breakpoints = e.detail.value;
@@ -1079,10 +1069,6 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 this.cell?.writeMetadata('maxRow', n)
             }
         }
-    },
-    async exportValue() {
-        const exp = await this.$('oda-code-editor')?.exportValue();
-        return exp;
     },
     getScrollCalculate(){
         return this.jupyter_height - 22 - 14;
@@ -1514,6 +1500,7 @@ window._findCodeEntry = async (e) => {
     const row = aceEditor.session.doc.$lines.findIndex(r=>r.trim().startsWith('>') && r.includes(text));
     const range = new ace.Range(row, 1000, row, 0);
     aceEditor.session.selection.setRange(range);
+    aceEditor.focus();
 }
 window._findErrorPos = async (e) => {
     const row = +e.getAttribute('row');
@@ -1528,6 +1515,7 @@ window._findErrorPos = async (e) => {
     const aceEditor = codeEditor.editor;
     const range = new ace.Range(row, 0, row, column);
     aceEditor.session.selection.setRange(range);
+    aceEditor.focus();
 }
 window.addEventListener('keydown', e => {
     if (e.code === 'KeyR' && e.ctrlKey) {
