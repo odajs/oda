@@ -66,8 +66,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 @apply --vertical;
                 @apply --flex;
                 outline: none !important;
-                overflow-y: auto;
-                overflow-x: hidden;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
                 /*padding: 12px 6px 30px 6px;*/
                 padding-top: 14px;
                 opacity: 0;
@@ -420,7 +420,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         </style>
 
         <div class="horizontal">
-            <div class="pe-no-print left-panel vertical" :error-invert="status === 'error'" style="z-index: 2;">
+            <div class="pe-no-print left-panel vertical" :error-invert="status === 'error'" content style="z-index: 2;">
                 <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: 2px; min-height: 50px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run()" :error="cell?.autoRun" :success="!cell?.time" style="margin: 4px; border-radius: 50%;"></oda-button>
                     <div>{{time}}</div>
