@@ -1032,7 +1032,8 @@ systems:{
 }
 einops:{
 
-    torus._einops_parse = (expression) => {
+    torus._einops_parse = (expression = '') => {
+        expression = expression.toString();
         const test_subscr = (subs = '', side)=>{
             subs = subs.trim()
             while(subs.includes('..'))
@@ -1188,7 +1189,13 @@ einops:{
                 code += `let using = t.filter(i=>i.allowGrad);\n`;
                 code += `let main = using[0];\n`;
                 code += `let key = '${key}';\n`;
-                code += `let out = main?.getOut(using, key) || torus.tensor(new Float32Array(${size}))._src(t)._shape(${output.length?output.map(a=>a.d):1})._label('${'einsum: ' + expression}');\n`;
+                code += `let out = main?.getOut(using, key);\n`;
+                code += `if(!out){\n`;
+                code += `  out = torus.tensor(new Float32Array(${size}))._src(t)._shape(${output.length?output.map(a=>a.d):1})._label('${'einsum: ' + expression}');\n`;
+                code += `  if(main)\n`
+                code += `    main.setOut(out, using, key)\n`
+                code += `}\n`;
+
                 code += `let out_data = out.data;\n`;
                 code += `let sum = out_data[0];\n`
                 code += `let func = eval(${func});\n\n`
@@ -1200,12 +1207,14 @@ einops:{
                 let axes = Object.values(subscrs.axes);
                 for(let n in subscrs.vars){
                     let d = subscrs.vars[n];
-                    axes.push({n, d, r:0, s:{[n+'_']:d}, sc: []})
+                    axes.push({n, d, r:0, s:{[n+'_']:d}, sc: [], var: true})
                 }
                 m = 1;
                 output = output.toReversed().map(axo=>{
                     let axis = axes.find(a=>a.n === axo.n);
                     axo.s = m;
+                    if(axis.var)
+                        axo.var = axis.var;
                     m *= axis.d// || subscrs.vars[axo.n];
                     axis.s[axo.n+'_'] = axo.s;
                     axis.r *= -1;
@@ -1215,10 +1224,13 @@ einops:{
                 axes = axes.sort((a,b)=>a.r<b.r?-1:1).map((axis, i)=>{
                     let tab = ' '.repeat(i * 2);
                     let adds = Object.keys(axis.s);
-                    let s1 = adds.map(n => n + ' = 0').join(', ');
-                    let s2 = adds.map(n => n + ' += ' + axis.s[n]).join(', ');
                     let key = adds[0];
-                    code += tab + `for (let ${s1}; ${key} < ${axis.d * axis.s[key]}; ${s2}){\n`;
+                    if(key){
+                        let s1 = adds.map(n => n + ' = 0').join(', ');
+                        let s2 = adds.map(n => n + ' += ' + axis.s[n]).join(', ');
+                        code += tab + `for (let ${s1}; ${key} < ${axis.d * axis.s[key]}; ${s2}){\n`;
+                    }
+
                     let idx = subscrs.output.indexOf(axis.n);
                     if(idx>-1){
                         subscrs.output.splice(idx, 1);
@@ -1247,6 +1259,7 @@ einops:{
                 code +=  tab +  `sum += func(${inputs.map((_,i)=>'val_'+i).join(', ')});\n`;
 
                 axes.toReversed().forEach((axis, i)=>{
+                    if(!Object.keys(axis.s).length) return;
                     let tab = ' '.repeat(2 * (axes.length - i - 1));
                     if(axis.is_out_data){
                         code +=  tab +  `  out_data[${output.map(ax=>ax.n+'_').join(' + ') || 0}] = sum;\n`;
@@ -1257,7 +1270,6 @@ einops:{
                 if(!output.length){
                     code +=  `out_data[0] = sum;\n`;
                 }
-                code += `\nif(main) main.setOut(out, using, key);\n`
                 code += 'return out;\n'
             }
             // >code
@@ -1277,28 +1289,52 @@ einops:{
         catch(e){
             throw new Error(`SubcodeError torus.einsum('${expression}'):\n`+e.message + '\n' + e.stack)
         }
-        out._back = function (){
-            tensors.forEach((t, i)=>{
-                if(!t.allowGrad) return;
-                const in_vars = inputs.map((input, ii)=>{
-                    if(ii === i)
-                        return output.map(ax=>ax.n).join('');
-                    return input.map(ax=>ax.n).join('');
+        if(!out._back){
+            out._back = function (){
+                tensors.forEach((t, i)=>{
+                    if(!t.allowGrad) return;
+                    const inp_vars = structuredClone(inputs.map((input, idx)=>(idx === i)?output:input));
+                    let out_vars = structuredClone(inputs[i]);
+                    // let flat_in_vars = in_vars.flat();
+                    let adds = out_vars.map((ax_out, i) => {
+                        let inps = inp_vars.map(inp => {
+                            return inp.find(ax_inp=>(ax_inp.n === ax_out.n.toUpperCase() || ax_inp.n === ax_out.n.toLowerCase()));
+                        }).filter(Boolean);
+                        if(!inps.length)
+                            return ax_out; // полное отсутствие входного операнда в обоих регистрах
+                        if(inps.find(ax_inp=>(ax_inp.n === ax_out.n && ax_inp.d === ax_out.d)))
+                            return;  // полное совпадение
+                        let inp = inps.find(ax_inp=>(ax_inp.n !== ax_out.n/* && ax_inp.d !== ax_out.d*/));
+                        if(inp?.var){
+                            let n = inp.n;
+                            inp.n = ax_out.n;
+                            ax_out.n = n;
+                            // return;
+                        }
+                        if(inps.find(ax_inp=>ax_inp.n === ax_out.n)) {
+                            let n = ax_out.n.toUpperCase();
+                            if(ax_out.n === n){
+                                n = n.toLowerCase();
+                            }
+                            ax_out.n = n
+                            return ax_out;  // совпадение по имени, но различие в размерностях
+                        }
+                        if(inps.find(ax_inp=>ax_inp.d !== ax_out.d)){
+                            return ax_out; // не совпадение по регистрам имен
+                        }
+
+                    }).filter(Boolean);
+                    let expr = inp_vars.map(inp=>inp.map(a=>a.n).join('')).join(',')  + '->' + out_vars.map(a=>a.n).join('');
+                    if (adds.length){
+                        expr += ':' + adds.map(a=>a.n+'='+a.d).join(',');
+                    }
+                    let sources = tensors.map((tensor,idx)=>(idx === i)?out:tensor)
+                    $.forward = $['backward_'+ i]?.toString();
+                    $.this_is_back = true;
+                    let out_back = torus.einsum(expr, sources, $);
+                    t.update_grad(out_back.data);
                 })
-                let out_vars = inputs[i].map(i=>i.n);
-                let adds = inputs[i].filter(ax=>!in_vars.some(i => i.includes(ax.n)))
-                let expr = in_vars.join(',')  + '->' + out_vars.join('');
-                if (adds.length)
-                    expr += ':' + adds.map(a=>a.n+'='+a.d).join(',');
-                let sources = tensors.map((tt,ii)=>{
-                    if(ii === i)
-                        return out;
-                    return tt;
-                })
-                $.forward = $['backward_'+ i]?.toString();
-                let out_back = torus.einsum(expr, sources, $);
-                t.update_grad(out_back.data);
-            })
+            }
         }
         return out;
     }
