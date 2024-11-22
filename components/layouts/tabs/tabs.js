@@ -79,7 +79,7 @@ ODA({
                     ~style="calcTabStyle($for.item, index === $for.index)"
                     @mousedown="_tabOnMouseDown($for.item, $event)">
 
-                    <div ~is="$for.item.componentName || componentName" :item="$for.item" :icon-size="iconSize * 0.8" @tap="tabTapped($for.index)" style="padding: 8px;"></div>
+                    <div ~is="$for.item.componentName || componentName" :item="$for.item" :idx="$for.index" :icon-size="iconSize * 0.8" @tap="tabTapped($for.index)" style="padding: 8px;"></div>
                     <oda-icon ~if="typeof $for.item.close === 'function'" icon="icons:close" :icon-size="0.75 * iconSize" @tap.stop="$for.item.close()" style="margin-right: 4px;"></oda-icon>
                 </div>
             </div>
