@@ -2119,5 +2119,5 @@ for (let n in descr){
     }
 }
 function label_from_error(deep = 0){
-    return new Error().stack.split('at torus.')?.[1 + deep].split(' ')?.[0] || 'torus';
+    return new Error().stack.split('at torus.')?.[1 + deep]?.split(' ')?.[0] || 'torus';
 }
