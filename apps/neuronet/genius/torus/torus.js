@@ -1491,11 +1491,13 @@ generators:{
         }
         let k = 2/size;
         const data = new Float32Array(size);
+        function func(){
+            return (torus.generator() - .5) * k;
+        }
         while(size--)
-            data[size] = (torus.generator() - .5) * k;
+            data[size] = func();
         return torus.tensor(data)._label('rand_init')._shape(shape);
     }
-
     torus.empty = (...shape)=>{
         shape = torus.flat(shape);
         let size = shape.mul();
