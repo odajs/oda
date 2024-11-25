@@ -792,39 +792,72 @@ if (!Array.prototype.toTensorString) {
         }
     } )
 }
-let max = 8;
+// let max = 8;
+
 // function num2text(x, float_type = false){
-
-//     let num = Math.abs(x) > 10000 ?x.toExponential((Math.abs(x) >= 10000000000)?1:2):x.toString();
+//     const showAsExponential = Math.abs(x) >= 100000 || (Math.abs(x) < 0.01 && x!==0);
+//     let num = showAsExponential ? x.toExponential((Math.abs(x) >= 10000000000 || Math.abs(x) <= 0.0000000001)?1:2):x.toString();
 //     let repeat = (num[0] === '-')?1:2;
-//     if (!Number.isFinite(x))
-//         num = num.substring(0, 5 - repeat)
 //     num = ' '.repeat(repeat) + num;
-//     if (!Number.isInteger(x) && !Number.isNaN(x) && Number.isFinite(x))
-//         num = num.substring(0, max).padEnd(max, '0');
-//     else{
-//         if (Number.isInteger(x) && float_type)
-//             num+='.';
-//         num = num.padStart(max, ' ');
-//     }
-
-//     return num
+//     if (!Number.isFinite(x))
+//         num = num.substring(0, 5)
+//     else if (!showAsExponential)
+//             if (!Number.isInteger(x))
+//                 num = num.substring(0, max).padEnd(max, '0');
+//             else if (float_type)
+//                     num+='.';
+//     return num.padStart(max, ' ');
 // }
 
-function num2text(x, float_type = false){
-    const showAsExponential = Math.abs(x) >= 100000 || (Math.abs(x) < 0.01 && x!==0);
-
-    let num = showAsExponential ? x.toExponential((Math.abs(x) >= 10000000000 || Math.abs(x) <= 0.0000000001)?1:2):x.toString();
-    let repeat = (num[0] === '-')?1:2;
-    num = ' '.repeat(repeat) + num;
-    if (!Number.isFinite(x))
-        num = num.substring(0, 5)
-    else if (!showAsExponential)
+function num2text(x, float_type = false, text_max = 8) {
+    let num = ' '.repeat(Math.sign(x)===-1 ? 1: 2);
+    if (!Number.isFinite(x)) {
+        num += x.toString();
+        num = num.substring(0, 5);
+    }
+    else {
+        const x_abs = Math.abs(x);
+        const showAsExponential = x_abs >= 10**(text_max-3 + (Number.isInteger(x) && !float_type)) || (x_abs < 0.01 && x!==0);
+        if (showAsExponential) {
+            let mantissa;
+            if (x_abs >= 1e+100 || x_abs < 1e-99)
+                mantissa = text_max-9<1 ? 1: text_max-9;
+            else if (x_abs >= 1e+10 || x_abs < 1e-9)
+                mantissa = text_max-8<1 ? 1: text_max-8;
+            else
+                mantissa = text_max-7<1 ? 1: text_max-7;
+            num += x.toExponential(mantissa);
+            //Рассчитанная выше длина мантиссы считалась для исходного числа.
+            //При этом метод toExponential перед формированием строки округляет число, что может изменить порядок числа.
+            //Например, для числа 9.999999e+9 была рассчитана длина мантиссы 2, и, следовательно, ожидалась строка «9.99e+9» из семи символов.
+            //Однако метод toExponential округляет число и выдаёт строку «1.00e+10» длинной восемь символов,
+            //т.к. в порядке стало две цифры, а длина мантиссы рассчитывалась для одной цифры.
+            //Ещё пример, для числа 9.999999e-10 была рассчитана длина мантиссы 1, и, следовательно, ожидалась строка «9.9e-10» из семи символов.
+            //Однако метод toExponential округляет число и выдаёт строку «1.0e-9» длинной шесть символов,
+            //т.к. в порядке оказалась одна цифра, а длина мантиссы рассчитывалась для двух цифр.
+            //При выводе многомерных тензоров разная длина чисел будет ломать стройный вид столбцов.
+            //Следующие пять строчек кода устраняют этот недостаток.
+            if (num.length < text_max )   //Если длина строки меньше заданной увеличиваем количество цифр в мантиссе
+                num = num.replace('e','0e');
+            else
+                if (num.length > text_max && mantissa > 1)   //Если длина строки больше заданной и есть куда сжимать мантиссу
+                    num = num.replace('0e','e');
+            //Ещё пример, для числа 0.00999999 была рассчитана длина мантиссы 2, и, следовательно, ожидалась строка «9.99e-3».
+            //Однако метод toExponential округляет число и выдаёт строку «1.00e-2». На мой взгляд, это число выглядит приятней в виде «0.01000».
+            //Следующие две строчки кода устраняют этот недостаток.
+            if (num.slice(-3) === "e-2")
+                num = (num.slice(0, 2) + '0.01').padEnd(text_max, '0')
+        }
+        else {
+            num += x.toString();
             if (!Number.isInteger(x))
-                num = num.substring(0, max).padEnd(max, '0');
-            else if (float_type)
-                    num+='.';
-    return num.padStart(max, ' ');
+                num = num.substring(0, text_max).padEnd(text_max, '0');
+            else
+                if (float_type)
+                    num += '.';
+        }
+    }
+    return num.padStart(text_max, ' ');
 }
 
 function genId(){
