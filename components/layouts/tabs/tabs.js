@@ -294,8 +294,8 @@ ODA({
         switch (this.contentAlign) {
             case 'left': {
                 style['margin'] = item.label
-                    ? '0px 2px 1px 0px'
-                    : '0px 2px 1px 0px';
+                    ? '1px 2px 0px 0px'
+                    : '1px 2px 0px 0px';
             } break;
             case 'right': {
                 style['margin'] = item.label
