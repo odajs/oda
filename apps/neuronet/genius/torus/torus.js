@@ -1880,54 +1880,91 @@ convertors:{
         })
         return out;
     }
-    torus.prototype.split = function(split_size_or_sections = [], dim = 0){
-        split_size_or_sections = torus.flat(split_size_or_sections);
-        let sum = split_size_or_sections.sum();                           // считаем сумму указанных срезов
-        if(!sum)                                                            // не указаны размеры срезов, возвращаем исходный тензор
-            return this;
-        const di = this.dims_info(dim)[0]
-        let max = di.dim;                                                   // корректируем изменение среза
-        if(sum > max)
-            throw new Error(`split_size_or_sections expects to sum exactly to ${max} (input tensor's size at dimension ${dim}), but got split_size_or_sections=[${split_size_or_sections}]`);
-        if(split_size_or_sections.length === 1){                            // если указан только 1 срез
-            let count = Math.floor(max/sum);
-            split_size_or_sections = Array(count).fill(sum);
-            sum = split_size_or_sections.sum();
-        }
-        if(sum < max)
-            split_size_or_sections.push(max - sum);
+    split_code_generator = function split_code_generator(t, steps, dim){
+        let key = t.shape + '-' + steps + '-' + dim;
+        let fn = torus.fn_cache.split[key];
+        if(!fn){
+            dim = t.check_dim(dim);
+            let sum = steps.sum();
+            let s_info = t.shape_info;
+            let d_info = s_info[dim];
+            steps = range(d_info.dim/sum).map(_=>steps).flat();
+            let rem = d_info.dim%sum;
+            if(rem)
+                steps.push(rem);
 
-        let outs = this.out;
-        const period = this.shape.slice(0, di.idx).mul() || 1;
-        const step = this.size / period;
-        const shape = Array.from(this.shape);
-        outs = split_size_or_sections.map((s, idx)=>{
-            let split_size = di.stride * s;
-            let out = outs?.[idx];
-            if(!out){
-                shape[di.idx] = s;
-                out = torus.tensor(new this.dType(shape.mul()))._shape(shape)._src(this)._label(`split ${idx+1} of ${split_size_or_sections.length} -> ${s}`);
-                out._back = ()=>{
-                    let from = split_size_or_sections.slice(0, idx).sum() * di.stride;
-                    let to = 0;
-                    for(let p = 0; p < this.size; p += step){
-                        const slice = out.grad.slice(to, to + split_size);
-                        this.grad.set(slice, from + p);
-                        to += split_size;
-                    }
-                }
+            sum = steps.sum();
+            let stride = t.size/sum;
+            let code = `let data = t.data;\n`;
+            code += `let steps = [${steps}];\n`;
+            code += `let outs = t.getOut(t, '${key}');\n`;
+            code += `let shape = t.shape;\n`;
+            code += `if(!outs){\n`;
+            code += `  outs = steps.map(s => torus.tensor(new Float32Array(${stride} * s))._shape(shape.map((ts,i)=>(i === ${dim}?s:ts))));\n`;
+            code += `  t.setOut(outs, t, '${key}');\n`;
+            code += `  for(let i = 0, out = outs[i]; i < outs.length; i++){\n`;
+            code += `    out._back = ()=>{\n`;
+            code += `      if (t.to_fwd_state){\n`;
+            code += `        t.to_fwd_state = false\n`;
+            code += `        t.data.fill(0);\n`;
+            code += `      }\n`;
+            code += `      out.idx = 0;\n`;
+            let src = 'data'
+            for(let d = 0; d < dim; d++){
+                let tab = '  '.repeat(d);
+                let si = s_info[d];
+                let ch1 = si.char;
+                let ch2 = ch1.toUpperCase();
+                stride = si.stride;
+                code += tab +`      for(let ${ch1} = 0, ${ch2} = 0; ${ch1} < ${si.dim}; ${ch1}++, ${ch2} += ${stride}){\n`;
+                code += tab +`        let ${ch1}_slice = ${src}.subarray(${ch2}, ${ch2} + ${stride});\n`;
+                src = ch1+'_slice';
             }
-            let from = split_size_or_sections.slice(0, idx).sum() * di.stride;
-            let to = 0;
-            for(let p = 0; p < this.size; p += step){
-                const slice = this.data.slice(from + p, from + p + split_size);
-                out.data.set(slice, to);
-                to += split_size;
+            let tab = '  '.repeat(dim);
+            code += tab + `        let step = steps[i] * ${stride};\n`;
+            code += tab + `        let slice = out.subarray(out.idx, out.idx + step);\n`;
+            code += tab + `        data.set(slice, i * step);\n`;
+            code += tab +`         out.idx += step;\n`;
+            for(let d = 0; d<dim; d++){
+                let tab = '  '.repeat(dim - d - 1);
+                code += tab+`      }\n`;
             }
-            return out;
-        });
-        this.out = outs;
-        return outs;
+            code += `    }\n`;
+            code += `  }\n`;
+            code += `}\n`;
+            code += `for(let i = 0; i < outs.length; i++)\n`;
+            code += `  outs[i].idx = 0;\n`;
+            src = 'data'
+            for(let d = 0; d < dim; d++){
+                let tab = '  '.repeat(d);
+                let si = s_info[d];
+                let ch1 = si.char;
+                let ch2 = ch1.toUpperCase();
+                stride = si.stride;
+                code += tab +`for(let ${ch1} = 0, ${ch2} = 0; ${ch1} < ${si.dim}; ${ch1}++, ${ch2} += ${stride}){\n`;
+                code += tab +`  let ${ch1}_slice = ${src}.subarray(${ch2}, ${ch2} + ${stride});\n`;
+                src = ch1+'_slice';
+            }
+            stride = d_info.stride;
+            tab = '  '.repeat(dim);
+            code += tab +`for(let i = 0, s = 0, step = steps[0] * ${stride}; s < ${sum}; s += step, step = steps[++i] * ${stride}){\n`;
+            code += tab +`  let slice = ${src}.subarray(s, s + step);\n`;
+            code += tab +`  let out = outs[i];\n`;
+            code += tab +`  out.data.set(slice, out.idx);\n`;
+            code += tab +`  out.idx += step;\n`;
+            code += tab+`}\n`;
+            for(let d = 0; d<dim; d++){
+                let tab = '  '.repeat(dim - d - 1);
+                code += tab+`}\n`;
+            }
+            code += `return outs;\n`;
+                torus.fn_cache.split[key] = fn = new Function('t', code);
+        }
+        return fn;
+    }
+    torus.prototype.split = function(split_size_or_sections, dim = 0){
+        let fn = split_code_generator(this, split_size_or_sections, dim);
+        return fn(this);
     }
     torus.prototype.float = function (){
         if (this.dtype !== Float32Array){
@@ -2099,7 +2136,7 @@ torus.prototype.pad = function(paddings, mode = 'constant', constant_value = 0) 
     return result;
 }
 
-torus.fn_cache = {einsum:{}, slice: {}};
+torus.fn_cache = {einsum:{}, slice: {}, split: {}};
 
 globalThis.range ??= (count = 0)=>{
     count = Math.floor(count)
