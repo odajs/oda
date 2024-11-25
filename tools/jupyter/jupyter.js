@@ -327,9 +327,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
             <oda-button ~if="!showAll" :icon-size class="dark border" style="margin: 4px; border-radius: 2px;" @tap="showAll=true">Show all</oda-button>
         </div>
     `,
-    get textWrap() {
-        return this.cell?.metadata?.textWrap || false;
-    },
+    textWrap: true,
     row: undefined,
     showAll: false,
     max: 50,
@@ -877,16 +875,11 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
         </style>
         <div class="pe-no-print top info border" ~if="cell?.outputs?.length || cell?.controls?.length">
             <oda-button :icon-size icon="bootstrap:eye-slash"  title="Hide/Show" allow-toggle ::toggled="toggleOutput"></oda-button>
-            <oda-button :icon-size icon="editor:wrap-text" @tap="textWrap" title="Wrap text" allow-toggle :toggled="cell?.metadata?.textWrap"></oda-button>
             <oda-button :icon-size icon="icons:clear" @tap="clearOutputs" title="Clear outputs"></oda-button>
         </div>
     `,
     cell: null,
     iconSize: 16,
-    textWrap() {
-        this.cell.metadata.textWrap = !this.cell.metadata.textWrap;
-        this.cell?.writeMetadata('textWrap', this.cell.metadata.textWrap);
-    },
     get toggleOutput(){
         return this.cell.hideOutput;
     },
@@ -1072,7 +1065,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         }
     },
     getScrollCalculate(){
-        return this.jupyter_height - 22 - 14;
+        return this.jupyter_height - 22 - 13;
     },
     attached() {
         this.setBreakpoints();
