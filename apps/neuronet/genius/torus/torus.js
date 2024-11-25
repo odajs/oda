@@ -752,7 +752,7 @@ torus.prototype.cross_entropy = torus.prototype.crossEntropy = function (target)
     loss = -loss.avg();
     let out = this.out;
     if(!out){
-        out = torus.tensor([loss])._src(this)._label('crossEntropy');
+        out = torus.tensor(loss)._src(this)._label('crossEntropy');
         this._back = ()=>{
             this.src.forEach(src => src.update_grad(grad));
         }
