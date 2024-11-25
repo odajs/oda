@@ -261,27 +261,15 @@ export class tensor/* extends Array*/{
     update_grad(grad){
         if(grad.length !== this.size)
             throw new Error(`update_grad(grad): size of grad (${grad.length}) does not match tensor size (${this.size})`)
-        if (!this.isParam){
-            if (this.to_fwd_state){
-                this.to_fwd_state = false;
-                this.data.set(grad, 0); //превращаем data в grads
-            }
-            else{
-                let i = this.size;
-                while (i--){  //добавляем grads
-                    this.data[i] += grad[i];
-                }
-            }
-        }
-        else{
-            this.to_fwd_state = false;
-            let lr = torus.LEARNING_RATE
-            let i = this.size;
-            while (i--){
-                let change = grad[i] * lr;
-                this.data[i] += change;
-            }
-        }
+        if (this.isParam)
+            grad = this.data.map((v,i)=>v + grad[i] * torus.LEARNING_RATE)
+        else if (!this.to_fwd_state)
+            grad = this.data.map((v,i)=>v + grad[i])
+        else
+            grad = grad.map(v => v)
+        this.to_fwd_state = false;
+        this.data.set(grad, 0);
+        grad.buffer.transfer(0);
     }
     back(grad){
         let topo = [];
