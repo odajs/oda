@@ -578,10 +578,10 @@ torus.prototype.minus = function (other){
     return this._element_wise_operator( other, {forward: '(x, y) => x - y', backward_0: '(g) => g', backward_1: '(_, g) => -g'});
 }
 torus.prototype.mul = torus.prototype.multiply = function (other){
-    return this._element_wise_operator(other, {forward:  '(x, y) => x * y', backward_0: '(g, y) => g * y', backward_1: '(x, g) => x * g'});
+    return this._element_wise_operator(other, {forward:  '(x, y) => x * y', backward_0: '(g, y) => y * g', backward_1: '(x, g) => x * g'});
 }
 torus.prototype.div = torus.prototype.divide = function (other){
-    return this._element_wise_operator(other, {forward: '(x, y) => x / y', backward_0: '(g, y) => g / y', backward_1: '(x, g) => -x / (g ** 2)'});
+    return this._element_wise_operator(other, {forward: '(x, y) => x / y', backward_0: '(g, y) => g / y', backward_1: '(x, y, g) =>-x / (y ** 2) * g'});
 }
 torus.prototype.pow = function (other){
     return this._element_wise_operator(other, {forward:  '(x, y) => x ** y', backward_0: '(g, y) => y * (g ** (y - 1))', backward_1: '(x, g) => x ** g * Math.log(x)'});
@@ -1021,33 +1021,24 @@ systems:{
         $ = torus.$($);
         const forward = eval($.forward);
         let label = label_from_error(1);
-        let out = $.out || this.getOut(this, label);
-        let data;
-        if(out){
-            let i = this.size;
-            data = out.data;
-            while(i--){
-                data[i] = forward(this.data[i])
-            }
-        }
-        else{
-            data = this.data.map(forward);
+        let out = this.getOut(this, label);
+        let data = this.data.map(forward);
+        if(!out){
             out = torus.from(data)._src(this)._shape(this);
             out._label(label+' ('+out.shape+')');
             if (this.allowGrad && $.backward_0){
-                out._back = ()=>{
-                    let old_data = data.slice(0);
-                    const backward = eval($.backward_0);
-                    let i = this.size;
-                    while(i--){
-                        old_data[i] = backward(this.data[i], old_data[i]) * out.data[i];
-                    }
-                    this.update_grad(old_data);
-                    old_data.buffer.transfer(0);
-
+                const backward = eval($.backward_0);
+                out._back ??= ()=>{
+                    let res = this.data.map((x,i)=> backward(x, data[i]) * out.data[i]);
+                    this.update_grad(res);
+                    res.buffer.transfer(0);
                 }
             }
             this.setOut(out, this, label);
+        }
+        else{
+            out.data.set(data);
+            data.buffer.transfer();
         }
         return out;
     }
@@ -1568,10 +1559,10 @@ functions:{
         return this._element_wise_function({forward: 'Math.exp',  backward_0: 'x=>x'});
     }
     torus.prototype.log = function (){
-        return this._element_wise_function({forward: 'Math.log', backward_0: '(x, y)=>1/x*y'});
+        return this._element_wise_function({forward: 'Math.log', backward_0: '(x, y) => 1/x*y'});
     }
     torus.prototype.tanh = function (){
-        return this._element_wise_function({forward: 'Math.tanh', backward_0: 'x=>(1 - x ** 2)'});
+        return this._element_wise_function({forward: 'Math.tanh', backward_0: 'x => (1 - x ** 2)'});
     }
     torus.prototype.sigmoid = function (params){
         return this._element_wise_function({forward: 'x=>(1 / (1 + Math.exp(-x)))', backward_0: '(x, y)=>y * (1 - y)'});
