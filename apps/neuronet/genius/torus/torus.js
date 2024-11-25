@@ -965,8 +965,9 @@ systems:{
         shape = torus.flat(shape);
         let handler = typeof value_or_handler === 'function' ? value_or_handler : i => value_or_handler;
         let size = shape.mul();
-        let data = new $.dType(size);
-        data = data.map(handler);
+        let tmp = new $.dType(size);
+        let data = tmp.map(handler);
+        tmp.buffer.transfer(0);
         if(!data.length)
             shape = []
         else if (!shape.mul())
@@ -1880,7 +1881,7 @@ convertors:{
         })
         return out;
     }
-    split_code_generator = function split_code_generator(t, steps, dim){
+    function split_code_generator(t, steps, dim){
         let key = t.shape + '-' + steps + '-' + dim;
         let fn = torus.fn_cache.split[key];
         if(!fn){
