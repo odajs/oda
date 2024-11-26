@@ -1,12 +1,16 @@
 // https://github.com/SuperYesifang/excel-viewer
+const libPath = import.meta.url.split('/').slice(0, -1).join('/') + '/lib/';
 
 import ExcelViewer from './lib/excel-viewer-esm.js';
 
-ODA({ is: 'excel-viewer',
+ODA({ is: 'oda-excel-viewer',
     template: `
-        <link rel="stylesheet" href="./lib/excel/xspreadsheet.css">
+        <link rel="stylesheet" :href>
         <div id="excel-container"></div>
     `,
+    get href() {
+        return libPath + 'excel/xspreadsheet.css';
+    },
     src: undefined,
     isReady: false,
     attached() {
