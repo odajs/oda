@@ -829,12 +829,19 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         }
         this.cell.move(direction);
         this.jupyter.scrollTop = top;
+        this.setIsMoveCell();
     },
     cell: null,
     iconSize: 16,
     deleteCell() {
         if (!window.confirm(`Do you really want delete current cell?`)) return;
         this.cell.delete();
+        this.setIsMoveCell();
+    },
+    setIsMoveCell() {
+        this.jupyter.$$('oda-jupyter-cell').map(i => i.lastRange = undefined);
+        this.jupyter.isMoveCell = true;
+        this.async(() => this.jupyter.isMoveCell = false, 500);
     },
     control: null,
     showSettings(e) {
@@ -971,8 +978,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     },
     on_change_cursor(e) {
         this.throttle('change_cursor', () => {
-            this.lastRange = this.ace?.getSelectionRange();
-            this.jupyter.scrollToCell(this.cell, this.lastRange.start.row)
+            if (!this.jupyter.isMoveCell) {
+                this.lastRange = this.ace?.getSelectionRange();
+                this.jupyter.scrollToCell(this.cell, this.lastRange.start.row);
+            }
         }, 100)
     },
     on_change_breakpoints(e){
