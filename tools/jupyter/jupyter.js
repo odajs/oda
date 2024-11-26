@@ -1394,11 +1394,9 @@ class JupyterCell extends ROCKS({
         try{
 
             run_context.output_data = jupyter.output_data = [];
-            let code = this.code;
-            let async = code.includes('import') || code.includes('await');
-            let fn = async? new AsyncFunction('context', code): new Function('context', code);
+            let fn = new AsyncFunction('context', this.code);
             let time = Date.now();
-            let res =  async?await fn.call(jupyter, run_context):fn.call(jupyter, run_context);
+            let res =  await fn.call(jupyter, run_context);
             time = new Date(Date.now() - time);
             let time_str = '';
             let t = time.getMinutes();
