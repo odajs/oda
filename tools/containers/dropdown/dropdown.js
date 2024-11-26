@@ -27,7 +27,7 @@ ODA({ is: 'oda-dropdown', imports: '@oda/title',
                 min-height: {{minHeight?minHeight:'0px'}};
             }
         </style>
-        <div class="vertical raised content border" style="overflow: hidden;" @resize="onResize">
+        <div :border="isVisible" class="vertical raised content" style="overflow: hidden;" @resize="onResize">
             <div ~if="title" class="horizontal no-flex accent-invert" style="align-items: center; overflow: hidden">
                 <oda-icon ~if="icon" no-flex :icon :icon-size :sub-icon style="margin-left: 8px;"></oda-icon>
                 <label ~if="title" class="flex" ~html="title" style="text-overflow: ellipsis; white-space: nowrap; padding: 8px; overflow: hidden;"></label>
