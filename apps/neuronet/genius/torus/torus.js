@@ -580,8 +580,91 @@ torus.prototype.minus = function (other){
 torus.prototype.mul = torus.prototype.multiply = function (other){
     return this._element_wise_operator(other, {forward:  '(x, y) => x * y', backward_0: '(g, y) => y * g', backward_1: '(x, g) => x * g'});
 }
-torus.prototype.div = torus.prototype.divide = function (other){
-    return this._element_wise_operator(other, {forward: '(x, y) => x / y', backward_0: '(g, y) => g / y', backward_1: '(x, y, g) =>-x / (y ** 2) * g'});
+torus.prototype.div = torus.prototype.divide = function (other, rounding_mode){
+    // rounding_mode: 'ceil', 'round', 'floor'
+    other = torus.from(other);
+    let main = [this, other].find(t=>t.allowGrad);
+    let out = main?.getOut([this,other], rounding_mode);
+    let min = Math.min(other.size,this.size);
+    let data;
+    if(!out){
+        let max = Math.max(other.size,this.size);
+        let scan = Math.min(this.shape.length, other.shape.length);
+        let dim_this = 0;
+        let dim_other = 0;
+        for(let i = 0; i<scan; i++){
+            dim_this += this.shape.toReversed()[i];
+            dim_other += other.shape.toReversed()[i];
+            if(dim_other !== 1 && dim_this !== 1 && dim_other != dim_other)
+                throw new Error(`div(): The size of tensor A (${this.size}) must match the size of tensor B (${other.size}) at non-singleton dimension 1`)
+        }
+        out = torus.tensor(new Float32Array(max))._shape(this.size === max?this:other);
+        main?.setOut(out, [this,other], rounding_mode);
+        if(!out._back){
+            out._back = ()=>{
+                data = this.data;
+                let out_data = out.data; //gradient
+                if(other.size>this.size){
+                    let step = data.length;
+                    if(this.allowGrad){
+                        data = other.data.map((y, i)=>out_data[i]/y);
+                        this.update_grad(data);
+                        data.buffer.transfer();
+                    }
+                    if(other.allowGrad){
+                        let y_data = other.data;
+                        data = this.data.map((x, i) => {
+                            let idx = i * step;
+                            let y_slice = y_data.subarray(idx, idx + step);
+                            let out_slice = out_data.subarray(idx, idx + step);
+                            return y_slice.reduce((res, y, i)=>{
+                                let g = out_slice[i];
+                                return res + (-x / (y **2)) * g;
+                            }, 0)
+                        });
+                        other.update_grad(data);
+                        data.buffer.transfer();
+                    }
+                }
+                else{
+                    data = other.data;
+                    let step = data.length;
+                    if(this.allowGrad){
+                        data = other.data.map((y, i)=>out_data[i]/y);
+                        this.update_grad(data);
+                        data.buffer.transfer();
+                    }
+                    if(other.allowGrad){
+                        let y_data = other.data;
+                        data = this.data.map((x, i) => {
+                            let idx = i * step;
+                            let y_slice = y_data.subarray(idx, idx + step);
+                            let out_slice = out_data.subarray(idx, idx + step);
+                            return y_slice.reduce((res, y, i)=>{
+                                let g = out_slice[i];
+                                return res + (-x / (y **2)) * g;
+                            }, 0)
+                        });
+                        other.update_grad(data);
+                        data.buffer.transfer();
+                    }
+                }
+            }
+        }
+    }
+    if(other.size>this.size){
+        let code = `return y_data.map((y, i)=>x_data[i%${min}]/y)`;
+        let fn = new Function('y_data', 'x_data', code);
+        data = fn(other.data, this.data);
+    }
+    else{
+        let code = `return x_data.map((x, i)=>x/y_data[i%${min}])`;
+        let fn = new Function('x_data', 'y_data', code);
+        data = fn(this.data, other.data);
+    }
+    out.data.buffer.transfer();
+    out.data = data;
+    return out;
 }
 torus.prototype.pow = function (other){
     return this._element_wise_operator(other, {forward:  '(x, y) => x ** y', backward_0: '(g, y) => y * (g ** (y - 1))', backward_1: '(x, g) => x ** g * Math.log(x)'});
@@ -1841,21 +1924,21 @@ convertors:{
         }
         return out;
     }
-    torus.cat = torus.concat  = (tensors = [], dim=-1, $ = {}) => {
-        const first = tensors.first;
+    torus.cat = torus.concat  = function (tensors = [], dim=-1){
+        const first = tensors.filter(i=>i.allowGrad)[0] || tensors[0]
         dim = first.check_dim(dim);
         let out = first.getOut(tensors, dim);
         if(!out){
             const shape = tensors.reduce((r, tensor, t)=>{
                 const shape = tensor.shape;
                 if(shape.length < r.length)
-                    throw new Error(`torus.concat(): incorrect dimentions of tensor №${t}: must [${r}], but `);
+                    throw new Error(`torus.concat(): incorrect dimentions of tensor ${t}: must [${r}], but `);
                 r = shape.map((s, i)=>{
                     const old = r[i] || 0;
                     if(i === dim)
                         return old + s;
                     if(old && old !== s)
-                        throw new Error(`torus.concat(): incorrect dim ${i} on tensor №${t} have size ${s} but must be ${old}`);
+                        throw new Error(`torus.concat(): incorrect dim ${i} on tensor ${t} have size ${s} but must be ${old}`);
                     return s;
                 })
                 return r;
@@ -1863,19 +1946,21 @@ convertors:{
             const size = shape.mul();
             out = torus.tensor(new first.dType(size))._label(`concat ${tensors.length} tensors`)._shape(shape)._src(...tensors);
             const step = out.size / out.shape.slice(0, dim).mul() || 1;
-            const di = out.dims_info(dim)[0]
-            out._back = ()=>{
-                let from = 0;
-                tensors.map((tensor, t)=>{
-                    let split_size = di.stride * tensor.shape[dim];
-                    let to = 0;
-                    for(let p = 0; p < size; p += step){
-                        const slice = out.grad.slice(from + p, from + p + split_size);
-                        tensor.grad.set(slice, to);
-                        to += split_size;
-                    }
-                    from += split_size;
-                })
+            const di = out.dims_info(dim)[0];
+            if(!out._back){
+                out._back = ()=>{
+                    let from = 0;
+                    tensors.map((tensor, t)=>{
+                        let split_size = di.stride * tensor.shape[dim];
+                        let to = 0;
+                        for(let p = 0; p < size; p += step){
+                            const slice = out.data.slice(from + p, from + p + split_size);
+                            tensor.data.set(slice, to);
+                            to += split_size;
+                        }
+                        from += split_size;
+                    })
+                }
             }
             first.setOut(out, tensors, dim);
         }
