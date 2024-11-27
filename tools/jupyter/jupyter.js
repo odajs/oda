@@ -759,8 +759,21 @@ ODA({ is: 'oda-jupyter-divider',
     },
     insert() {
         this.jupyter.editMode = false;
-        this.selectedCell = this.notebook.add(this.cell, '', top._jupyterCellData);
+        this.jupyter.isMoveCell = true;
+        const cells = JSON.parse(top._jupyterCellData);
+        let lastCell = this.cell;
+        Object.values(cells).map(i => {
+            lastCell = this.notebook.add(lastCell, '', i);
+            lastCell.id = getID();
+        })
         top._jupyterCellData = undefined;
+        this.selectedCell = lastCell;
+        this.async(() => {
+            this.scrollToCell(this.selectedCell);
+            this.async(() => {
+                this.jupyter.isMoveCell = false;
+            }, 100)
+        }, 500)
     }
 })
 
@@ -793,7 +806,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="move(1)"></oda-button>
             <oda-button ~show="cell?.type === 'code' || cell?.type === 'sheet'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
             <oda-button :icon-size icon="icons:delete" @tap.stop="deleteCell"></oda-button>
-            <oda-button :icon-size icon="icons:content-copy" @tap.stop="copyCell" ~style="{fill: top._jupyterCellData ? 'red' : ''}"></oda-button>
+            <oda-button :icon-size icon="icons:content-copy" @tap.stop="copyCell" ~style="{fill: isCopiedCell ? 'red' : ''}"></oda-button>
             <oda-button ~if="cell.type!=='code'" allow-toggle ::toggled="editMode"  :icon-size :icon="editMode?'icons:close':'editor:mode-edit'"></oda-button>
         </div>
     `,
@@ -847,8 +860,30 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
     showSettings(e) {
         ODA.showDropdown('oda-property-grid', { inspectedObject: this.control, filterByFlags: '' }, { minWidth: '480px', parent: e.target, anchor: 'top-right', align: 'left', title: 'Settings', hideCancelButton: true })
     },
+    get isCopiedCell() {
+        let cells = JSON.parse(top._jupyterCellData || '{}');
+        return cells[this.cell.id];
+    },
     copyCell() {
-        top._jupyterCellData = JSON.stringify(this.cell.data);
+        let cells;
+        if (top._jupyterCellData) {
+            cells = JSON.parse(top._jupyterCellData);
+            if (cells[this.cell.id]) {
+                delete cells[this.cell.id];
+                if (Object.keys(cells).length === 0) {
+                    top._jupyterCellData = this.isCopiedCell = undefined;
+                    this.jupyter.$render();
+                    return;
+                }
+                top._jupyterCellData = JSON.stringify(cells);
+                this.isCopiedCell = undefined;
+                this.jupyter.$render();
+                return;
+            }
+        }
+        cells ||= {};
+        cells[this.cell.id] = this.cell.data;
+        top._jupyterCellData = JSON.stringify(cells);
         this.jupyter.$render();
     },
     tap(e) {
