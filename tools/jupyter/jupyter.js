@@ -752,7 +752,14 @@ ODA({ is: 'oda-jupyter-divider',
     },
     add(key) {
         this.jupyter.editMode = false;
+        this.jupyter.isMoveCell = true;
         this.selectedCell = this.notebook.add(this.cell, key);
+        this.async(() => {
+            this.scrollToCell(this.selectedCell);
+            this.async(() => {
+                this.jupyter.isMoveCell = false;
+            }, 100)
+        }, 500)
     },
     showInsertBtn() {
         return top._jupyterCellData;
