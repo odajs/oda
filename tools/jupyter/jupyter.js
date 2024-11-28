@@ -766,6 +766,7 @@ ODA({ is: 'oda-jupyter-divider',
         return top._jupyterCellData;
     },
     insert() {
+        this.isMoveCell = true;
         const cells = JSON.parse(top._jupyterCellData);
         let lastCell = this.cell,
             firstCell;
@@ -776,6 +777,7 @@ ODA({ is: 'oda-jupyter-divider',
         })
         top._jupyterCellData = undefined;
         this.selectedCell = firstCell;
+        this.async(() => this.isMoveCell = false, 300);
     }
 })
 
