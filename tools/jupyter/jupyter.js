@@ -150,12 +150,17 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     $listeners:{
         scroll(e){
             this.jupyter_scroll_top = this.scrollTop;
+            this.isMoveCell = true;
+            this.throttle('scroll', () => {
+                this.async(() => this.isMoveCell = false, 250);
+            }, 100)
         },
         resize(e){
             this.jupyter_height = this.offsetHeight;
         }
     },
     $pdp: {
+        isMoveCell: false,
         jupyter_scroll_top: 0,
         get jupyter_height(){
             return this.offsetHeight;
@@ -751,22 +756,14 @@ ODA({ is: 'oda-jupyter-divider',
         return false
     },
     add(key) {
-        this.jupyter.editMode = false;
         this.jupyter.isMoveCell = true;
         this.selectedCell = this.notebook.add(this.cell, key);
-        this.async(() => {
-            this.scrollToCell(this.selectedCell);
-            this.async(() => {
-                this.jupyter.isMoveCell = false;
-            }, 100)
-        }, 500)
+        this.setIsMoveCell();
     },
     showInsertBtn() {
         return top._jupyterCellData;
     },
     insert() {
-        this.jupyter.editMode = false;
-        this.jupyter.isMoveCell = true;
         const cells = JSON.parse(top._jupyterCellData);
         let lastCell = this.cell;
         Object.values(cells).map(i => {
@@ -775,12 +772,15 @@ ODA({ is: 'oda-jupyter-divider',
         })
         top._jupyterCellData = undefined;
         this.selectedCell = lastCell;
+        this.setIsMoveCell(500);
+    },
+    setIsMoveCell(delay = 100) {
         this.async(() => {
+            this.jupyter.isMoveCell = true;
+            this.jupyter.editMode = false;
             this.scrollToCell(this.selectedCell);
-            this.async(() => {
-                this.jupyter.isMoveCell = false;
-            }, 100)
-        }, 500)
+            this.async(() => this.jupyter.isMoveCell = false, 300);
+        }, delay)
     }
 })
 
