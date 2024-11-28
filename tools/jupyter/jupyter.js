@@ -237,7 +237,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         if (!cell) return;
         const cellElements = this.jupyter.$$('oda-jupyter-cell');
         const cellElement = cellElements.find(el => el.cell.id === cell.id);
-        if (!cellElement) return;
+        if (!cellElement?.control?.editor) return;
         const screenTop = this.jupyter.scrollTop,
             screenBottom = screenTop + this.jupyter.offsetHeight;
         if (cell.type === 'code' && !cell.hideCode) {

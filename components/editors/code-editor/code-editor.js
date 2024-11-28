@@ -145,7 +145,7 @@ ODA({is: 'oda-code-editor',
         this.editor = ace?.edit(this.container);
         this.editor.renderer.attachToShadowRoot();
         await import('./src/ext-language_tools.js');
-        await import('./src/beautify-html.js');
+        // await import('./src/beautify-html.js');
         ['basePath', 'modePath', 'themePath', 'workerPath'].map(path => {
             ace.config.set(path, this.srcPatch)
         });
