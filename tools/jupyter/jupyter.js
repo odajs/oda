@@ -150,10 +150,6 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     $listeners:{
         scroll(e){
             this.jupyter_scroll_top = this.scrollTop;
-            this.isMoveCell = true;
-            this.throttle('scroll', () => {
-                this.async(() => this.isMoveCell = false, 250);
-            }, 100)
         },
         resize(e){
             this.jupyter_height = this.offsetHeight;
@@ -242,10 +238,11 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         if (!cell) return;
         const cellElements = this.jupyter.$$('oda-jupyter-cell');
         const cellElement = cellElements.find(el => el.cell.id === cell.id);
-        if (!cellElement?.control?.editor) return;
+        if (!cellElement) return;
         const screenTop = this.jupyter.scrollTop,
             screenBottom = screenTop + this.jupyter.offsetHeight;
-        if (cell.type === 'code' && !cell.hideCode) {
+        if (cell.type === 'code' && !cell.hideCode && row >= 0) {
+            if (!cellElement?.control?.editor) return;
             if (toLastRange && cellElement.lastRange) {
                 row = cellElement.lastRange.start.row;
                 this.async(() => {
@@ -261,13 +258,14 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 delta = lineHeight * (row) - delta;
             else
                 delta = lineHeight * (row + 2) - this.jupyter.offsetHeight - delta;
+            this.jupyter.scrollTop = cellElement.offsetTop + delta;
+            await new Promise(resolve => this.async(resolve, 100));
         } else {
-            if (cellElement.offsetTop >= screenTop && cellElement.offsetTop  <= screenBottom) {
-                return;
+            if (cellElement.offsetTop >= screenBottom - cellElement.offsetHeight) {
+                this.jupyter.scrollTop += cellElement.offsetHeight;
+                await new Promise(resolve => this.async(resolve, 100));
             }
         }
-        this.jupyter.scrollTop = cellElement.offsetTop + delta;
-        await new Promise(resolve => this.async(resolve, 100));
     },
     async attached() {
         await getLoader();
@@ -758,29 +756,26 @@ ODA({ is: 'oda-jupyter-divider',
     add(key) {
         this.jupyter.isMoveCell = true;
         this.selectedCell = this.notebook.add(this.cell, key);
-        this.setIsMoveCell();
+        this.async(() => {
+            if (!this.selectedCell.next) {
+                this.scrollToCell(this.selectedCell, -1);
+            }
+        }, 300)
     },
     showInsertBtn() {
         return top._jupyterCellData;
     },
     insert() {
         const cells = JSON.parse(top._jupyterCellData);
-        let lastCell = this.cell;
+        let lastCell = this.cell,
+            firstCell;
         Object.values(cells).map(i => {
             lastCell = this.notebook.add(lastCell, '', i);
             lastCell.id = getID();
+            firstCell ||= lastCell;
         })
         top._jupyterCellData = undefined;
-        this.selectedCell = lastCell;
-        this.setIsMoveCell(500);
-    },
-    setIsMoveCell(delay = 100) {
-        this.async(() => {
-            this.jupyter.isMoveCell = true;
-            this.jupyter.editMode = false;
-            this.scrollToCell(this.selectedCell);
-            this.async(() => this.jupyter.isMoveCell = false, 300);
-        }, delay)
+        this.selectedCell = firstCell;
     }
 })
 
