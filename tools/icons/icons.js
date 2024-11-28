@@ -65,9 +65,6 @@ ODA({ is: 'oda-icons',
     icons: [],
     _icons: [],
     async attached() {
-        this.layoutHost.panels.forEach(p => {
-            p.showPin = false;
-            p.pinned = true;
-        });
+        this.layoutHost.panels.forEach(p => p.opened = true);
     },
 })
