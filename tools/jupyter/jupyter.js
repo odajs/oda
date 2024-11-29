@@ -740,7 +740,7 @@ ODA({ is: 'oda-jupyter-divider',
         </style>
         <div class="pe-no-print horizontal center" style="z-index: 2">
             <oda-button ~if="!readOnly" :icon-size icon="icons:add" ~for="editors" @tap.stop="add($for.key)">{{$for.key}}</oda-button>
-            <oda-button ~if="showInsertBtn()" :icon-size icon="icons:add" @tap.stop="insert" style="color: red; fill: red">Insert cell</oda-button>
+            <oda-button ~if="showInsertBtn()" :icon-size icon="icons:add" @tap.stop="insert" style="color: red; fill: red">Insert cell - {{showInsertBtn()}} </oda-button>
         </div>
     `,
     get last() {
@@ -764,20 +764,19 @@ ODA({ is: 'oda-jupyter-divider',
         }, 300)
     },
     showInsertBtn() {
-        return top._jupyterCellData;
+        return JSON.parse(top._jupyterCellData || '[]')?.length;
     },
     insert() {
-        this.isMoveCell = true;
-        const cells = JSON.parse(top._jupyterCellData);
-        let lastCell = this.cell,
-            firstCell;
-        Object.values(cells).map(i => {
-            lastCell = this.notebook.add(lastCell, '', i);
-            lastCell.id = getID();
-            firstCell ||= lastCell;
+        this.jupyter.isMoveCell = true;
+        const cells = JSON.parse(top._jupyterCellData || '[]');
+        this.selectedCell = this.cell;
+        let lastCell;
+        cells.map(i => {
+            lastCell = this.notebook.add(lastCell || this.cell, '', i);
+            lastCell.id = lastCell.metadata.id = getID();
         })
         top._jupyterCellData = undefined;
-        this.selectedCell = firstCell;
+        this.jupyter.$$('oda-jupyter-cell').map(i => i.lastRange = undefined);
         this.async(() => this.isMoveCell = false, 300);
     }
 })
@@ -866,29 +865,28 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         ODA.showDropdown('oda-property-grid', { inspectedObject: this.control, filterByFlags: '' }, { minWidth: '480px', parent: e.target, anchor: 'top-right', align: 'left', title: 'Settings', hideCancelButton: true })
     },
     get isCopiedCell() {
-        let cells = JSON.parse(top._jupyterCellData || '{}');
-        return cells[this.cell.id];
+        let cells = JSON.parse(top._jupyterCellData || '[]');
+        return cells.find(i => i.metadata.id === this.cell.metadata.id);
     },
     copyCell() {
-        let cells;
-        if (top._jupyterCellData) {
-            cells = JSON.parse(top._jupyterCellData);
-            if (cells[this.cell.id]) {
-                delete cells[this.cell.id];
-                if (Object.keys(cells).length === 0) {
+        let cell,
+            cells = JSON.parse(top._jupyterCellData || '[]');
+        if (cells?.length) { 
+            cell = cells.find(i => i.metadata.id === this.cell.metadata.id);
+            if (cell) {
+                cells = cells.filter(i => i.metadata.id !== this.cell.metadata.id);
+                if (cells.length === 0) {
                     top._jupyterCellData = this.isCopiedCell = undefined;
-                    this.jupyter.$render();
-                    return;
+                } else {
+                    top._jupyterCellData = JSON.stringify(cells);
+                    this.isCopiedCell = undefined;
                 }
-                top._jupyterCellData = JSON.stringify(cells);
-                this.isCopiedCell = undefined;
-                this.jupyter.$render();
-                return;
             }
         }
-        cells ||= {};
-        cells[this.cell.id] = this.cell.data;
-        top._jupyterCellData = JSON.stringify(cells);
+        if (!cell) {
+            cells.push(this.cell.data);
+            top._jupyterCellData = JSON.stringify(cells);
+        }
         this.jupyter.$render();
     },
     tap(e) {
