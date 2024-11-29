@@ -150,13 +150,16 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     $listeners:{
         scroll(e){
             this.jupyter_scroll_top = this.scrollTop;
+            this.isScroll = true;
+            this.debounce('isScroll', () => {
+                this.isScroll = false;
+            }, 300)
         },
         resize(e){
             this.jupyter_height = this.offsetHeight;
         }
     },
     $pdp: {
-        isMoveCell: false,
         jupyter_scroll_top: 0,
         get jupyter_height(){
             return this.offsetHeight;
@@ -243,8 +246,8 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             screenBottom = screenTop + this.jupyter.offsetHeight;
         if (cell.type === 'code' && !cell.hideCode && row >= 0) {
             if (!cellElement?.control?.editor) return;
-            if (toLastRange && cellElement.lastRange) {
-                row = cellElement.lastRange.start.row;
+            if (toLastRange && cell.lastRange) {
+                row = cell.lastRange.start.row;
                 this.async(() => {
                     cellElement.control.ace.focus();
                 }, 100)
@@ -272,7 +275,6 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     },
     async printValue() {
         const scrollTop = this.scrollTop;
-        const cellElements = this.jupyter.$$('oda-jupyter-cell');
         this.style.scrollBehavior = 'auto';
         this.scrollTop = this.scrollHeight;
         this.style.scrollBehavior = 'smooth';
@@ -427,7 +429,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run()" :error="cell?.autoRun" :success="!cell?.time" style="margin: 4px; border-radius: 50%;"></oda-button>
                     <div>{{time}}</div>
                     <div>{{status}}</div>
-                    <oda-icon id="go-lastrange" ~if="!cell?.hideCode && lastRange" :icon-size icon="box:s-edit-alt" @tap="scrollToLastRange" style="margin: 8px;" title="scroll to marked"></oda-icon>
+                    <oda-icon id="go-lastrange" ~if="!cell?.hideCode && isLastRange" :icon-size icon="box:s-edit-alt" @tap="scrollToLastRange" style="margin: 8px;" title="scroll to marked"></oda-icon>
                     <oda-icon id="go-breakpoint" no-flex ~if="!cell?.hideCode && cell?.breakpoints" :icon-size icon="icons:label-outline" @tap="goToBreakPoint" style="margin: 8px;" title="debugger"></oda-icon>
                 </div>
             </div>
@@ -633,10 +635,13 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         const delta = this.$('#go-breakpoint').offsetTop + 10;
         this.jupyter.scrollToCell(this.cell, row, delta);
     },
+    get isLastRange() {
+        return this.cell?.lastRange;
+    },
     scrollToLastRange() {
-        if (this.lastRange) {
+        if (this.cell?.lastRange) {
             const delta = this.$('#go-lastrange').offsetTop + 10;
-            this.jupyter.scrollToCell(this.cell, this.lastRange.start.row, delta, true);
+            this.jupyter.scrollToCell(this.cell, this.cell.lastRange.start.row, delta, true);
         }
     },
     scrollToRunOutputs() {
@@ -661,7 +666,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         return this.offsetHeight;
     },
     $pdp: {
-        lastRange: undefined,
         get control_bottom(){
             return this.offsetTop + this.control_height;
         },
@@ -760,7 +764,7 @@ ODA({ is: 'oda-jupyter-divider',
             if (!this.selectedCell.next) {
                 this.scrollToCell(this.selectedCell, -1);
             }
-            this.async(() => this.isMoveCell = false, 300);
+            this.async(() => this.jupyter.isMoveCell = false, 300);
         }, 300)
     },
     showInsertBtn() {
@@ -776,8 +780,7 @@ ODA({ is: 'oda-jupyter-divider',
             lastCell.id = lastCell.metadata.id = getID();
         })
         top._jupyterCellData = undefined;
-        this.jupyter.$$('oda-jupyter-cell').map(i => i.lastRange = undefined);
-        this.async(() => this.isMoveCell = false, 300);
+        this.async(() => this.jupyter.isMoveCell = false, 300);
     }
 })
 
@@ -856,7 +859,6 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         this.setIsMoveCell();
     },
     setIsMoveCell() {
-        this.jupyter.$$('oda-jupyter-cell').map(i => i.lastRange = undefined);
         this.jupyter.isMoveCell = true;
         this.async(() => this.jupyter.isMoveCell = false, 500);
     },
@@ -1016,9 +1018,9 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     },
     on_change_cursor(e) {
         this.throttle('change_cursor', () => {
-            if (!this.jupyter.isMoveCell) {
-                this.lastRange = this.ace?.getSelectionRange();
-                this.jupyter.scrollToCell(this.cell, this.lastRange.start.row);
+            if (!this.jupyter.isMoveCell && !this.jupyter.isScroll) {
+                this.cell.lastRange = this.ace?.getSelectionRange();
+                this.jupyter.scrollToCell(this.cell, this.cell.lastRange.start.row);
             }
         }, 100)
     },
