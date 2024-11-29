@@ -16,7 +16,7 @@ ODA({
     </style>
     <div id='search'> 
         <oda-icon icon="icons:search" icon-size="20"  ></oda-icon>
-        <input placeholder="быстрый поиск..." type="search" ::value='search'>
+        <input placeholder="fast search..." type="search" ::value='search'>
         
     </div>
     <table>
