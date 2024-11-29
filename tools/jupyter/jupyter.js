@@ -183,7 +183,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                     await this.$render();
                     if (!this.selectedCell && this.cells?.[this.savedIndex]) {
                         this.selectedCell = this.cells[this.savedIndex];
-                        await this.scrollToCell();
+                        await this.scrollToCell(this.selectedCell, 0, 1 );
                     }
                     this.style.visibility = 'visible';
                     this.style.opacity = 1;
@@ -264,7 +264,10 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             this.jupyter.scrollTop = cellElement.offsetTop + delta;
             await new Promise(resolve => this.async(resolve, 100));
         } else {
-            if (cellElement.offsetTop >= screenBottom - cellElement.offsetHeight) {
+            if (delta) {
+                this.jupyter.scrollTop = cellElement.offsetTop + delta;
+                await new Promise(resolve => this.async(resolve, 100));
+            } else if (cellElement.offsetTop >= screenBottom - cellElement.offsetHeight) {
                 this.jupyter.scrollTop += cellElement.offsetHeight;
                 await new Promise(resolve => this.async(resolve, 100));
             }
