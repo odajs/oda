@@ -226,13 +226,13 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
     <style>
         :host{
             transform: translate3d({{block?.x || 0}}px, {{block?.y || 0}}px, 0px);
-            z-index: {{(selection.includes(block)?1:0)}};
+            z-index: {{(containerIsFocused?1:0)}};
         }
     </style>
         <oda-scheme-pins class="horizontal" pos="top" :style="'transform: translateY(' + pinsTranslate + '%)'"></oda-scheme-pins>
         <div class="flex horizontal">
             <oda-scheme-pins class="vertical" pos="left" :style="'transform: translateX(' + pinsTranslate + '%)'"></oda-scheme-pins>
-            <div class="block shadow content flex horizontal" style="align-items: center; z-index: 1" :active="selection.has(block)" :focused="selection.has(block)">
+            <div class="block shadow content flex horizontal" style="align-items: center; z-index: 1" :active="containerIsFocused" :focused="containerIsFocused">
                 <div class="flex" ~is="block?.template || block?.is || blockTemplate || 'div'" ~props="block?.props"></div>
             </div>
             <oda-scheme-pins class="vertical" pos="right" :style="'transform: translateX(-' + pinsTranslate + '%)'"></oda-scheme-pins>
@@ -256,6 +256,9 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
         containerHover: {
             $type: Boolean,
             $def: false
+        },
+        get containerIsFocused() {
+            return this.selection.has(this.block);
         },
         container: {
             get() {
