@@ -1938,7 +1938,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
         if (row.templates) {
             console.warn('!!!row.templates', row);
         }
-        const template = row[`${PROP_PREFIX}templates`]?.[col] || col.cellTemplate || this.cellTemplate;
+        const template = row[`${PROP_PREFIX}templates`]?.[col[this.columnId]] || col.cellTemplate || this.cellTemplate;
         if (typeof template === 'object')
             return template.tag || template.is || template.template;
         return template;
