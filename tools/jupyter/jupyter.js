@@ -760,6 +760,7 @@ ODA({ is: 'oda-jupyter-divider',
             if (!this.selectedCell.next) {
                 this.scrollToCell(this.selectedCell, -1);
             }
+            this.async(() => this.isMoveCell = false, 300);
         }, 300)
     },
     showInsertBtn() {
