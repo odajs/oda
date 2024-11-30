@@ -31,9 +31,9 @@ ODA({
             display: flex;
             flex-direction: {{_titleFlexDir}};
             align-items: justify;
-            background-color: {{focused ? 'var(--focused-color) !important' : 'var(--dark-background)'}};
-            color: var(--content-background);
-            fill: var(--content-background);
+            background: {{focused ? 'var(--focused-color) !important':'linear-gradient(0deg, var(--header-background), var(--content-background), var(--content-background))'}};
+            color: {{focused ? 'var(--content-background)':'var(--content-color)'}};
+            fill: {{focused ? 'var(--content-background)':'var(--content-color)'}};
         }
         :host #titleButtons{
             align-self: {{_titleButtonsAlign}};
@@ -376,7 +376,8 @@ ODA({
 
     },
     get focused() {
-        return this._getFloatForms().every(m => m === this || m.zIndex < this.zIndex);
+        let floats = this._getFloatForms();
+        return floats.length === 0  || floats.every(m => m === this || m.zIndex < this.zIndex);
     },
     _top() {
         if (this.float) {
