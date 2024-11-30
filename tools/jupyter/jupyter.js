@@ -1034,7 +1034,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                     this.jupyter.scrollToCell(this.cell, this.cell.lastRange.start.row);
                 // }
             }
-        }, 100)
+        }, 300)
     },
     on_change_breakpoints(e){
         this.cell.breakpoints = e.detail.value;
