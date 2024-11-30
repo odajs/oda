@@ -1020,12 +1020,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         this.ace?.focus();
     },
     on_change_cursor(e) {
-        this.throttle('change_cursor', () => {
+        this.debounce('change_cursor', () => {
             if (!this.jupyter.isMoveCell && !this.jupyter.isScroll) {
                 this.cell.lastRange = this.ace?.getSelectionRange();
-                if (this.cell.lastRange.start.row === this.cell.lastRange.end.row && this.cell.lastRange.start.column === this.cell.lastRange.end.column) {
-                    this.jupyter.scrollToCell(this.cell, this.cell.lastRange.start.row);
-                }
+                this.jupyter.scrollToCell(this.cell, this.cell.lastRange.start.row);
             }
         }, 100)
     },
