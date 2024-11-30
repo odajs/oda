@@ -1023,7 +1023,9 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         this.debounce('change_cursor', () => {
             if (!this.jupyter.isMoveCell && !this.jupyter.isScroll) {
                 this.cell.lastRange = this.ace?.getSelectionRange();
-                this.jupyter.scrollToCell(this.cell, this.cell.lastRange.start.row);
+                // if (this.cell.lastRange.start.row === this.cell.lastRange.end.row && this.cell.lastRange.start.column === this.cell.lastRange.end.column) {
+                    this.jupyter.scrollToCell(this.cell, this.cell.lastRange.start.row);
+                // }
             }
         }, 100)
     },
