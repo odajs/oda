@@ -23,7 +23,10 @@ function log_recurse (obj){
             return '['+obj.map(log_recurse)+']';
         } break;
         default:{
-            if (typeof obj === 'object' || typeof obj === 'function')
+            if(obj instanceof HTMLElement){
+
+            }
+            else if (typeof obj === 'object' || typeof obj === 'function')
                 return obj.toString()
         }
     }
@@ -31,7 +34,11 @@ function log_recurse (obj){
 }
 window.log = (...e) => {
     e = e.map(log_recurse);
-    run_context.output_data?.push([...e].join(''));
+    let el = e.find(v=>v instanceof HTMLElement);
+    if(el)
+        run_context.output_data?.push(...e);
+    else
+        run_context.output_data?.push([...e].join(''));
 }
 const console_warn = console.warn;
 window.warning = window.warn =  console.warn = (...e) => {
