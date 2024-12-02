@@ -376,7 +376,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
         }) || [];
     },
     get outHtml() {
-        if (this.row?.item instanceof HTMLElement)
+        if (this.row?.item instanceof HTMLElement || this.row?.item?.includes?.('<!--isShow-->'))
             return this.row.item;
         if (this.showAll)
             return this.row?.item || ''
@@ -451,7 +451,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         <div flex id="control" ~is="editor" :cell ::edit-mode ::value :read-only show-preview :_value :show-border="editMode"></div>
                     </div>
                     <div info ~if="cell.collapsed" class="horizontal" @tap="cell.collapsed = false">
-                        <oda-icon  style="margin: 4px;" :icon="childIcon"></oda-icon>
+                        <oda-icon style="margin: 4px;" :icon="childIcon"></oda-icon>
                         <div style="margin: 8px;">Hidden {{cell.childrenCount}} cells</div>
                     </div>
                 </div>
@@ -459,10 +459,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell ~show="selected"></oda-jupyter-outputs-toolbar>
                     <div class="vertical flex" style="overflow: hidden;">
                         <div flex vertical ~if="!cell?.hideOutput" style="overflow: hidden;">
-                            <div  ~for="cell.controls" style="font-family: monospace;" >
-                                <oda-jupyter-cell-out  ~for="$for.item.data" :row="$$for" :max="control?.maxRow"></oda-jupyter-cell-out>
-                            </div>
-                            <div  ~for="outputFor" style="font-family: monospace;" >
+                            <div ~for="outputFor" style="font-family: monospace;" >
                                 <oda-jupyter-cell-out ~for="$for.item.data" :row="$$for" :max="control?.maxRow"></oda-jupyter-cell-out>
                             </div>
                         </div>
@@ -483,7 +480,11 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     outputFor: {
         get() {
             this.control = undefined;
-            return this.cell?.outputs.slice(0, this.maxOutputsRow * (this.outputsStep + 1));
+            if (this.cell?.controls?.length)
+                return this.cell?.controls.slice(0, this.maxOutputsRow * (this.outputsStep + 1));
+            if (this.cell?.outputs?.length)
+                return this.cell?.outputs?.slice(0, this.maxOutputsRow * (this.outputsStep + 1));
+            return this.cell?.outputs;
         }
     },
     get _value() {
@@ -1480,8 +1481,9 @@ class JupyterCell extends ROCKS({
             this.time = '0 ms';
         }
         finally {
-            this.outputs = jupyter.output_data.filter(i=>!(i instanceof HTMLElement) && !i.includes('<!--isShow-->')).map(i=>({data:{"text/plain": i}}));
-            this.controls = jupyter.output_data.filter(i=>i instanceof HTMLElement || i.includes('<!--isShow-->')).map(i=>({data:{"text/plain": i}}));
+            this.outputs = jupyter.output_data.filter(i=>!(i instanceof HTMLElement) && !i.includes?.('<!--isShow-->')).map(i=>({data:{"text/plain": i}}));
+            // this.controls = jupyter.output_data.filter(i=>i instanceof HTMLElement || i.includes('<!--isShow-->')).map(i=>({data:{"text/plain": i}}));
+            this.controls = jupyter.output_data.map(i=>({data:{"text/plain": i}}));
             this.isRun = false;
             run_context.output_data = [];
         }
