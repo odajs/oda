@@ -1,7 +1,7 @@
 let style = /*css*/`
 
 :root {
-    --main-color: blue;
+    --main-color: brown;
     
     --header-1: oklch(from var(--main-color) .8 .02 h);
     --header-2: oklch(from var(--main-color) 0.4 .02 h);
@@ -41,6 +41,12 @@ let style = /*css*/`
     --layout-color: light-dark(var(--layout-2), var(--layout-1));
     
     
+    --info-1: oklch(from var(--main-color) .95 .02 h);
+    --info-2: oklch(from var(--main-color) 0.6 .2 h);     
+    --info-background: light-dark(var(--info-1), var(--info-2));
+    --info-color: light-dark(var(--info-2), var(--info-1));
+    
+    
     --focused-color: var(--main-color);
     
     
@@ -60,8 +66,7 @@ let style = /*css*/`
     --success-color: light-dark(green, green);
     --error-color: light-dark(red, yellow);
     --error-background: light-dark(yellow, red);
-    --info-color: light-dark(blueviolet, lightyellow);
-    --info-background: light-dark(lightyellow, blueviolet);
+
     --warning-color: light-dark(orange, orange);
     --disabled-color: light-dark(silver, silver);
     
@@ -376,15 +381,17 @@ body[context-menu-show] *:not(oda-context-menu){
     };
 
     --info: {
+        background-color: var(--info-background) !important;
         color: var(--info-color) !important;
         fill: var(--info-color) !important;
         border-color: var(--info-color) !important;
-        background-color: var(--info-background) !important;
+        
     };
     --info-invert: {
         background-color: var(--info-color) !important;
         fill: var(--info-background) !important;
         color: var(--info-background) !important;
+        border-color: var(--info-background) !important;
     };
 
     --warning: {
