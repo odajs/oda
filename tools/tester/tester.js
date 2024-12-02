@@ -13,6 +13,11 @@ ODA({is: 'oda-tester', imports: '@oda/app-layout, @tools/property-grid, @tools/m
     <oda-property-grid group-expanding-mode="all" slot="right-panel" :label :inspected-object="component" opened allow-expert-mode></oda-property-grid>
     <div ~is="focused?.is" slot="main" :component class="flex" style="width: 100%; height: 100%;"></div>
     `,
+    attached(){
+        this.async(()=>{
+            this.leftPanelElement.opened = true;
+        })
+    },
     customButtons:[],
     addButton(props){
         this.customButtons.push(props);

@@ -97,7 +97,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter', extends: 
             class="main vertical flex shadow"
             @wheel="_scroll"
             style="order:1"
-            ~style="{filter: (allowCompact && compact && openedControl)?'brightness(.5)':'none', pointerEvents: (allowCompact && compact && openedControl)?'none':'auto'}"
+            ~style="{filter: (allowCompact && compact && opened)?'brightness(.5)':'none', pointerEvents: (allowCompact && compact && opened)?'none':'auto'}"
         >
             <slot name="top" class="pe-no-print vertical no-flex" style="border-bottom: 1px solid;"></slot>
             <slot name="main" class="vertical flex" style="overflow: hidden; z-index: 0"></slot>
@@ -146,6 +146,12 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter', extends: 
         compactThreshold: 500,
         allowCompact: true,
         autoCompact: true,
+        opened: {
+            $type: Boolean,
+            get() {
+                return this.panels.some(p => p.opened);
+            }
+        },
     },
     get appHeader() {
         return this.$('#appHeader');
