@@ -47,9 +47,9 @@ let style = /*css*/`
     --info-color: light-dark(var(--info-2), var(--info-1));
     
     
-    --focused-color: var(--main-color);
+    --focused-color: light-dark(var(--main-color), var(--main-color));
     
-    
+     --accent-color: light-dark(var(--main-color), var(--main-color));
     
     --style-group: 'theme';
     --bar-background: var(--content-background);
@@ -60,7 +60,7 @@ let style = /*css*/`
     
 
     
-    --accent-color: light-dark(blue, oklch(0.72 0.16 259.27));
+   
     
     --success-color: light-dark(green, green);
     --error-color: light-dark(red, yellow);
