@@ -5,6 +5,9 @@ ODA({is: 'oda-code-editor',
             :host([read-only]){
                 @apply --dimmed;
             }
+            .ace_gutter-layer{
+                @apply --header;
+            }
             .ace_hidden-cursors {
                 opacity: {{showCursor ? 1 : 0}};
             }
@@ -31,8 +34,11 @@ ODA({is: 'oda-code-editor',
             .ace_scroller, .ace_editor {
                 overflow: {{stickySearch?'unset':''}};
             }
+            .ace_layer{
+                @apply --content;
+            }
         </style>
-        <div @keydown.stop  style="min-height: 100%; font-size: large;"></div>
+        <div @keydown.stop content  style="min-height: 100%; font-size: large;"></div>
     `,
     get lineHeight(){
         return this.editor?.container.querySelector('.ace_gutter-cell')?.offsetHeight;

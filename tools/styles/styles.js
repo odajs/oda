@@ -18,7 +18,7 @@ let style = /*css*/`
     --dark-background: light-dark(var(--dark-1), var(--dark-2));
     --dark-color: light-dark(var(--dark-2), var(--dark-1));
     
-    --light-1: oklch(from var(--main-color) .9 .02 h);
+    --light-1: oklch(from var(--main-color) .95 .02 h);
     --light-2: oklch(from var(--main-color) .6 .02 h);
     --light-background: light-dark(var(--light-1), var(--light-2));
     --light-color: light-dark(var(--light-2), var(--light-1));
@@ -41,7 +41,7 @@ let style = /*css*/`
     --layout-color: light-dark(var(--layout-2), var(--layout-1));
     
     
-    --info-1: oklch(from var(--main-color) .95 .02 h);
+    --info-1: oklch(from var(--main-color) 1 .02 h);
     --info-2: oklch(from var(--main-color) 0.6 .2 h);     
     --info-background: light-dark(var(--info-1), var(--info-2));
     --info-color: light-dark(var(--info-2), var(--info-1));
@@ -60,9 +60,8 @@ let style = /*css*/`
     
 
     
-    
-
     --accent-color: light-dark(blue, oklch(0.72 0.16 259.27));
+    
     --success-color: light-dark(green, green);
     --error-color: light-dark(red, yellow);
     --error-background: light-dark(yellow, red);
@@ -94,10 +93,10 @@ let style = /*css*/`
         border-color: var(--header-color);
     };
     --dark: {
-        background-color: var(--dark-background);
+        background-color: var(--dark-background) !important;
         color: var(--dark-color) !important;
         fill: var(--dark-color)  !important;
-        border-color: var(--dark-color);
+        border-color: var(--dark-color) !important;
     };
     
     --content:{

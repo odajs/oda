@@ -1583,7 +1583,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
     </style>
     <style>
         :host([even-odd]) .row:not([selected]):nth-child(odd):not([role]):not([dragging]) > .cell:not([fix]) {
-            background-color: rgba(0,0,0,.05);
+            @apply --light;
         }
         .cell {
             position: relative;
