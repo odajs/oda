@@ -243,13 +243,14 @@ html {
         border: none !important;
         box-shadow: none !important;
     }
-    *::-webkit-scrollbar { width: 0px; height: 0px; }
+    *::-webkit-scrollbar { 
+        width: 0px; height: 0px; 
+    }
     .raised, [raised] {
         border: none !important;
         box-shadow: none !important;
     }
 }
-
 input{
     background-color: var(--content-background);
     color: var(--content-color);
