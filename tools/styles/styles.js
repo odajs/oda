@@ -2,16 +2,59 @@ let style = /*css*/`
 
 :root {
     --main-color: blue;
+    
+    --header-1: oklch(from var(--main-color) .8 .02 h);
+    --header-2: oklch(from var(--main-color) 0.4 .02 h);
+    --header-background: light-dark(var(--header-1), var(--header-2));
+    --header-color: light-dark(var(--header-2), var(--header-1));
+     
+    --content-1: oklch(from var(--main-color) 1 .02 h);
+    --content-2: oklch(from var(--main-color) 0.2 .02 h);
+    --content-background: light-dark(var(--content-1), var(--content-2));
+    --content-color: light-dark(var(--content-2), var(--content-1));
+
+    --dark-1: oklch(from var(--main-color) .6 .02 h);
+    --dark-2: oklch(from var(--main-color) 1 .02 h);
+    --dark-background: light-dark(var(--dark-1), var(--dark-2));
+    --dark-color: light-dark(var(--dark-2), var(--dark-1));
+    
+    --light-1: oklch(from var(--main-color) .9 .02 h);
+    --light-2: oklch(from var(--main-color) .6 .02 h);
+    --light-background: light-dark(var(--light-1), var(--light-2));
+    --light-color: light-dark(var(--light-2), var(--light-1));
+    
+    --body-1: oklch(from var(--main-color) 1 .02 h);
+    --body-2: oklch(from var(--main-color) 0.2 .02 h);   
+    --body-background: light-dark(transparent, transparent);
+    --body-color: light-dark(var(--body-2), var(--body-1));
+
+    --section-1: oklch(from var(--main-color) .8 .02 h);
+    --section-2: oklch(from var(--main-color) 0.2 .02 h);  
+    --section-background: light-dark(var(--section-1), var(--section-2));
+    --section-color: light-dark(var(--section-2), var(--section-1));
+
+
+
+    --layout-1: oklch(from var(--main-color) 1 .02 h);
+    --layout-2: oklch(from var(--main-color) 0.2 .02 h); 
+    --layout-background: light-dark(var(--layout-1), var(--layout-2));
+    --layout-color: light-dark(var(--layout-2), var(--layout-1));
+    
+    
+    --focused-color: var(--main-color);
+    
+    
+    
     --style-group: 'theme';
-    --content-background: light-dark(white, oklch(0.40 0 0));
-    --light-background: light-dark(#eee, gray);
-    --light-color: light-dark(gray, #eee);
     --bar-background: var(--content-background);
     --stroke-color: light-dark(transparent, transparent);
-    --content-color: light-dark(black, rgb(200 200 200));
-    --header-background: light-dark(silver, rgb(50 50 50));
-    --header-color: var(--content-color);
+    
+
     --border-color: light-dark(black, white);
+    
+
+    
+    
 
     --accent-color: light-dark(blue, oklch(0.72 0.16 259.27));
     --success-color: light-dark(green, green);
@@ -21,24 +64,13 @@ let style = /*css*/`
     --info-background: light-dark(lightyellow, blueviolet);
     --warning-color: light-dark(orange, orange);
     --disabled-color: light-dark(silver, silver);
-
-    --focused-color: var(--accent-color);
+    
     --selected-color: light-dark(navy, rgb(0 153 255));
     --selected-background: var(--header-background);
     --selected-filter: brightness(0.8) contrast(1.2)/*', 'brightness(1.2) contrast(0.9)')*/;
     --pointer-color: light-dark(magenta, magenta);
 
-    --dark-color: light-dark(white, rgb(20 20 20));
-    --dark-background: light-dark(gray, gray);
 
-    --body-background: light-dark(transparent, transparent);
-    --body-color: var(--content-background);
-
-    --section-background: light-dark(lightgrey, rgb(26 26 26));
-    --section-color: light-dark(black, rgb(200 200 200));
-
-    --layout-background: light-dark(whitesmoke, rgb(26 26 26));
-    --layout-color: light-dark(black, rgb(200 200 200));
 }
 
 :root{
@@ -50,15 +82,30 @@ let style = /*css*/`
 
 :root{
     --style-group: 'layouts';
+    --header: {
+        background-color: var(--header-background);
+        color: var(--header-color);
+        fill: var(--header-color);
+        border-color: var(--header-color);
+    };
+    --dark: {
+        background-color: var(--dark-background);
+        color: var(--dark-color) !important;
+        fill: var(--dark-color)  !important;
+        border-color: var(--dark-color);
+    };
+    
     --content:{
-        background-color: var(--content-background, white);
-        color: var(--content-color, black);
-        fill: var(--content-color, black);
+        background-color: var(--content-background);
+        color: var(--content-color);
+        fill: var(--content-color);
+        border-color: var(--dark-color);
     };
     --light:{
-        background-color: var(--light-background, #eee);
-        color: var(--light-color, gray);
-        fill: var(--light-color, gray);
+        background-color: var(--light-background);
+        color: var(--light-color);
+        fill: var(--light-color);
+        border-color: var(--light-color);
     };
 
     --boxed: {
@@ -119,17 +166,7 @@ let style = /*css*/`
         @apply --horizontal;
         align-items: center;
     };
-    --header: {
-        background: var(--header-background);
-        color: var(--header-color);
-        fill: var(--header-color);
-    };
-    --dark: {
-        color: var(--dark-color) !important;
-        fill: var(--dark-color) !important;
-        border-color: var(--dark-color) !important;
-        background-color: var(--dark-background) !important;
-    };
+
     --heading: {
         @apply --horizontal;
         align-items: center;
@@ -403,7 +440,6 @@ body[context-menu-show] *:not(oda-context-menu){
     };
     --focused:{
         position: relative !important;
-        //box-shadow: 0 2px 0 0  var(--focused-color) !important;
     };
     --dimmed: {
         opacity: 0.7;
