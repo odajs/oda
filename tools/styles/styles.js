@@ -1,6 +1,7 @@
 let style = /*css*/`
 
 :root {
+    --main-color: blue;
     --style-group: 'theme';
     --content-background: light-dark(white, oklch(0.40 0 0));
     --light-background: light-dark(#eee, gray);
