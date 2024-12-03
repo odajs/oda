@@ -552,6 +552,24 @@ body[context-menu-show] *:not(oda-context-menu){
     }
 }
 
+::-webkit-scrollbar {
+    width: 18px;
+    height: 16px;
+}
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+
+}
+::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: var(--body-background);
+   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+}
+::-webkit-scrollbar-thumb:hover {
+    @apply --dark;
+    width: 16px;
+}
+
 `;
 globalThis.cssRules = [];
 globalThis.adopted = [];
