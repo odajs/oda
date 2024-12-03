@@ -14,7 +14,7 @@ let style = /*css*/`
     --content-color: light-dark(var(--content-2), var(--content-1));
 
     --dark-1: oklch(from var(--main-color) .6 .02 h);
-    --dark-2: oklch(from var(--main-color) 1 .02 h);
+    --dark-2: oklch(from var(--main-color) .8 .02 h);
     --dark-background: light-dark(var(--dark-1), var(--dark-2));
     --dark-color: light-dark(var(--dark-2), var(--dark-1));
     
@@ -553,22 +553,23 @@ body[context-menu-show] *:not(oda-context-menu){
 }
 
 ::-webkit-scrollbar {
-    width: 18px;
-    height: 16px;
-}
-::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-
+    width: 8px;
+    height: 8px;
 }
 ::-webkit-scrollbar-thumb {
-    border-radius: 10px;
-    background: var(--body-background);
-   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+    border-radius: 4px;
+    background-color: var(--light-background);
+   -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,0.5);
 }
 ::-webkit-scrollbar-thumb:hover {
-    @apply --dark;
-    width: 16px;
+    background-color: var(--header-background);
 }
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,0.3);
+    background-color: var(--content-background);
+}
+
+
 
 `;
 globalThis.cssRules = [];

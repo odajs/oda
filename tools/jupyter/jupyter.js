@@ -55,6 +55,14 @@ window.show = (...e) => {
     })
     run_context.output_data?.push(...e);
 }
+window.frame = (...e) => {
+    e = e.map(i=>{
+        if (typeof i === 'string')
+            i = '<!--isIframe-->\n' + i;
+        return i;
+    })
+    run_context.output_data?.push(...e);
+}
 const console_error =  console.error;
 window.err = window.error = console.error = (...e) => {
     console_error.call(window, ...e);
@@ -335,8 +343,9 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
                 text-decoration: underline;
             }
         </style>
-        <div id="out-src" :src="outSrc" ~is="outIs" vertical  ~html="outHtml" ~style="{overflowWrap: (textWrap ? 'break-word': ''), whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning></div>
-        <div ~if="curRowsLength<maxRowsLength && !showAll" class="horizontal left header flex" style="font-size: small; align-items: center;">
+        <iframe ~show="isIframe" id="out-frame" :srcdoc style="border: none; outline: none; width: 100%;"></iframe>
+        <div ~show="!isIframe" id="out-src" :src="outSrc" ~is="outIs" vertical  ~html="outHtml" ~style="{overflowWrap: (textWrap ? 'break-word': ''), whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning></div>
+        <div ~if="!isIframe && curRowsLength<maxRowsLength && !showAll" class="horizontal left header flex" style="font-size: small; align-items: center;">
             <span style="padding: 9px;">Rows: {{curRowsLength.toLocaleString()}} of {{maxRowsLength.toLocaleString()}}</span>
             <oda-button ~if="!showAll" :icon-size class="dark border" style="margin: 4px; border-radius: 2px;" @tap="setStep($event, 1)">Show next {{(max*2).toLocaleString()}}</oda-button>
             <oda-button ~if="!showAll" :icon-size class="dark border" style="margin: 4px; border-radius: 2px;" @tap="showAll=true">Show all</oda-button>
@@ -375,7 +384,27 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
             return v
         }) || [];
     },
+    isIframe: false,
+    srcdoc: '',
     get outHtml() {
+        if (this.row?.item?.includes?.('<!--isIframe-->')) {
+            this.isIframe = true;
+            let i = this.row.item;
+            this.async(() => {
+                const iframe = this.$('iframe');
+                iframe.addEventListener('load', () => {
+                    const resizeObserver = new ResizeObserver((e) => {
+                        iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
+                    })
+                    resizeObserver.observe(iframe.contentDocument.body);
+                    this.async(() => {
+                        this.$('#out-frame')?.scrollIntoView({block: "end"});
+                    }, 500)
+                })
+                this.srcdoc = i;
+            }, 100)
+            return '';
+        }
         if (this.row?.item instanceof HTMLElement || this.row?.item?.includes?.('<!--isShow-->'))
             return this.row.item;
         if (this.showAll)
@@ -1492,7 +1521,8 @@ class JupyterCell extends ROCKS({
         let src = this.srcWithBreakpoints || this.src;
         let code = src.replace(/import\s+([\"|\'])(\S+)([\"|\'])/gm, 'await import($1$2$3)');
         code = code.replace(/import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, '__v__ =  $1 = await import($2$3$4); for(let i in __v__) run_context.i = __v__[i]');
-        code = code.replace(/(import\s*\()/gm, ' ODA.$1');
+        if (!code.includes('frame('))
+            code = code.replace(/(import\s*\()/gm, ' ODA.$1');
         code = code.replace(/^\s*print\s*\((.*)\)/gm, ' log($1)');
         code = code.split('\n').map(row =>{
 

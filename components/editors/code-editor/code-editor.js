@@ -5,6 +5,9 @@ ODA({is: 'oda-code-editor',
             :host([read-only]){
                 @apply --dimmed;
             }
+            .ace_content{
+                @apply --content;
+            }
             .ace_gutter, .ace_gutter-cell{
                 @apply --light;
             }
