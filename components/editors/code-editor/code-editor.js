@@ -34,7 +34,10 @@ ODA({is: 'oda-code-editor',
                 width: fit-content;
                 margin-left: auto;
             }
-            .ace_scroller, .ace_editor {
+            .ace_scroller{
+                overflow: hidden;
+            }
+            .ace_editor {
                 overflow: {{stickySearch?'unset':''}};
             }
         </style>
