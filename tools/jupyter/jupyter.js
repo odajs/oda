@@ -397,6 +397,26 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
             return this._srcdoc;
         if (this.row?.item?.includes?.('<!--isFrame-->')) {
             let src = this.cell.data.source[0];
+            let _attached = `
+attached() {
+    top.addEventListener("message", (e) => {
+        if (e.data?.id !== this.id)
+            return;
+        // console.log(this.id, e.data)
+        for (let key in e.data) {
+            this[key] = e.data[key];
+        }
+    })
+`
+            if (/attached\s*\(\s*\)\s*{/gm.test(src)) {
+                src = src.replace(/attached\s*\(\s*\)\s*{/gm, _attached);
+            } else {
+                src = src.replace(/ODA\s*\(\s*\s*{/gm, `
+ODA({ 
+${_attached}
+},
+`)
+            }
             src = `
 ${this.row?.item || ''}
 <script type="module">
