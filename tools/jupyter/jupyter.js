@@ -55,6 +55,14 @@ window.show = (...e) => {
     })
     run_context.output_data?.push(...e);
 }
+window.frame = (...e) => {
+    e = e.map(i=>{
+        if (typeof i === 'string')
+            i += '<!--isFrame-->'
+        return i;
+    })
+    run_context.output_data?.push(...e);
+}
 const console_error =  console.error;
 window.err = window.error = console.error = (...e) => {
     console_error.call(window, ...e);
@@ -334,6 +342,11 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
                 @apply --content;
                 text-decoration: underline;
             }
+            iframe {
+                border: none;
+                width: 100%;
+                height: 40px;
+            }
         </style>
         <div id="out-src" :src="outSrc" ~is="outIs" vertical  ~html="outHtml" ~style="{overflowWrap: (textWrap ? 'break-word': ''), whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning></div>
         <div ~if="curRowsLength<maxRowsLength && !showAll" class="horizontal left header flex" style="font-size: small; align-items: center;">
@@ -353,8 +366,12 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
         this.step += sign;
     },
     outSrc: '',
-    outIs(i = this.row) {
+    get outIs() {
         this.outSrc = '';
+        const i = this.row;
+        if (i?.item?.includes?.('<!--isFrame-->')){
+            return 'iframe';
+        }
         if (i.key === 'image/png') {
             this.outSrc = 'data:image/png;base64,' + i.item;
             return 'img';
@@ -376,6 +393,35 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
         }) || [];
     },
     get outHtml() {
+        if (this._srcdoc)
+            return this._srcdoc;
+        if (this.row?.item?.includes?.('<!--isFrame-->')) {
+            let src = this.cell.data.source;
+            src = `
+${this.row?.item || ''}
+<script type="module">
+    import '../../oda.js';
+    const frame = () => {};
+    ${src}
+</script>
+            `
+            this.async(() => {
+                const iframe = this.$('iframe');
+                iframe.addEventListener('load', () => {
+                    const resizeObserver = new ResizeObserver((e) => {
+                        iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
+                        console.log('resize')
+                    })
+                    resizeObserver.observe(iframe.contentDocument.body);
+                    this.async(() => {
+                        this.$('#out-frame')?.scrollIntoView({block: "end"});
+                    }, 500)
+                })
+                iframe.srcdoc = src;
+                this._srcdoc = src;
+                return;
+            }, 100)
+        }
         if (this.row?.item instanceof HTMLElement || this.row?.item?.includes?.('<!--isShow-->'))
             return this.row.item;
         if (this.showAll)
@@ -388,6 +434,11 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
     },
     get error() {
         return this.cell?.status === 'error';
+    },
+    attached() {
+        this.cell.listen('is-run', e => {
+            this._srcdoc = '';
+        })
     }
 })
 
@@ -584,6 +635,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     if(autorun !== true)
                         this.notebook?.change();
                     resolve();
+                    this.cell.fire('is-run');
                     if(autorun !== true){
                         this.cell?.next?.clearTimes();
                         this.scrollToRunOutputs();
@@ -1127,7 +1179,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         }
     },
     getScrollCalculate(){
-        return this.jupyter_height - 22 - 13;
+        return this.jupyter_height - 22 - 5;
     },
     attached() {
         this.setBreakpoints();
