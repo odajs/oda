@@ -396,7 +396,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
         if (this._srcdoc)
             return this._srcdoc;
         if (this.row?.item?.includes?.('<!--isFrame-->')) {
-            let src = this.cell.data.source;
+            let src = this.cell.data.source[0];
             src = `
 ${this.row?.item || ''}
 <script type="module">
@@ -408,10 +408,14 @@ ${this.row?.item || ''}
             this.async(() => {
                 const iframe = this.$('iframe');
                 iframe.addEventListener('load', () => {
+                    iframe.style.height = '40px';
                     const resizeObserver = new ResizeObserver((e) => {
-                        iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
-                        console.log('resize')
-                    })
+                        let h = iframe.contentDocument.body.scrollHeight;
+                        iframe.style.height = h + 'px';
+                        // if (h === iframe.contentDocument.body.scrollHeight) {
+                        //     resizeObserver.unobserve(iframe.contentDocument.body);
+                        // }
+                    })     
                     resizeObserver.observe(iframe.contentDocument.body);
                     this.async(() => {
                         this.$('#out-frame')?.scrollIntoView({block: "end"});
@@ -434,11 +438,6 @@ ${this.row?.item || ''}
     },
     get error() {
         return this.cell?.status === 'error';
-    },
-    attached() {
-        this.cell.listen('is-run', e => {
-            this._srcdoc = '';
-        })
     }
 })
 
@@ -635,7 +634,8 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     if(autorun !== true)
                         this.notebook?.change();
                     resolve();
-                    this.cell.fire('is-run');
+                    if (this.$('oda-jupyter-cell-out'))
+                        this.$('oda-jupyter-cell-out')._srcdoc = '';
                     if(autorun !== true){
                         this.cell?.next?.clearTimes();
                         this.scrollToRunOutputs();
