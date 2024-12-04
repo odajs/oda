@@ -634,8 +634,8 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     if(autorun !== true)
                         this.notebook?.change();
                     resolve();
-                    if (this.$('oda-jupyter-cell-out'))
-                        this.$('oda-jupyter-cell-out')._srcdoc = '';
+                    if (this.$$('oda-jupyter-cell-out').length)
+                        this.$$('oda-jupyter-cell-out').map(i => i._srcdoc = '');
                     if(autorun !== true){
                         this.cell?.next?.clearTimes();
                         this.scrollToRunOutputs();
