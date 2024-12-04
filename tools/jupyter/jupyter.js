@@ -695,7 +695,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         }
         this._currentBreakPoints = row;
         row -= 1;
-        const delta = this.$('#go-breakpoint').offsetTop + 10;
+        const delta = this.$('#go-breakpoint').offsetTop + 12;
         this.jupyter.scrollToCell(this.cell, row, delta);
     },
     get isLastRange() {
@@ -703,7 +703,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     },
     scrollToLastRange() {
         if (this.cell?.lastRange) {
-            const delta = this.$('#go-lastrange').offsetTop + 10;
+            const delta = this.$('#go-lastrange').offsetTop + 12;
             this.jupyter.scrollToCell(this.cell, this.cell.lastRange.start.row, delta, true);
         }
     },
