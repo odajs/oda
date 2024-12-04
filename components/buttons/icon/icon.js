@@ -23,6 +23,12 @@ ODA({is: 'oda-icon',
                 top: 0px;
                 left: 0px;
                 position: absolute;
+
+                .text-icon{
+                    color: {{fill}};
+                    font-size: 600%;
+                    font-weight: bold;
+                }
             }
         </style>
         <div is="style" ~if="bubble">
@@ -204,6 +210,10 @@ ODA({is: 'oda-icon',
 });
 function loadIcon(icon) { //todo сделать обобщение
     let object = new Promise((resolve, reject) => {
+        if (icon.startsWith('@:')) {
+            icons[icon] = { body: { body: `<text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" class="text-icon">${icon.substring(2).toUpperCase()}</text>`, size: 100 } };
+            return resolve(icons[icon]);
+        }
         resolves[icon] = (a) => {
             delete resolves[icon];
             if (a)
