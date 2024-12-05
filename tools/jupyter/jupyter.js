@@ -36,16 +36,18 @@ function log_recurse (obj){
 }
 window.log = (...e) => {
     e = e.map(log_recurse);
-    let el = e.find(v=>v instanceof HTMLElement);
-    if(el)
-        run_context.output_data?.push(...e.map(v=>({'html/text': v})));
-    else{
-        el = e.find(v=>v instanceof JupyterProxyElement);
-        if(el)
-            run_context.output_data?.push(...e.map(v=>({'jupyter/iframe': v})));
+    run_context.output_data?.push(...e.map(v=>{
+        let mimeType = 'text/plain'
+        if (v instanceof HTMLElement)
+            mimeType = 'html/text'
+        else if (v instanceof JupyterProxyElement){
+            const script = '<button>КНОПКА</button>'
+            return {'jupyter/iframe': script, proxy: v}
+        }
         else
-            run_context.output_data?.push(...e.map(v=>({'text/plain': v.toString()})));
-    }
+            v = v.toString();
+       return {[mimeType]:v}
+    }));
 }
 const console_warn = console.warn;
 window.warning = window.warn =  console.warn = (...e) => {
@@ -355,7 +357,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
                 height: 40px;
             }
         </style>
-        <div :src="image" ~is="out_tag" vertical  ~html="outHtml" ~style="{overflowWrap: (textWrap ? 'break-word': ''), whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning></div>
+        <div :src="image" ~is="out_tag" :srcdoc vertical  ~html="outHtml" ~style="{overflowWrap: (textWrap ? 'break-word': ''), whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning @load="iframe_loaded"></div>
         <div ~if="curRowsLength<maxRowsLength && !showAll" class="horizontal left header flex" style="font-size: small; align-items: center;">
             <span style="padding: 9px;">Rows: {{curRowsLength.toLocaleString()}} of {{maxRowsLength.toLocaleString()}}</span>
             <oda-button ~if="!showAll" :icon-size class="dark border" style="margin: 4px; border-radius: 2px;" @tap="setStep($event, 1)">Show next {{(max*2).toLocaleString()}}</oda-button>
@@ -371,6 +373,14 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
         e.preventDefault();
         e.stopPropagation();
         this.step += sign;
+    },
+    iframe_loaded(e){
+        this.row.items.proxy.iframe = e.target;
+    },
+    get srcdoc(){
+        if (this.row?.key === 'jupyter/iframe'){
+            return this.row.item;
+        }
     },
     get image(){
         if (this.row?.key === 'image/png')
@@ -771,7 +781,7 @@ class JupyterProxyElement{
 
             },
             set(target, p, value, receiver) {
-                this.#iframe.contentWindow.postMessage();
+                target.#iframe?.contentWindow.postMessage();
                 return true;
             }
         })
