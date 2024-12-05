@@ -8,8 +8,6 @@ function log_recurse (obj){
     if (obj === undefined) return 'undefined'
     switch (obj.constructor){
         case undefined:{
-            if(obj instanceof JupyterProxyElement)
-                return obj;
             obj = Object.assign({}, obj);
         }
         case Function:
@@ -36,18 +34,11 @@ function log_recurse (obj){
 }
 window.log = (...e) => {
     e = e.map(log_recurse);
-    run_context.output_data?.push(...e.map(v=>{
-        let mimeType = 'text/plain'
-        if (v instanceof HTMLElement)
-            mimeType = 'html/text'
-        else if (v instanceof JupyterProxyElement){
-            const script = '<button>КНОПКА</button>'
-            return {'jupyter/iframe': script, proxy: v}
-        }
-        else
-            v = v.toString();
-       return {[mimeType]:v}
-    }));
+    let el = e.find(v=>v instanceof HTMLElement);
+    if(el)
+        run_context.output_data?.push(...e);
+    else
+        run_context.output_data?.push([...e].join(''));
 }
 const console_warn = console.warn;
 window.warning = window.warn =  console.warn = (...e) => {
@@ -357,7 +348,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
                 height: 40px;
             }
         </style>
-        <div :src="image" ~is="out_tag" :srcdoc vertical  ~html="outHtml" ~style="{overflowWrap: (textWrap ? 'break-word': ''), whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning @load="iframe_loaded"></div>
+        <div id="out-src" :src="outSrc" ~is="outIs" vertical  ~html="outHtml" ~style="{overflowWrap: (textWrap ? 'break-word': ''), whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning></div>
         <div ~if="curRowsLength<maxRowsLength && !showAll" class="horizontal left header flex" style="font-size: small; align-items: center;">
             <span style="padding: 9px;">Rows: {{curRowsLength.toLocaleString()}} of {{maxRowsLength.toLocaleString()}}</span>
             <oda-button ~if="!showAll" :icon-size class="dark border" style="margin: 4px; border-radius: 2px;" @tap="setStep($event, 1)">Show next {{(max*2).toLocaleString()}}</oda-button>
@@ -374,24 +365,16 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
         e.stopPropagation();
         this.step += sign;
     },
-    iframe_loaded(e){
-        this.row.items.proxy.iframe = e.target;
-    },
-    get srcdoc(){
-        if (this.row?.key === 'jupyter/iframe'){
-            return this.row.item;
+    outSrc: '',
+    get outIs() {
+        this.outSrc = '';
+        const i = this.row;
+        if (i?.item?.includes?.('<!--isFrame-->')){
+            return 'iframe';
         }
-    },
-    get image(){
-        if (this.row?.key === 'image/png')
-            return 'data:image/png;base64,' + this.row.item;
-    },
-    get out_tag() {
-        switch (this.row?.key){
-            case 'image/png':
-                return 'img';
-            case 'jupyter/iframe':
-                return 'iframe';
+        if (i.key === 'image/png') {
+            this.outSrc = 'data:image/png;base64,' + i.item;
+            return 'img';
         }
         return 'div';
     },
@@ -410,6 +393,55 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
         }) || [];
     },
     get outHtml() {
+        if (this._srcdoc)
+            return this._srcdoc;
+        if (this.row?.item?.includes?.('<!--isFrame-->')) {
+            let src = this.cell.data.source[0];
+            let _attached = `
+attached() {
+    this.id ||= '_cmp';
+    window.run_context[this.id] = this;
+`
+            if (/attached\s*\(\s*\)\s*{/gm.test(src)) {
+                src = src.replace(/attached\s*\(\s*\)\s*{/gm, _attached);
+            } else {
+                src = src.replace(/ODA\s*\(\s*\s*{/gm, `
+ODA({ 
+${_attached}
+},
+`)
+            }
+            src = `
+${this.row?.item || ''}
+<script type="module">
+    import '${jupyter_path.replace('tools/jupyter', 'oda.js')}';
+    const create = () => {};
+    ${src}
+</script>
+            `
+            this.async(() => {
+                const iframe = this.$('iframe');
+                iframe.addEventListener('load', () => {
+                    iframe.style.height = '40px';
+                    iframe.contentWindow._win = window;
+                    iframe.contentWindow.run_context = window.run_context;
+                    const resizeObserver = new ResizeObserver((e) => {
+                        let h = iframe.contentDocument.body.scrollHeight;
+                        iframe.style.height = h + 'px';
+                        // if (h === iframe.contentDocument.body.scrollHeight) {
+                        //     resizeObserver.unobserve(iframe.contentDocument.body);
+                        // }
+                    })     
+                    resizeObserver.observe(iframe.contentDocument.body);
+                    this.async(() => {
+                        this.$('#out-frame')?.scrollIntoView({block: "end"});
+                    }, 500)
+                })
+                iframe.srcdoc = src;
+                this._srcdoc = src;
+                return;
+            }, 100)
+        }
         if (this.row?.item instanceof HTMLElement || this.row?.item?.includes?.('<!--isShow-->'))
             return this.row.item;
         if (this.showAll)
@@ -489,11 +521,11 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         <div style="margin: 8px;">Hidden {{cell.childrenCount}} cells</div>
                     </div>
                 </div>
-                <div ~if="outputs?.length" class="info border" flex style="z-index: 1;">
+                <div id="outputs" ~if="cell?.outputs?.length || cell?.controls?.length" class="info border" flex style="z-index: 1;">
                     <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell ~show="selected"></oda-jupyter-outputs-toolbar>
                     <div class="vertical flex" style="overflow: hidden;">
                         <div flex vertical ~if="!cell?.hideOutput" style="overflow: hidden;">
-                            <div ~for="outputs" style="font-family: monospace;" >
+                            <div ~for="outputFor" style="font-family: monospace;" >
                                 <oda-jupyter-cell-out ~for="$for.item.data" :row="$$for" :max="control?.maxRow"></oda-jupyter-cell-out>
                             </div>
                         </div>
@@ -511,20 +543,16 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         </div>
         <oda-jupyter-divider></oda-jupyter-divider>
     `,
-    get outputs(){
-        this.control = undefined;
-        return this.cell?.controls?.slice(0, this.maxOutputsRow * (this.outputsStep + 1)) || [];
+    outputFor: {
+        get() {
+            this.control = undefined;
+            if (this.cell?.controls?.length)
+                return this.cell?.controls.slice(0, this.maxOutputsRow * (this.outputsStep + 1));
+            if (this.cell?.outputs?.length)
+                return this.cell?.outputs?.slice(0, this.maxOutputsRow * (this.outputsStep + 1));
+            return this.cell?.outputs;
+        }
     },
-    // outputFor: {
-    //     get() {
-    //         this.control = undefined;
-    //         if (this.cell?.controls?.length)
-    //             return this.cell?.controls.slice(0, this.maxOutputsRow * (this.outputsStep + 1));
-    //         if (this.cell?.outputs?.length)
-    //             return this.cell?.outputs?.slice(0, this.maxOutputsRow * (this.outputsStep + 1));
-    //         return this.cell?.outputs;
-    //     }
-    // },
     get _value() {
         return `<b style="margin: 4px; cursor: pointer; align-self: center;"><u>Empty ${this.cell?.type}</u></b> <gray>(click for edit...)</gray>`
     },
@@ -606,14 +634,14 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         await new Promise(async (resolve)=>{
                             if (autorun !== true)
                                 this.checkBreakpoints(code);
-                            await code.run(this);
+                            await code.run(this.jupyter);
                             this.async(resolve)
                         })
                         await this.$render();
                     }
                     if (autorun !== true)
                         this.checkBreakpoints(this.cell);
-                    await this.cell.run(this);
+                    await this.cell.run(this.jupyter);
 
                 } catch (error) {
 
@@ -765,34 +793,8 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         this.cell.hideOutput = false;
         this.jupyter.$render();
         this.notebook.change();
-    },
-    create(tag_name, props = {}){
-        return new JupyterProxyElement(tag_name, props = {});
     }
 })
-
-class JupyterProxyElement{
-    #iframe = null;
-    #props = {}
-    constructor(tag_name, props = {}) {
-        this.#props = props;
-        return new Proxy(this,  {
-            get(target, p, receiver) {
-
-            },
-            set(target, p, value, receiver) {
-                target.#iframe?.contentWindow.postMessage();
-                return true;
-            }
-        })
-    }
-    set iframe(n){
-        this.#iframe = n;
-        for (let p in this.#props){
-            this[p] = this.#props[p];
-        }
-    }
-}
 
 ODA({ is: 'oda-jupyter-divider',
     template: `
@@ -1328,17 +1330,15 @@ class JupyterCell extends ROCKS({
         return this.metadata?.id || getID();
     },
     get controls() {
-        return this.data?.controls || this.outputs;
+        return this.data?.controls || [];
     },
     set controls(n) {
-        this.outputs = n.map(val=>({data:val}));
         Object.defineProperty(this.data, 'controls', {
-            value: this.outputs,
+            value: n,
             enumerable: false,
             configurable: true,
             writable: false,
         })
-
     },
     autoRun:{
         get(){
@@ -1517,8 +1517,7 @@ class JupyterCell extends ROCKS({
         this.notebook = notebook;
         this.data = data;
     }
-    async run(cell){
-        let jupyter = cell.jupyter
+    async run(jupyter){
         this.hideOutput = false;
         this.time = '';
         this.status = '';
@@ -1528,7 +1527,7 @@ class JupyterCell extends ROCKS({
             run_context.output_data = jupyter.output_data = [];
             let fn = new AsyncFunction('context', this.code);
             let time = Date.now();
-            let res =  await fn.call(cell, run_context);
+            let res =  await fn.call(jupyter, run_context);
             time = new Date(Date.now() - time);
             let time_str = '';
             let t = time.getMinutes();
@@ -1551,9 +1550,9 @@ class JupyterCell extends ROCKS({
             this.time = '0 ms';
         }
         finally {
-
+            this.outputs = jupyter.output_data.filter(i=>!(i instanceof HTMLElement) && !i.includes?.('<!--isShow-->')).map(i=>({data:{"text/plain": i}}));
             // this.controls = jupyter.output_data.filter(i=>i instanceof HTMLElement || i.includes('<!--isShow-->')).map(i=>({data:{"text/plain": i}}));
-            this.controls = jupyter.output_data;//.map(i=>({data:{"text/plain": i}}));
+            this.controls = jupyter.output_data.map(i=>({data:{"text/plain": i}}));
             this.isRun = false;
             run_context.output_data = [];
         }
