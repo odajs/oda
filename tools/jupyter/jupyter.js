@@ -414,7 +414,7 @@ ${_attached}
             src = `
 ${this.row?.item || ''}
 <script type="module">
-    import '../../oda.js';
+    import '${jupyter_path.replace('tools/jupyter', 'oda.js')}';
     const create = () => {};
     ${src}
 </script>
