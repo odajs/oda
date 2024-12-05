@@ -399,6 +399,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
             let src = this.cell.data.source[0];
             let _attached = `
 attached() {
+    this.id ||= '_cmp';
     window.run_context[this.id] = this;
 `
             if (/attached\s*\(\s*\)\s*{/gm.test(src)) {
