@@ -55,7 +55,7 @@ window.show = (...e) => {
     })
     run_context.output_data?.push(...e);
 }
-window.frame = (...e) => {
+window.create = (...e) => {
     e = e.map(i=>{
         if (typeof i === 'string')
             i += '<!--isFrame-->'
@@ -399,14 +399,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
             let src = this.cell.data.source[0];
             let _attached = `
 attached() {
-    top.addEventListener("message", (e) => {
-        if (e.data?.id !== this.id)
-            return;
-        // console.log(this.id, e.data)
-        for (let key in e.data) {
-            this[key] = e.data[key];
-        }
-    })
+    window.run_context[this.id] = this;
 `
             if (/attached\s*\(\s*\)\s*{/gm.test(src)) {
                 src = src.replace(/attached\s*\(\s*\)\s*{/gm, _attached);
@@ -421,7 +414,7 @@ ${_attached}
 ${this.row?.item || ''}
 <script type="module">
     import '../../oda.js';
-    const frame = () => {};
+    const create = () => {};
     ${src}
 </script>
             `
@@ -429,6 +422,8 @@ ${this.row?.item || ''}
                 const iframe = this.$('iframe');
                 iframe.addEventListener('load', () => {
                     iframe.style.height = '40px';
+                    iframe.contentWindow._win = window;
+                    iframe.contentWindow.run_context = window.run_context;
                     const resizeObserver = new ResizeObserver((e) => {
                         let h = iframe.contentDocument.body.scrollHeight;
                         iframe.style.height = h + 'px';
@@ -1021,6 +1016,7 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
     clearOutputs() {
         this.cell.hideOutput = false;
         this.cell.outputs = [];
+        this.cell.controls = [];
     }
 })
 
