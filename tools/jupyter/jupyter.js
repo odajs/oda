@@ -44,7 +44,7 @@ window.log = (...e) => {
         if(el)
             run_context.output_data?.push(...e.map(v=>({'jupyter/iframe': v})));
         else
-            run_context.output_data?.push(...e.map(v=>({'text/plain': v})));
+            run_context.output_data?.push(...e.map(v=>({'text/plain': v.toString()})));
     }
 }
 const console_warn = console.warn;
