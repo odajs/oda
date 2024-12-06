@@ -285,9 +285,7 @@ if (!window.ODA?.IsReady) {
     }
 
     function regComponent(prototype) {
-        if (window.customElements.get(prototype.is)) return prototype.is;
-        // try {
-            const imports = loadImports(prototype);
+        const imports = loadImports(prototype);
             if (imports.then){
                 return imports.then(imp=>{
                     let parents = getParents(prototype);
@@ -306,15 +304,6 @@ if (!window.ODA?.IsReady) {
                 })
             }
             return finalizeRegistration(prototype, imports, parents);
-
-
-/*        }
-        catch (e) {
-            console.error(prototype.is, e);
-        }
-        finally {
-            delete prototype.$system.reg;
-        }*/
     }
 
     const regexUrl = /https?:\/\/(?:.+\/)[^:?#&]+/g
@@ -541,25 +530,27 @@ if (!window.ODA?.IsReady) {
         }
     }
     function ODA(prototype = {}) {
-        return ODA.telemetry.prototypes[prototype.is] ??= (() => {
-            if (ODA.telemetry.components[prototype.is]) return ODA.telemetry.components[prototype.is];
-            prototype.is = prototype.is.toLowerCase();
-            prototype.$system ??= Object.create(null);
+        prototype.is = prototype.is.toLowerCase();
+        prototype.$system ??= Object.create(null);
+
+        if (window.customElements.get(prototype.is) || ODA.telemetry.prototypes[prototype.is]) {
+            ODA.telemetry.prototypes[prototype.is] = prototype;
+            return prototype.is;
+        }
+        else {
             const matches = (new Error()).stack.trim().match(regexUrl);
             prototype.$system.url = matches[matches.length - 1];
             prototype.$system.dir = prototype.$system.url.substring(0, prototype.$system.url.lastIndexOf('/')) + '/';
             prototype.extends = str2arr(prototype.extends);
             const res = regComponent(prototype);
-            if (res.then) {
-                return res.then(() => {
+            if(res instanceof Promise){
+                return res.then(res =>{
                     ODA.telemetry.prototypes[prototype.is] = prototype;
-                    return prototype.is;
+                    return res;
                 })
             }
-            else {
-                return res;
-            }
-        })();
+            return res;
+        }
     }
     // ODA.isHidden = true;
     ODA.regHotKey = function (key, handle) {
