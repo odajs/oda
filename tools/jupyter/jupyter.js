@@ -743,24 +743,30 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
 
 class JupyterProxyElement{
     #iframe = null;
-    #props = {}
+    #props = {};
+    #tag_name = '';
     constructor(tag_name, props = {}) {
         this.#props = props;
+        this.#tag_name = tag_name;
         return new Proxy(this,  {
             get(target, p, receiver) {
 
             },
             set(target, p, value, receiver) {
-                target.#iframe?.contentWindow.postMessage();
+                // target.#iframe?.contentWindow.postMessage();
+                target[p] = value;
                 return true;
             }
         })
     }
-    set iframe(n){
+    get iframe() {
+        return this.#iframe;
+    }
+    set iframe(n) {
         this.#iframe = n;
-        for (let p in this.#props){
-            this[p] = this.#props[p];
-        }
+        // for (let p in this.#props){
+        //     this[p] = this.#props[p];
+        // }
     }
 }
 
