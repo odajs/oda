@@ -8,7 +8,7 @@ ODA({is: 'oda-code-editor',
             .ace_content{
                 @apply --content;
             }
-            .ace_gutter, .ace_gutter-cell{
+            .ace_gutter, .ace_gutter-cell, .ace_gutter-layer, .ace_active-line{
                 @apply --light;
             }
             .ace_hidden-cursors {
