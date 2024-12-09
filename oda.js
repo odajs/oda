@@ -67,6 +67,9 @@ if (!window.ODA?.IsReady) {
     }
 
     function finalizeRegistration(prototype, imports = [], parents = []) {
+        if (window.customElements.get(prototype.is)) {
+            return prototype.is;
+        }
         try {
             let template = prototype.template || '';
             if (parents.length) {
