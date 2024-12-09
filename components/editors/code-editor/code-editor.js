@@ -20,9 +20,9 @@ ODA({is: 'oda-code-editor',
             .ace_editor .ace_marker-layer .ace_selection {
                 background: {{marker?marker+'!important':''}};
             }
-            .ace_gutter-cell.ace_breakpoint{ 
-                border-radius: 20px 0px 0px 20px; 
-                box-shadow: 0px 0px 1px 1px red inset; 
+            .ace_gutter-cell.ace_breakpoint{
+                border-radius: 20px 0px 0px 20px;
+                box-shadow: 0px 0px 1px 1px red inset;
                 background-color: lightyellow;
             }
             .ace_scrollbar-h {
@@ -63,7 +63,7 @@ ODA({is: 'oda-code-editor',
             }
         },
         theme: {
-            $def: 'chrome',
+            $def: 'ambiance',
             set(n) {
                 if (n)
                     this.setTheme(n);

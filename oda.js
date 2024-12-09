@@ -285,6 +285,9 @@ if (!window.ODA?.IsReady) {
     }
 
     function regComponent(prototype) {
+        if(window.customElements.get(prototype.is)){
+            return prototype.is;
+        }
         const imports = loadImports(prototype);
             if (imports.then){
                 return imports.then(imp=>{
