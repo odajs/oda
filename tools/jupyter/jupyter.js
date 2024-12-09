@@ -1307,7 +1307,7 @@ class JupyterCell extends ROCKS({
         return this.data?.controls || this.outputs;
     },
     set controls(n) {
-        this.outputs = n.map(val => ({ data: val }));
+        this.outputs = n;
         Object.defineProperty(this.data, 'controls', {
             value: this.outputs,
             enumerable: false,
@@ -1526,7 +1526,7 @@ class JupyterCell extends ROCKS({
             this.time = '0 ms';
         }
         finally {
-            this.controls = jupyter.output_data;
+            this.controls = jupyter.output_data.map(val => ({ data: val }));
             this.isRun = false;
             run_context.output_data = [];
         }
