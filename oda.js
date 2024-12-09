@@ -555,6 +555,7 @@ if (!window.ODA?.IsReady) {
                     return res;
                 })
             }
+            ODA.telemetry.prototypes[prototype.is] = prototype;
             return res;
         }
     }
