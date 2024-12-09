@@ -8,7 +8,7 @@ ODA({is: 'oda-code-editor',
             .ace_content{
                 @apply --content;
             }
-            .ace-chrome .ace_marker-layer .ace_active-line {
+            .ace_marker-layer .ace_active-line {
                 background: var(--light-background) !important;
             }
             .ace_gutter, .ace_gutter-cell, .ace_gutter-layer, .ace_active-line{
@@ -63,7 +63,7 @@ ODA({is: 'oda-code-editor',
             }
         },
         theme: {
-            $def: 'ambiance',
+            $def: 'chrome',
             set(n) {
                 if (n)
                     this.setTheme(n);
