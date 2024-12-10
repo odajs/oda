@@ -41,8 +41,7 @@ window.log = (...e) => {
         if (v instanceof HTMLElement)
             mimeType = 'html/text';
         else if (v instanceof JupyterProxyElement) {
-            const script = '<button>КНОПКА</button>'
-            return { 'jupyter/iframe': script, proxy: v };
+            return { 'jupyter/iframe': v };
         }
         else
             v = v.toString();
@@ -357,12 +356,39 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
         this.step += sign;
     },
     iframe_loaded(e){
-        this.row.items.proxy.iframe = e.target;
+        const iframe = e.target;
+        iframe.style.height = '40px';
+        this.row.item.elem = iframe.contentDocument.body.firstChild;
+        console.log(this.row.item.elem);
+        const resizeObserver = new ResizeObserver((e) => {
+            let h = iframe.contentDocument.body.scrollHeight;
+            iframe.style.height = h + 'px';
+            // if (h === iframe.contentDocument.body.scrollHeight) {
+            //     resizeObserver.unobserve(iframe.contentDocument.body);
+            // }
+        })     
+        resizeObserver.observe(iframe.contentDocument.body);
+        this.async(() => {
+            this.$('#out-frame')?.scrollIntoView({ block: "end" });
+        }, 500)
     },
     get srcdoc(){
-        if (this.row?.key === 'jupyter/iframe'){
-            return this.row.item;
+        let tag_name = this.row.item.tag_name, src = '';
+        try {
+            src = JSON.stringify(ODA.telemetry.prototypes[tag_name] || {});
+        } catch (err) {
+            console.log(err);
         }
+        src = `
+<${tag_name}></${tag_name}>
+<script type="module">
+    import '${jupyter_path.replace('tools/jupyter', 'oda.js')}';
+    ODA(
+        ${src}
+    )
+<\/script>
+`
+        return src;
     },
     get image(){
         if (this.row?.key === 'image/png')
@@ -742,31 +768,36 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
 })
 
 class JupyterProxyElement{
-    #iframe = null;
     #props = {};
     #tag_name = '';
+    #elem = {};
     constructor(tag_name, props = {}) {
         this.#props = props;
         this.#tag_name = tag_name;
         return new Proxy(this,  {
-            get(target, p, receiver) {
-
+            get(target, p) {
+                if (p !== 'constructor') {
+                    return target.elem?.[p] || target[p];
+                }
             },
-            set(target, p, value, receiver) {
-                // target.#iframe?.contentWindow.postMessage();
+            set(target, p, value) {
                 target[p] = value;
+                if (target.elem)
+                    target.elem[p] = value;
                 return true;
             }
         })
     }
-    get iframe() {
-        return this.#iframe;
+    get tag_name() {
+        return this.#tag_name;
     }
-    set iframe(n) {
-        this.#iframe = n;
-        // for (let p in this.#props){
-        //     this[p] = this.#props[p];
-        // }
+    get elem() {
+        return this.#elem;
+    }
+    set elem(n) {
+        this.#elem = n;
+        for (p in this.#props)
+            this.elem[p] = p;
     }
 }
 
