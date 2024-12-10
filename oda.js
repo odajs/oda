@@ -46,7 +46,7 @@ if (!window.ODA?.IsReady) {
         }
     }
 
-    function getParents(prototype) {
+    async function getParents(prototype) {
         clearExtends(prototype);
         let parents = prototype.extends.map(s => s.trim()).filter(Boolean).reduce((res, ext) => {
             ext = ext.trim();
@@ -58,12 +58,8 @@ if (!window.ODA?.IsReady) {
             }
             return res;
         }, []);
-        if (parents.some(p => p.then)) {
-            return Promise.all(parents);
-        }
-        else {
-            return parents;
-        }
+
+        return Promise.all(parents);
     }
 
     function finalizeRegistration(prototype, imports = [], parents = []) {
@@ -287,29 +283,13 @@ if (!window.ODA?.IsReady) {
         }
     }
 
-    function regComponent(prototype) {
-        if(window.customElements.get(prototype.is)){
+    async function regComponent(prototype) {
+        if (window.customElements.get(prototype.is)){
             return prototype.is;
         }
-        const imports = loadImports(prototype);
-            if (imports.then){
-                return imports.then(imp=>{
-                    let parents = getParents(prototype);
-                    if(parents.then){
-                        return parents.then(par =>{
-                            return finalizeRegistration(prototype, imp, par);
-                        })
-                    }
-                    return finalizeRegistration(prototype, imp, parents);
-                })
-            }
-            let parents = getParents(prototype);
-            if(parents.then){
-                return parents.then(par =>{
-                    return finalizeRegistration(prototype, imports, par);
-                })
-            }
-            return finalizeRegistration(prototype, imports, parents);
+        const imports = await loadImports(prototype);
+        const parents = await getParents(prototype);
+        return finalizeRegistration(prototype, imports, parents);
     }
 
     const regexUrl = /https?:\/\/(?:.+\/)[^:?#&]+/g
@@ -548,15 +528,12 @@ if (!window.ODA?.IsReady) {
             prototype.$system.url = matches[matches.length - 1];
             prototype.$system.dir = prototype.$system.url.substring(0, prototype.$system.url.lastIndexOf('/')) + '/';
             prototype.extends = str2arr(prototype.extends);
-            const res = regComponent(prototype);
-            if(res instanceof Promise){
-                return res.then(res =>{
-                    ODA.telemetry.prototypes[prototype.is] = prototype;
-                    return res;
-                })
-            }
-            ODA.telemetry.prototypes[prototype.is] = prototype;
-            return res;
+            let name;
+            ODA.telemetry.prototypes[prototype.is] = regComponent(prototype).then(res => {
+                name = res;
+                return ODA.telemetry.prototypes[prototype.is] = prototype;
+            });
+            return ODA.telemetry.prototypes[prototype.is].then(() => name);
         }
     }
     // ODA.isHidden = true;
