@@ -482,7 +482,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     <div>{{time}}</div>
                     <div>{{status}}</div>
                     <oda-icon id="go-lastrange" ~if="!cell?.hideCode && isLastRange" :icon-size icon="box:s-edit-alt" @tap="scrollToLastRange" style="margin: 8px;" title="scroll to marked"></oda-icon>
-                    <oda-icon id="go-breakpoint" no-flex ~if="!cell?.hideCode && cell?.breakpoints" :icon-size icon="icons:label-outline" @tap="goToBreakPoint" style="margin: 8px;" title="debugger"></oda-icon>
+                    <oda-icon id="go-breakpoint" no-flex ~if="showGoBreakpoint" :icon-size icon="icons:label-outline" @tap="goToBreakPoint" style="margin: 8px;" title="debugger"></oda-icon>
                 </div>
             </div>
             <div class="pe-preserve-print vertical no-flex" style="width: calc(100% - 34px); position: relative;">
@@ -519,6 +519,9 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         </div>
         <oda-jupyter-divider></oda-jupyter-divider>
     `,
+    get showGoBreakpoint() {
+        return !this.cell?.hideCode && this.cell?.breakpoints?.trim();
+    },
     get outputs(){
         this.control = undefined;
         return this.cell?.controls?.slice(0, this.maxOutputsRow * (this.outputsStep + 1)) || [];
@@ -1205,11 +1208,14 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     },
     attached() {
         this.setBreakpoints();
+        this.cell.listen('change-breakpoints', () => this.setBreakpoints());
     }, 
     setBreakpoints() {
         this.async(() => {
-            if (this.cell.breakpoints)
-                this.editor?.setBreakpoints(this.cell.breakpoints);
+            if (this.cell.breakpoints) {
+                this.editor?.setBreakpoints(this.cell.breakpoints, true);
+                this.$render();
+            }
         }, 700)
     }
 })
@@ -1378,6 +1384,7 @@ class JupyterCell extends ROCKS({
     set breakpoints(n) {
         this.data.breakpoints = n || '';
         this.notebook.change();
+        this.fire('change-breakpoints');
         this.clearTimes();
     },
     clearTimes(all = false){

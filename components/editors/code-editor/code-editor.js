@@ -295,7 +295,9 @@ ODA({is: 'oda-code-editor',
         })
         return res;
     },
-    setBreakpoints(rows) {
+    setBreakpoints(rows, clearAll = false) {
+        if (clearAll)
+            this.editor?.session?.clearBreakpoints();
         const breakpoints = rows.split(' ');
         breakpoints.map((i) => {
             this.editor?.session?.setBreakpoint(i - 1);
