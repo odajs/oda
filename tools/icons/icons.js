@@ -1,3 +1,9 @@
+export default {
+    get allowUse() {
+        return false;
+    }
+}
+
 import './icons-tree/icons-tree.js';
 import './icons-set/icons-set.js';
 ODA({ is: 'oda-icons',
