@@ -57,6 +57,7 @@ ODA({ is: 'oda-icons-tree', imports: '@oda/tree', extends: 'this, oda-tree',
     async attached() {
         const list = await this.iconsList;
         this.dataSet = await loadIcons(list);
+        this.focusedRow = this.dataSet[0];
     },
     $public: {
         allowFocus: true,
@@ -78,7 +79,7 @@ ODA({ is: 'oda-icons-tree', imports: '@oda/tree', extends: 'this, oda-tree',
                 this.debounce('filterVal', () => {
                     this.columns[1].$filter = (!filter || filter === '*') ? '' : filter.split(':').join('&&');
                     this.hideRoot = Boolean(filter);
-                }, 300);
+                }, 500);
             }
         },
         cellTemplate: 'oda-icons-icon',
