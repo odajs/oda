@@ -895,13 +895,13 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
             }
         </style>
         <div class="pe-no-print top" ~if="!readOnly" @down="tap">
-            <oda-button ~if="cell?.type === 'code'" :icon-size icon="bootstrap:eye-slash" title="Hide/Show code"  allow-toggle ::toggled="hideCode"></oda-button>
             <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap.stop="move(-1)"></oda-button>
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="move(1)"></oda-button>
             <oda-button ~show="cell?.type === 'code' || cell?.type === 'sheet'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
             <oda-button :icon-size icon="icons:delete" @tap.stop="deleteCell"></oda-button>
             <oda-button :icon-size icon="icons:content-copy" @tap.stop="copyCell" ~style="{fill: isCopiedCell ? 'red' : ''}"></oda-button>
             <oda-button ~if="cell.type!=='code'" allow-toggle ::toggled="editMode"  :icon-size :icon="editMode?'icons:close':'editor:mode-edit'"></oda-button>
+            <oda-button ~if="cell?.type === 'code'" :icon-size icon="bootstrap:eye-slash" title="Hide/Show code"  allow-toggle ::toggled="hideCode"></oda-button>
         </div>
     `,
     get hideCode(){
