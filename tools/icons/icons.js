@@ -29,18 +29,25 @@ ODA({ is: 'oda-icons',
             $def: 48,
             $save: true
         },
-        selectedIcon: ''
+        selectedIcon: {
+            $def: '',
+            set(n) {
+                if (!this.filterVal)
+                    this.focusedRow = this.icons.find(i => i.icon === n);
+            }
+        }
     },
     focusedRow: {
         $type: Object,
         set(n) {
-            let icons = [];
-            if (n) {
+            if (n?.icon) {
                 this.selectedIcon = n.icon;
-                icons = n.items?.length ? n.items : n.__parent__?.items || this.icons;
-                icons.sort((a, b) => a.name < b.name ? -1 : b.name > a.name ? 1 : 0);
+                if (!this.filterVal) {
+                    let icons = n.items?.length ? n.items : n.__parent__?.items || this.icons;
+                    icons.sort((a, b) => a.name < b.name ? -1 : b.name > a.name ? 1 : 0);
+                    this.icons = icons;
+                }
             }
-            this.icons = icons;
         }
     },
     hideTree: false,
