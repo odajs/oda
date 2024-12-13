@@ -2,12 +2,12 @@ let style = /*css*/`
 
 :root {
     --main-color: brown;
-    
+
     --header-1: oklch(from var(--main-color) .8 .02 h);
     --header-2: oklch(from var(--main-color) 0.4 .02 h);
     --header-background: light-dark(var(--header-1), var(--header-2));
     --header-color: light-dark(var(--header-2), var(--header-1));
-     
+
     --content-1: oklch(from var(--main-color) 1 .02 h);
     --content-2: oklch(from var(--main-color) 0.2 .02 h);
     --content-background: light-dark(var(--content-1), var(--content-2));
@@ -17,58 +17,58 @@ let style = /*css*/`
     --dark-2: oklch(from var(--main-color) .8 .02 h);
     --dark-background: light-dark(var(--dark-1), var(--dark-2));
     --dark-color: light-dark(var(--dark-2), var(--dark-1));
-    
+
     --light-1: oklch(from var(--main-color) .95 .02 h);
-    --light-2: oklch(from var(--main-color) .6 .02 h);
+    --light-2: oklch(from var(--main-color) .5 .03 h);
     --light-background: light-dark(var(--light-1), var(--light-2));
     --light-color: light-dark(var(--light-2), var(--light-1));
-    
+
     --body-1: oklch(from var(--main-color) 1 .02 h);
-    --body-2: oklch(from var(--main-color) 0.2 .02 h);   
+    --body-2: oklch(from var(--main-color) 0.2 .02 h);
     --body-background: light-dark(transparent, transparent);
     --body-color: light-dark(var(--body-2), var(--body-1));
 
     --section-1: oklch(from var(--main-color) .8 .02 h);
-    --section-2: oklch(from var(--main-color) 0.2 .02 h);  
+    --section-2: oklch(from var(--main-color) 0.2 .02 h);
     --section-background: light-dark(var(--section-1), var(--section-2));
     --section-color: light-dark(var(--section-2), var(--section-1));
 
 
 
     --layout-1: oklch(from var(--main-color) 1 .02 h);
-    --layout-2: oklch(from var(--main-color) 0.2 .02 h); 
+    --layout-2: oklch(from var(--main-color) 0.2 .02 h);
     --layout-background: light-dark(var(--layout-1), var(--layout-2));
     --layout-color: light-dark(var(--layout-2), var(--layout-1));
-    
-    
+
+
     --info-1: oklch(from var(--main-color) 1 .02 h);
-    --info-2: oklch(from var(--main-color) 0.6 .2 h);     
+    --info-2: oklch(from var(--main-color) 0.6 .2 h);
     --info-background: light-dark(var(--info-1), var(--info-2));
     --info-color: light-dark(var(--info-2), var(--info-1));
-    
-    
+
+
     --focused-color: light-dark(var(--main-color), var(--main-color));
-    
+
      --accent-color: light-dark(var(--main-color), var(--main-color));
-    
+
     --style-group: 'theme';
     --bar-background: var(--content-background);
     --stroke-color: light-dark(transparent, transparent);
-    
+
 
     --border-color: light-dark(black, white);
-    
 
-    
-   
-    
+
+
+
+
     --success-color: light-dark(green, green);
     --error-color: light-dark(red, yellow);
     --error-background: light-dark(yellow, red);
 
     --warning-color: light-dark(orange, orange);
     --disabled-color: light-dark(silver, silver);
-    
+
     --selected-color: light-dark(navy, rgb(0 153 255));
     --selected-background: var(--header-background);
     --selected-filter: brightness(0.8) contrast(1.2)/*', 'brightness(1.2) contrast(0.9)')*/;
@@ -98,7 +98,7 @@ let style = /*css*/`
         fill: var(--dark-color)  !important;
         border-color: var(--dark-color) !important;
     };
-    
+
     --content:{
         background-color: var(--content-background);
         color: var(--content-color);
@@ -243,8 +243,8 @@ html {
         border: none !important;
         box-shadow: none !important;
     }
-    *::-webkit-scrollbar { 
-        width: 0px; height: 0px; 
+    *::-webkit-scrollbar {
+        width: 0px; height: 0px;
     }
     .raised, [raised] {
         border: none !important;
@@ -385,7 +385,7 @@ body[context-menu-show] *:not(oda-context-menu){
         color: var(--info-color) !important;
         fill: var(--info-color) !important;
         border-color: var(--info-color) !important;
-        
+
     };
     --info-invert: {
         background-color: var(--info-color) !important;

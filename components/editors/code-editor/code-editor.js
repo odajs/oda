@@ -14,6 +14,9 @@ ODA({is: 'oda-code-editor',
             .ace_gutter, .ace_gutter-cell, .ace_gutter-layer, .ace_active-line{
                 @apply --light;
             }
+            .ace_cursor {
+                border-left: 2px solid var(--light-color) !important;
+            }
             .ace_hidden-cursors {
                 opacity: {{showCursor ? 1 : 0}};
             }
