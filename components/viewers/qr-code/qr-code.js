@@ -35,6 +35,5 @@ ODA({
         document.body.appendChild(a);
         a.click();
         a.remove();
-        console.log(111)
     }
 })
