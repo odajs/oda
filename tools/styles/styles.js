@@ -50,7 +50,7 @@ let style = /*css*/`
     --focused-color: light-dark(var(--main-color), var(--main-color-invert));
 
      --accent-color: light-dark(var(--main-color), var(--main-color-invert));
-     --accent-color-background: light-dark(var(--main-color-invert), var(--main-color));
+     --accent-background: light-dark(var(--main-color-invert), var(--main-color));
 
     --style-group: 'theme';
     --bar-background: var(--content-background);
@@ -69,8 +69,8 @@ let style = /*css*/`
     --error-color: light-dark(red, yellow);
     --error-background: light-dark(yellow, red);
 
-    --warning-color: light-dark(orange, blue);
-    --warning-background: light-dark(blue, orange);
+    --warning-color: light-dark(orange, wheat);
+    --warning-background: light-dark(wheat, orange);
     
     
     --disabled-color: light-dark(silver, silver);
@@ -367,11 +367,9 @@ body[context-menu-show] *:not(oda-context-menu){
         color: var(--accent-color) !important;
         fill: var(--accent-color) !important;
         border-color: var(--accent-color) !important;
-        outline: var(--accent-color) dashed 2px;
         background-color: var(--accent-background) !important;
     };
     --accent-invert: {
-        outline: var(--accent-background) dashed 2px;
         background-color: var(--accent-color) !important;
         fill: var(--accent-background) !important;
         color: var(--accent-background) !important;

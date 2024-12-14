@@ -99,7 +99,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter', extends: 
             style="order:1"
             ~style="{filter: (allowCompact && compact && opened)?'brightness(.5)':'none', pointerEvents: (allowCompact && compact && opened)?'none':'auto'}"
         >
-            <slot name="top" class="pe-no-print vertical no-flex" style="border-bottom: 1px solid;"></slot>
+            <slot name="top" class="pe-no-print vertical no-flex"f></slot>
             <slot name="main" class="vertical flex" style="overflow: hidden; z-index: 0"></slot>
             <slot name="bottom" class="pe-no-print vertical no-flex" style="overflow: visible;"></slot>
         </div>

@@ -36,7 +36,7 @@ ODA({is: 'oda-jupyter-tree-cell', extends: 'this, oda-table-cell',
             return this.item?.status === 'error'
         }
     },
-    warning:{
+    dimmed:{
         $attr: true,
         get(){
             return this.item?.hideCode;
