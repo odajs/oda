@@ -2,7 +2,7 @@ let style = /*css*/`
 
 :root {
     --main-color: purple;
-    --main-color-invert: oklch(from var(--main-color) 1 1 120);
+    --main-color-invert: oklch(from var(--main-color) 1 1 180);
     --header-1: oklch(from var(--main-color) .8 .02 h);
     --header-2: oklch(from var(--main-color) 0.4 .02 h);
     --header-background: light-dark(var(--header-1), var(--header-2));
@@ -50,6 +50,7 @@ let style = /*css*/`
     --focused-color: light-dark(var(--main-color), var(--main-color-invert));
 
      --accent-color: light-dark(var(--main-color), var(--main-color-invert));
+     --accent-color-background: light-dark(var(--main-color-invert), var(--main-color));
 
     --style-group: 'theme';
     --bar-background: var(--content-background);
@@ -62,11 +63,16 @@ let style = /*css*/`
 
 
 
-    --success-color: light-dark(green, green);
+    --success-color: light-dark(green, white);
+    --success-background: light-dark(white, green);
+    
     --error-color: light-dark(red, yellow);
     --error-background: light-dark(yellow, red);
 
-    --warning-color: light-dark(orange, orange);
+    --warning-color: light-dark(orange, blue);
+    --warning-background: light-dark(blue, orange);
+    
+    
     --disabled-color: light-dark(silver, silver);
 
     --selected-color: light-dark(navy, rgb(0 153 255));
@@ -362,22 +368,27 @@ body[context-menu-show] *:not(oda-context-menu){
         fill: var(--accent-color) !important;
         border-color: var(--accent-color) !important;
         outline: var(--accent-color) dashed 2px;
+        background-color: var(--accent-background) !important;
     };
     --accent-invert: {
+        outline: var(--accent-background) dashed 2px;
         background-color: var(--accent-color) !important;
-        fill: white !important;
-        color: white !important;
+        fill: var(--accent-background) !important;
+        color: var(--accent-background) !important;
+        border-color: var(--accent-background) !important;
     };
 
     --success: {
         color: var(--success-color) !important;
         fill: var(--success-color) !important;
         border-color: var(--success-color) !important;
+        background-color: var(--success-background) !important;
     };
     --success-invert: {
         background-color: var(--success-color) !important;
-        fill: white !important;
-        color: white !important;
+        fill: var(--success-background) !important;
+        color: var(--success-background) !important;
+        border-color: var(--success-background) !important;
     };
 
     --info: {
@@ -395,6 +406,7 @@ body[context-menu-show] *:not(oda-context-menu){
     };
 
     --warning: {
+        background-color: var(--warning-background) !important;
         color: var(--warning-color)  !important;
         fill: var(--warning-color) !important;
         border-color: var(--warning-color) !important;
@@ -402,8 +414,9 @@ body[context-menu-show] *:not(oda-context-menu){
 
     --warning-invert: {
         background-color: var(--warning-color) !important;
-        fill: white !important;
-        color: white !important;
+        color: var(--warning-background)  !important;
+        fill: var(--warning-background) !important;
+        border-color: var(--warning-background) !important;
     };
     --help: {
     };
