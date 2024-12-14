@@ -1,20 +1,20 @@
 let style = /*css*/`
 
 :root {
-    --main-color: purple;
+    --main-color: indigo;
     --main-color-invert: oklch(from var(--main-color) 1 1 180);
-    --header-1: oklch(from var(--main-color) 0.8 .1 h);
-    --header-2: oklch(from var(--main-color) 0.4 .1 h);
+    --header-1: oklch(from var(--main-color) 0.8 .07 h);
+    --header-2: oklch(from var(--main-color) 0.4 .07 h);
     --header-background: light-dark(var(--header-1), var(--header-2));
     --header-color: light-dark(var(--header-2), var(--header-1));
 
-    --content-1: oklch(from var(--main-color) 1 .04 h);
+    --content-1: oklch(from var(--main-color) 1 .1 h);
     --content-2: oklch(from var(--main-color) 0.2 .04 h);
     --content-background: light-dark(var(--content-1), var(--content-2));
     --content-color: light-dark(var(--content-2), var(--content-1));
 
-    --dark-1: oklch(from var(--main-color) .6 .1 h);
-    --dark-2: oklch(from var(--main-color) .8 .1 h);
+    --dark-1: oklch(from var(--main-color) .6 .05 h);
+    --dark-2: oklch(from var(--main-color) .8 .05 h);
     --dark-background: light-dark(var(--dark-1), var(--dark-2));
     --dark-color: light-dark(var(--dark-2), var(--dark-1));
 
