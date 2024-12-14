@@ -2,6 +2,7 @@ ODA({is: 'oda-property-grid', imports: '@oda/table', extends: 'this, oda-table',
     template: /*html*/`
         <style>
             :host {
+                @apply --header;
                 max-height: 100%;
                 border: 1px solid gray;
             }
