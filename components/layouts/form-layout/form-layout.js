@@ -91,7 +91,7 @@ ODA({
                 <oda-button ~if="float" :icon-size :icon="isMinimized ? 'icons:check-box-outline-blank' : 'icons:remove'" @mousedown.stop  @tap="isMinimized = !isMinimized"></oda-button>
                 <oda-button ~if="float && !isMinimized" :icon-size :icon="sizeMode === 'max' ? 'icons:content-copy:90' : 'icons:check-box-outline-blank'" @mousedown.stop @tap.stop="_toggleSize(['normal', 'max'])"></oda-button>
             </div>
-            <oda-button ~if="allowClose || (float && allowClose !== false)" class="close-btn" :icon-size="iconSize + 4" icon="icons:close" @mousedown.stop @tap.stop="_close" style="background-color: red; align-self: flex-start;"></oda-button>
+            <oda-button ~if="allowClose || (float && allowClose !== false)" class="close-btn" :icon-size="iconSize + 4" icon="icons:close" @mousedown.stop @tap.stop="_close" error-invert style="align-self: flex-start; padding: 5px"></oda-button>
         </div>
     </div>
     <form-status-bar ~show="!isMinimized" :icon-size="iconSize" ~props="statusBar"></form-status-bar>`,

@@ -1,8 +1,8 @@
 let style = /*css*/`
 
 :root {
-    --main-color: brown;
-
+    --main-color: purple;
+    --main-color-invert: oklch(from var(--main-color) 1 1 120);
     --header-1: oklch(from var(--main-color) .8 .02 h);
     --header-2: oklch(from var(--main-color) 0.4 .02 h);
     --header-background: light-dark(var(--header-1), var(--header-2));
@@ -47,9 +47,9 @@ let style = /*css*/`
     --info-color: light-dark(var(--info-2), var(--info-1));
 
 
-    --focused-color: light-dark(var(--main-color), var(--main-color));
+    --focused-color: light-dark(var(--main-color), var(--main-color-invert));
 
-     --accent-color: light-dark(var(--main-color), var(--main-color));
+     --accent-color: light-dark(var(--main-color), var(--main-color-invert));
 
     --style-group: 'theme';
     --bar-background: var(--content-background);
