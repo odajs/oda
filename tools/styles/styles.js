@@ -8,8 +8,8 @@ let style = /*css*/`
     --header-background: light-dark(var(--header-1), var(--header-2));
     --header-color: light-dark(var(--header-2), var(--header-1));
 
-    --content-1: oklch(from var(--main-color) 1 .1 h);
-    --content-2: oklch(from var(--main-color) 0.2 .04 h);
+    --content-1: oklch(from var(--main-color) 1 .02 h);
+    --content-2: oklch(from var(--main-color) 0.2 .02 h);
     --content-background: light-dark(var(--content-1), var(--content-2));
     --content-color: light-dark(var(--content-2), var(--content-1));
 
