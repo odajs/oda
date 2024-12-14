@@ -62,10 +62,10 @@ ODA({is: 'oda-modal', imports: '@oda/button',
                 <div class="flex" style="overflow: auto;">
                     <slot class="no-flex" name="modal-title"></slot>
                 </div>
-                <oda-button
+                <oda-button error-invert
                     :icon-size="iconSize + 4"
                     icon="icons:close"
-                    style="background-color: red; align-self: flex-start;"
+                    style="align-self: flex-start;"
                     @tap.stop="cancel"
                 ></oda-button>
             </div>
