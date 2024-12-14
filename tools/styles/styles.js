@@ -363,18 +363,7 @@ body[context-menu-show] *:not(oda-context-menu){
         min-height: 10px;
     };
 
-    --accent: {
-        color: var(--accent-color) !important;
-        fill: var(--accent-color) !important;
-        border-color: var(--accent-color) !important;
-        background-color: var(--accent-background) !important;
-    };
-    --accent-invert: {
-        background-color: var(--accent-color) !important;
-        fill: var(--accent-background) !important;
-        color: var(--accent-background) !important;
-        border-color: var(--accent-background) !important;
-    };
+
 
     --success: {
         color: var(--success-color) !important;
@@ -415,6 +404,18 @@ body[context-menu-show] *:not(oda-context-menu){
         color: var(--warning-background)  !important;
         fill: var(--warning-background) !important;
         border-color: var(--warning-background) !important;
+    };
+    --accent: {
+        color: var(--accent-color) !important;
+        fill: var(--accent-color) !important;
+        border-color: var(--accent-color) !important;
+        background-color: var(--accent-background) !important;
+    };
+    --accent-invert: {
+        background-color: var(--accent-color) !important;
+        fill: var(--accent-background) !important;
+        color: var(--accent-background) !important;
+        border-color: var(--accent-background) !important;
     };
     --help: {
     };
