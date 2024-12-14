@@ -16,7 +16,6 @@ ODA({ is: 'oda-icons',
         </style>
         <oda-icons-tree
             ~if="!hideTree"
-            title="icons"
             label="icons"
             ::focused-row
             ::filter-val

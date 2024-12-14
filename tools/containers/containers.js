@@ -125,8 +125,7 @@ ODA.loadJSON(path + '/_.dir').then(res=>{
                 top.addEventListener('pointerdown', onPointerDown);
                 window.addEventListener('pointerdown', onPointerDown, true);
                 hostProps.parent?.addEventListener('pointerdown', onPointerDown, true);
-            })
-            .finally(() => {
+            }).finally(() => {
                 if (control.slotProxy) {
                     control.slot = control.slotProxy.$slot;
                     control.slotProxy.parentElement.replaceChild(control, control.slotProxy);
