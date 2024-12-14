@@ -73,7 +73,8 @@ ODA({
         :host(:not([autosize]):not([is-minimized])[float][size-mode=max]){
             /*padding: 8px;*/
             padding-top: var(--top-padding);
-            background-color: rgba(0,0,0,.25);
+            backdrop-filter: blur(1px);
+            background-color: rgba(0,0,0,0);
             width: 100%;
             height: 100%;
             /*padding-bottom: {{iconSize + 8}}px;*/
@@ -126,7 +127,7 @@ ODA({
             $def: 24,
         },
         get topPadding() {
-            return (this.domHost?.topPadding || this.iconSize || 24) + (this.iconSize || 24) / 2;
+            return (this.domHost?.topPadding || this.iconSize || 24) + (this.iconSize || 24) / 2 + 4;
         },
         autosize: {
             $def: false,
