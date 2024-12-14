@@ -3,23 +3,23 @@ let style = /*css*/`
 :root {
     --main-color: purple;
     --main-color-invert: oklch(from var(--main-color) 1 1 180);
-    --header-1: oklch(from var(--main-color) .8 .02 h);
-    --header-2: oklch(from var(--main-color) 0.4 .02 h);
+    --header-1: oklch(from var(--main-color) 0.8 .1 h);
+    --header-2: oklch(from var(--main-color) 0.4 .1 h);
     --header-background: light-dark(var(--header-1), var(--header-2));
     --header-color: light-dark(var(--header-2), var(--header-1));
 
-    --content-1: oklch(from var(--main-color) 1 .02 h);
-    --content-2: oklch(from var(--main-color) 0.2 .02 h);
+    --content-1: oklch(from var(--main-color) 1 .04 h);
+    --content-2: oklch(from var(--main-color) 0.2 .04 h);
     --content-background: light-dark(var(--content-1), var(--content-2));
     --content-color: light-dark(var(--content-2), var(--content-1));
 
-    --dark-1: oklch(from var(--main-color) .6 .02 h);
-    --dark-2: oklch(from var(--main-color) .8 .02 h);
+    --dark-1: oklch(from var(--main-color) .6 .1 h);
+    --dark-2: oklch(from var(--main-color) .8 .1 h);
     --dark-background: light-dark(var(--dark-1), var(--dark-2));
     --dark-color: light-dark(var(--dark-2), var(--dark-1));
 
-    --light-1: oklch(from var(--main-color) .95 .02 h);
-    --light-2: oklch(from var(--main-color) .5 .03 h);
+    --light-1: oklch(from var(--main-color) .95 .05 h);
+    --light-2: oklch(from var(--main-color) .5 .05 h);
     --light-background: light-dark(var(--light-1), var(--light-2));
     --light-color: light-dark(var(--light-2), var(--light-1));
 
@@ -75,10 +75,10 @@ let style = /*css*/`
     
     --disabled-color: light-dark(silver, silver);
 
-    --selected-color: light-dark(navy, rgb(0 153 255));
-    --selected-background: var(--header-background);
-    --selected-filter: brightness(0.8) contrast(1.2)/*', 'brightness(1.2) contrast(0.9)')*/;
-    --pointer-color: light-dark(magenta, magenta);
+    --selected-color: light-dark(var(--light-1), var(--light-2));
+    --selected-background: light-dark(var(--light-2), var(--light-1));
+    --selected-filter: brightness(0.8) contrast(1.2);
+    --pointer-color: light-dark(var(--main-color), var(--main-color-invert));
 
 
 }
@@ -451,6 +451,7 @@ body[context-menu-show] *:not(oda-context-menu){
         color: var(--selected-color) !important;
         fill: var(--selected-color) !important;
         filter: var(--selected-filter);
+        background: var(--selected-background) !important;
     };
     --outlined: {
         outline: var(--content-color) dashed .5px;

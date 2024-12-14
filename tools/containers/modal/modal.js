@@ -123,7 +123,7 @@ ODA({is: 'oda-dialog-message', imports: '@oda/icon',
             warning
             :icon
             :icon-size
-            style="margin: 8px 8px 8px 16px;"
+            style="margin: 8px 8px 8px 16px; border-radius: 50%;"
         ></oda-icon>
         <label
             class="flex"
