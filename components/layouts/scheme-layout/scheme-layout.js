@@ -73,6 +73,9 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         }
     },
     showTrash: false,
+    get trashElement() {
+        return this.$('oda-icon.error');
+    },
     dragLink: '',
     get paths() {
         const paths = this.links?.map(l => ({ is: 'path', props: { stroke: this.linkColor, 'stroke-width': '2', fill: 'transparent', d: l } }));
@@ -174,14 +177,14 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             } break;
             case 'end': {
                 this.lastdown.style.opacity = 1;
-                this.lastdown = null;
                 this.async(() => {
                     this.inTrack = false;
                     this.links = undefined;
                 });
-                if (e.detail.x > (this.layout.offsetWidth - 120) && e.detail.y > (this.layout.offsetHeight - 120)) {
+                const blockTrashRect = this.lastdown.getClientRect(this.trashElement);
+                if( Math.abs(blockTrashRect.center.x) < blockTrashRect.width / 2.5 && Math.abs(blockTrashRect.center.y) < blockTrashRect.height / 2.5 )
                     await this.removeSelection();
-                };
+                this.lastdown = null;
                 this.showTrash = false;
             } break;
         }
