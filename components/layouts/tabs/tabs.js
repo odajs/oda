@@ -86,7 +86,7 @@ ODA({
             <div class="pseudo-scroll"></div>
         </div>
         <oda-button ~if="overflow" icon="icons:chevron-right" :disabled="scrollIsMax" :rotate="direction === 'vertical' ? '90' : '0'" @tap="_scroll(1)" class="scroll-button"></oda-button>
-        <oda-button style="padding: 6px" ~if="items?.some(i => typeof i.close === 'function')"  icon="icons:close" border error title="close all tabs" @tap="_closeAll"></oda-button>
+        <oda-button style="padding: 6px" ~if="items?.some(i => typeof i.close === 'function')"  icon="icons:close" title="close all tabs" @tap="_closeAll"></oda-button>
     `,
     $public: {
         $pdp: true,
