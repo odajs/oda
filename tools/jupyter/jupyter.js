@@ -855,7 +855,7 @@ ODA({ is: 'oda-jupyter-divider',
         }, 300)
     },
     showInsertBtn() {
-        return JSON.parse(top._jupyterCellData || '[]')?.length;
+        return !this.readOnly && JSON.parse(top._jupyterCellData || '[]')?.length;
     },
     insert() {
         this.jupyter.isMoveCell = true;
@@ -867,7 +867,10 @@ ODA({ is: 'oda-jupyter-divider',
             lastCell.id = lastCell.metadata.id = getID();
         })
         top._jupyterCellData = undefined;
-        this.async(() => this.jupyter.isMoveCell = false, 300);
+        this.async(() => {
+            this.jupyter.isMoveCell = false;
+            this.notebook.change(true);
+        }, 300)
     }
 })
 
