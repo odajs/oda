@@ -855,6 +855,15 @@ in the <${host.localName}>`;
                 return this.reduce((r,v)=>r + (v || 0), 0)/(this.length || 1);
             }
         });
+        Object.defineProperty(Array.prototype, 'unique', {
+            enumerable: false, configurable: true,
+            value: function () {
+                let res = [];
+                for (let item of this)
+                    res.add(item);
+                return res;
+            }
+        });
     }
     String:{
         const kebabGlossary = Object.create(null);

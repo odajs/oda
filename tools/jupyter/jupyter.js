@@ -203,7 +203,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 }
                 await this.$render();
                 if (e.detail.value) {
-                    const added = this.$$('oda-jupyter-cell').find(cell => cell.cell.id === this.selectedCell.id);
+                    const added = this.$$('oda-jupyter-cell').find(cell => cell.cell.id === this.selectedCell?.id);
                     added.focus();
                 }
                 this.fire('changed');
@@ -866,10 +866,10 @@ ODA({ is: 'oda-jupyter-divider',
             lastCell = this.notebook.add(lastCell || this.cell, '', i);
             lastCell.id = lastCell.metadata.id = getID();
         })
+        this.selectedCell ||= lastCell;
         top._jupyterCellData = undefined;
         this.async(() => {
             this.jupyter.isMoveCell = false;
-            this.notebook.change(true);
         }, 300)
     }
 })
