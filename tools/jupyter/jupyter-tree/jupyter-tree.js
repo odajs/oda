@@ -24,6 +24,7 @@ ODA({is: 'oda-jupyter-tree-cell', extends: 'this, oda-table-cell',
         </style>
         <oda-icon ~if="icon" :icon></oda-icon>
     `,
+    hideSearch: true,
     bold:{
         $attr: true,
         get(){

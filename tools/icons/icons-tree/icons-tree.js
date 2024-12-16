@@ -24,13 +24,13 @@ function getIconFolder(template) {
 }
 async function loadIcons(items) {
     items = items?.map?.(i => {
-        return fetch(iconsPath + i.name).then(res=>{
-            return res.text().then(text=>{
+        return fetch(iconsPath + i.name).then(res => {
+            return res.text().then(text => {
                 const html = pars.parseFromString(text, 'text/html');
                 const template = html.querySelector('template');
                 return getIconFolder(template);
             })
-        }).catch(error=>{
+        }).catch(error => {
             return getIconFolder(document.createElement('template'));
         })
     }) || []
@@ -40,19 +40,11 @@ async function loadIcons(items) {
 ODA({ is: 'oda-icons-tree', imports: '@oda/tree', extends: 'this, oda-tree',
     template: /*html*/`
         <style>
-            :host{
+            :host {
                 overflow: hidden;
-                padding-left: 8px;
-            }
-            input{
-                width: 0px;
-                padding: 8px;
+                /*padding-left: 8px;*/
             }
         </style>
-        <div class="horizontal" style="padding: 4px; align-items: center;">
-            <input class="flex" ::value="filterVal" type="search"  style="outline: none" placeholder="Search...">
-<!--            <oda-button :icon-size icon="icons:search" @tap="_keypress($event, true)"></oda-button>-->
-        </div>
     `,
     async attached() {
         const list = await this.iconsList;
@@ -73,10 +65,10 @@ ODA({ is: 'oda-icons-tree', imports: '@oda/tree', extends: 'this, oda-tree',
                 })
             }
         },
-        filterVal: {
+        searchText: {
             $def: '',
             set(filter) {
-                this.debounce('filterVal', () => {
+                this.debounce('searchText', () => {
                     this.columns[1].$filter = (!filter || filter === '*') ? '' : filter.split(':').join('&&');
                     this.hideRoot = Boolean(filter);
                 }, 500);
