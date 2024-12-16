@@ -1,9 +1,3 @@
-export default {
-    get allowUse() {
-        return false;
-    }
-}
-
 import './icons-tree/icons-tree.js';
 import './icons-set/icons-set.js';
 ODA({ is: 'oda-icons',
@@ -63,7 +57,7 @@ ODA({ is: 'oda-icons',
                 }, 500)
             } else {
                 this.hideTree = true;
-                this.focusedRow = undefined; // this.focusedRow.items?.length ? this.focusedRow.items : [{ icon: this.focusedRow.icon, label: this.focusedRow.label }];
+                this.focusedRow = undefined;
                 this.async(() => this.hideTree = false);
             }
         }
