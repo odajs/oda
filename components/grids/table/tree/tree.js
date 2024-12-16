@@ -24,7 +24,7 @@ ODA({is: 'oda-tree', imports: '@oda/table', extends: 'this, oda-table',
             class="flex content dimmed filter"
             type="search"
             :value="searchText"
-            placeholder="Search..."
+            placeholder="Filter..."
             @input="onSearchInput"
             @keydown="onSearchKeyDown"
         >
