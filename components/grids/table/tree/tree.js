@@ -1,36 +1,40 @@
 ODA({is: 'oda-tree', imports: '@oda/table', extends: 'this, oda-table',
     template: /*html*/`
     <style>
-        div {
-            min-height: {{iconSize}}px;
+        .search-container {
+            min-height: {{search_height}}px;
+            max-height: {{search_height}}px;
             border-radius: 0px !important;
             box-sizing: border-box;
             overflow: hidden;
             text-overflow: ellipsis;
-            padding: 4px;
+            padding: 8px;
             gap: 2px;
         }
-        div > input {
+        .filter {
             outline: none;
             border: none;
             width:  100%;
-            padding: 4px 8px;
-            border-radius: 4px;
+            padding: 0px 16px;
+            border-radius: 16px;
         }
     </style>
-    <div ~show="!hideSearch" class="horizontal no-flex accent-invert">
+    <div ~show="!hideSearch" class="horizontal no-flex accent-invert search-container">
         <input
-            class="flex content dimmed"
+            class="flex content dimmed filter"
             type="search"
             :value="searchText"
-            placeholder="search..."
+            placeholder="Search..."
             @input="onSearchInput"
             @keydown="onSearchKeyDown"
         >
-        <oda-button ~show="!hideSearchButton" icon="icons:search" :icon-size @tap="onSearchInput"></oda-button>
+<!--        <oda-button ~show="!hideSearchButton" icon="icons:search" :icon-size @tap="onSearchInput"></oda-button>-->
         <slot name="search-buttons"></slot>
     </div>
     `,
+    get search_height(){
+        return this.iconSize + this.iconSize/2 + 4;
+    },
     $public: {
         icon: 'icons:tree-structure',
         focusedRow: Object,
