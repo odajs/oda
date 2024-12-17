@@ -470,7 +470,6 @@ cells: {
                     allowSelection: 'level',
                     allowFocusCell: true,
                     selectByCheck: true,
-                    hideSearch: true,
                     dataSet: changedItems,
                     selectedRows: [...changedItems],
                     style: 'padding: 32px 16px 0px 16px;'

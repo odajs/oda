@@ -2816,7 +2816,6 @@ settings: {
             </div>
         </div>
         `,
-        hideSearch: true,
         columns: [
             { name: 'name', treeMode: true },
             { name: 'fix', $hidden: true, $sortGroups: 1, __expanded__: true }

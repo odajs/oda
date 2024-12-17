@@ -19,7 +19,7 @@ ODA({is: 'oda-tree', imports: '@oda/table', extends: 'this, oda-table',
             border-radius: 16px;
         }
     </style>
-    <div ~show="!hideSearch" class="horizontal no-flex accent-invert search-container">
+    <div ~show="showSearch" class="horizontal no-flex accent-invert search-container">
         <input
             class="flex content dimmed filter"
             type="search"
@@ -33,7 +33,7 @@ ODA({is: 'oda-tree', imports: '@oda/table', extends: 'this, oda-table',
     </div>
     `,
     get search_height(){
-        return this.iconSize + this.iconSize/2 + 4;
+        return this.iconSize + this.iconSize / 2 + 4;
     },
     $public: {
         icon: 'icons:tree-structure',
@@ -41,8 +41,7 @@ ODA({is: 'oda-tree', imports: '@oda/table', extends: 'this, oda-table',
         autoWidth: true,
         keyName: 'name',
         disableColumnsSave: true,
-        hideSearch: false,
-        hideSearchButton: false,
+        showSearch: false,
         searchText: {
             $type: String
         },
@@ -66,7 +65,4 @@ ODA({is: 'oda-tree', imports: '@oda/table', extends: 'this, oda-table',
             this.searchInput?.blur?.();
         }
     },
-    onSearchButtonTap(e) {
-
-    }
 });

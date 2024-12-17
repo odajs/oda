@@ -22,7 +22,6 @@ ODA({ is: 'oda-layout-designer', imports: '@oda/icon',
             :data-set="[layout]"
             show-grouping-panel="false"
             :selected-rows="selection"
-            hide-search
         ></oda-tree>
         <div class="flex vertical" style="overflow-x: hidden; overflow-y: auto;">
             <oda-layout-designer-structure ~is="structureTemplate" class="flex" ~class="{header: designMode}" :layout></oda-layout-designer-structure>

@@ -10,7 +10,6 @@ ODA({ is: 'oda-jupyter-tree', imports: '@oda/tree', extends: 'oda-tree',
     },
     autoFixRows : true,
     hideRoot: true,
-    hideSearch: true,
     hideTop: true,
  });
 ODA({is: 'oda-jupyter-tree-cell', extends: 'this, oda-table-cell',
@@ -25,7 +24,6 @@ ODA({is: 'oda-jupyter-tree-cell', extends: 'this, oda-table-cell',
         </style>
         <oda-icon ~if="icon" :icon></oda-icon>
     `,
-    hideSearch: true,
     bold:{
         $attr: true,
         get(){
