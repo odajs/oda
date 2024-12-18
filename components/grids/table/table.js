@@ -1712,6 +1712,8 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
                 :focused="allowFocus && isFocusedRow($for.item)"
                 :selected="allowSelection !== 'none' && isSelectedRow($for.item)"
                 @dragstart="table._onDragStart($event, $detail)"
+                
+                :raised="raisedRows.includes($for.item)"
             >
                 <div
                     ~for="$for.item.__group__ ? [$for.item] : rowColumns"
@@ -2048,7 +2050,7 @@ cells: {
                 overflow: hidden;
                 text-overflow: ellipsis;
                 min-height: 100%;
-                min-width: 1px;
+                /*min-width: 1px;*/
                 white-space: {{autoRowHeight ? 'normal' : 'nowrap'}};
             }
             :host * {

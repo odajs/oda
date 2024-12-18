@@ -55,7 +55,6 @@
     }
     const types = ['line', 'bar', 'pie', 'radar', 'doughnut', 'polarArea'];
     setInterval(() => {
-        chart1.type = chart2.type = chart3.type = chart4.type = ''
         chart1.type = types[Math.round(-0.5 + Math.random() * 6)];
         chart2.type = types[Math.round(-0.5 + Math.random() * 6)];
         chart3.type = types[Math.round(-0.5 + Math.random() * 6)];
