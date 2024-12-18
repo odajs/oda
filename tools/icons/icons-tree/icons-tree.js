@@ -65,6 +65,7 @@ ODA({ is: 'oda-icons-tree', imports: '@oda/tree', extends: 'this, oda-tree',
                 })
             }
         },
+        showSearch: true,
         searchText: {
             $def: '',
             set(filter) {

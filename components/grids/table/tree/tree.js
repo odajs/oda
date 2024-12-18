@@ -28,7 +28,6 @@ ODA({is: 'oda-tree', imports: '@oda/table', extends: 'this, oda-table',
             @input="onSearchInput"
             @keydown="onSearchKeyDown"
         >
-<!--        <oda-button ~show="!hideSearchButton" icon="icons:search" :icon-size @tap="onSearchInput"></oda-button>-->
         <slot name="search-buttons"></slot>
     </div>
     `,
