@@ -21,6 +21,7 @@ ODA({ is: 'oda-pdf-viewer', imports: '@oda/button',
     },
     get src() {
         const n = this.url;
+        if (!n) return;
         if (this.nativeView)
             return  n?.startsWith('./') ? PATH + n.replace('./', '') : n;
         return PATH + 'web/viewer.html?file=' + (n?.startsWith('./') ? PATH + n.replace('./', '') : n);
