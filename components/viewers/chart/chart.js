@@ -24,7 +24,7 @@ ODA({ is: 'oda-chart', imports: './lib/chart.js',
         async chartChanged(type, data, options) {
             const canvas = this.$?.('canvas');
             if (type && data && options && canvas) {
-                this.chart?.destroy() && this.chart.destroy();
+                this.chart?.destroy();
                 const ctx = canvas.getContext('2d');
                 this.chart = new Chart(ctx, { type: this.type, data: this.data, options: { ...this.defaultOptions, ...this.options } });
             }
