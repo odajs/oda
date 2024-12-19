@@ -52,12 +52,13 @@ let style = /*css*/`
      --accent-color: light-dark(var(--main-color), var(--main-color-invert));
      --accent-background: light-dark(var(--main-color-invert), var(--main-color));
 
-    --style-group: 'theme';
     --bar-background: var(--content-background);
     --stroke-color: light-dark(transparent, transparent);
 
 
     --border-color: light-dark(black, white);
+    
+    --shadow-color: light-dark(rgba(0,0,0,.2), rgba(255,255,255,.2));
 
 
 
@@ -91,7 +92,6 @@ let style = /*css*/`
 }
 
 :root{
-    --style-group: 'layouts';
     --header: {
         background-color: var(--header-background);
         color: var(--header-color);
@@ -301,11 +301,8 @@ body{
     display: none !important;
 }
 :root {
-    --shadow1: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.2);
-    --shadow2: 0 8px 10px 1px rgba(255, 255, 255, 0.14), 0 3px 14px 2px rgba(255, 255,255, 0.12), 0 5px 5px -3px rgba(255, 255, 255, 0.2);
-    --box-shadow: light-dark(var(--shadow1), var(--shadow2));
     --shadow: {
-        box-shadow: var(--box-shadow);
+        box-shadow: 0 8px 10px 1px var(--shadow-color), 0 3px 14px 2px var(--shadow-color), 0 5px 5px -3px var(--shadow-color);
     };
 
     --shadow-transition: {
@@ -320,7 +317,7 @@ body{
         text-shadow: 0 1px 1px black;
     };
     --raised:{
-        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 0 3px 0  var(--shadow-color);
     };
 }
 body[context-menu-show] *:not(oda-context-menu){
@@ -328,7 +325,6 @@ body[context-menu-show] *:not(oda-context-menu){
 }
 
 :root {
-    --style-group: 'states';
     --invert:{
         filter: invert(1);
     };
@@ -442,9 +438,6 @@ body[context-menu-show] *:not(oda-context-menu){
     };
 }
 :root{
-    --style-group: 'selectors';
-
-
     --active: {
         color: var(--selected-color) !important;
         fill: var(--selected-color) !important;
