@@ -17,7 +17,21 @@ ODA({ is: 'oda-chart', imports: './lib/chart.js',
             $attr: true
         },
         data: undefined,
-        options: {}
+        options: {},
+        src: {
+            $def: '',
+            set(n) {
+                if (n) {
+                    const src = JSON.parse(n);
+                    this.data = src;
+                }
+            }
+        },
+        source: {
+            get() {
+                return this.data ? JSON.stringify(this.data) : this.src || '';
+            }
+        }
     },
     get defaultOptions() { return { responsive: true, maintainAspectRatio: false } },
     $observers: {
