@@ -13,7 +13,6 @@ ODA({is: 'oda-button', extends: 'oda-icon',
             outline-offset: -1px;
             overflow: hidden;
             @apply --no-flex;
-            border-radius: 4px;
         }
         :host([icon-pos=right]) {
             flex-direction: row-reverse !important;
