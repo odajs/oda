@@ -14,7 +14,8 @@ ODA({ is: 'oda-chart', imports: './lib/chart.js',
         type: {
             $def: 'line',
             $list: ['line', 'bar', 'pie', 'radar', 'doughnut', 'polarArea'],
-            $attr: true
+            $attr: true,
+            $save: true
         },
         data: undefined,
         options: {},
@@ -22,15 +23,19 @@ ODA({ is: 'oda-chart', imports: './lib/chart.js',
             $def: '',
             set(n) {
                 if (n) {
-                    const src = JSON.parse(n);
-                    this.data = src;
+                    try { 
+                        const src = JSON.parse(n);
+                        this.data = src;
+                    } catch (error) {}
                 }
-            }
+            },
+            $save: true
         },
         source: {
             get() {
-                return this.data ? JSON.stringify(this.data) : this.src || '';
-            }
+                return this.data ? JSON.stringify(this.data) : this.src || '{}';
+            },
+            // $save: true
         }
     },
     get defaultOptions() { return { responsive: true, maintainAspectRatio: false } },

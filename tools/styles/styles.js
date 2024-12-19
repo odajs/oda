@@ -567,13 +567,13 @@ body[context-menu-show] *:not(oda-context-menu){
 ::-webkit-scrollbar-thumb {
     border-radius: 4px;
     background-color: var(--light-background);
-   -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,0.5);
+   -webkit-box-shadow: inset 0 0 4px var(--shadow-color);
 }
 ::-webkit-scrollbar-thumb:hover {
     background-color: var(--header-background);
 }
 ::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,0.3);
+    -webkit-box-shadow: inset 0 0 4px var(--shadow-color);
     background-color: var(--content-background);
 }
 
