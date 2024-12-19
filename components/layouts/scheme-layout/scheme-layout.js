@@ -167,11 +167,14 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
             case 'track': {
                 this.selection.forEach(i => {
                     const step = this.snapToGrid ? this.step : 1;
-                    i.x = Math.round((e.detail.x / this.scale - i.delta.x) / step) * step;
-                    i.y = Math.round((e.detail.y / this.scale - i.delta.y) / step) * step;
-                    if (Math.abs(i.delta.x - e.detail.x) > step || Math.abs(i.delta.y - e.detail.y) > step) {
+
+                    const x = Math.round((e.detail.x / this.scale - i.delta.x) / step) * step;
+                    const y = Math.round((e.detail.y / this.scale - i.delta.y) / step) * step;
+                    i.x = x < (0 - this.iconSize) ? 0 - this.iconSize : x;
+                    i.y = y < (0 - this.iconSize) ? 0 - this.iconSize : y;
+
+                    if (Math.abs(i.delta.x - e.detail.x) > step || Math.abs(i.delta.y - e.detail.y) > step)
                         this.inTrack = true;
-                    }
                 })
                 this.links = undefined;
             } break;
