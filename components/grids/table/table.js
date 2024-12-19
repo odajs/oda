@@ -46,31 +46,31 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         }
     },
     arrowLeft(e) {
-        this.$('oda-table-body').$keys.arrowLeft(e);
+        this.body.$keys.arrowLeft(e);
     },
     arrowRight(e) {
-        this.$('oda-table-body').$keys.arrowRight(e);
+        this.body.$keys.arrowRight(e);
     },
     arrowUp(e) {
-        this.$('oda-table-body').$keys.arrowUp(e);
+        this.body.$keys.arrowUp(e);
     },
     arrowDown(e) {
-        this.$('oda-table-body').$keys.arrowDown(e);
+        this.body.$keys.arrowDown(e);
     },
     home(e) {
-        this.$('oda-table-body').$keys.home(e);
+        this.body.$keys.home(e);
     },
     end(e) {
-        this.$('oda-table-body').$keys.end(e);
+        this.body.$keys.end(e);
     },
     pageUp(e) {
-        this.$('oda-table-body').$keys.pageUp(e);
+        this.body.$keys.pageUp(e);
     },
     pageDown(e) {
-        this.$('oda-table-body').$keys.pageDown(e);
+        this.body.$keys.pageDown(e);
     },
     enter(e) {
-        this.$('oda-table-body').$keys.enter(e);
+        this.body.$keys.enter(e);
     },
     // async openSettings(parent) {
     //     this.showSettings = !this.showSettings;
@@ -1712,7 +1712,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
                 :focused="allowFocus && isFocusedRow($for.item)"
                 :selected="allowSelection !== 'none' && isSelectedRow($for.item)"
                 @dragstart="table._onDragStart($event, $detail)"
-                
+
                 :raised="raisedRows.includes($for.item)"
             >
                 <div
