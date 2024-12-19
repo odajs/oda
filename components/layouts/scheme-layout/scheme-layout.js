@@ -181,8 +181,9 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
                     this.inTrack = false;
                     this.links = undefined;
                 });
-                const blockTrashRect = this.lastdown.getClientRect(this.trashElement);
-                if( Math.abs(blockTrashRect.center.x) < blockTrashRect.width / 2.5 && Math.abs(blockTrashRect.center.y) < blockTrashRect.height / 2.5 )
+                const blockRect = this.lastdown.getClientRect(this.layout);
+                const trashRect = this.trashElement.getClientRect(this.layout);
+                if((Math.abs(blockRect.center.x - trashRect.center.x) < blockRect.width / 2) && (Math.abs(blockRect.center.y - trashRect.center.y) < blockRect.height / 2))
                     await this.removeSelection();
                 this.lastdown = null;
                 this.showTrash = false;
