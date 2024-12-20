@@ -244,11 +244,18 @@ ODA({is: 'oda-hexagon',
             width: {{size * 1.5}}px;
             @apply --text-shadow;
             background-color: transparent;
+            @apply --raised;
         }{}
         .container{
             overflow: visible; 
             align-items: center; 
             align-self: center;
+            z-index: 1;
+        }
+        label{
+            border-radius: 8px;
+            padding: 4px;
+            @apply --info;
         }
     </style>
     <div class="flex vertical container">
