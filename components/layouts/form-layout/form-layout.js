@@ -85,16 +85,8 @@ ODA({
         <oda-icon ~if="title && icon" :icon :sub-icon style="margin-left: 8px;"></oda-icon>
         <slot class="horizontal"  flex  name="title-bar"></slot>
         <label ~if="title" ~html="title" style="margin-left: 8px; align-self: center; overflow: hidden; text-overflow: ellipsis;"></label>
-<!--        <div class="flex"></div>-->
-        <slot id="titleButtons" ~show="!isMinimized" class="horizontal no-flex" name="control-title-buttons"></slot>
         <slot id="titleButtons" ~show="!isMinimized" class="horizontal no-flex" name="title-buttons"></slot>
-        <div slot="title-buttons" class="horizontal" style="order: 10000;">
-            <div ~if="float && !hideMinMax" style="align-self: flex-start;" class="horizontal no-flex">
-                <oda-button ~if="float" :icon-size :icon="isMinimized ? 'icons:check-box-outline-blank' : 'icons:remove'" @mousedown.stop  @tap="isMinimized = !isMinimized"></oda-button>
-                <oda-button ~if="float && !isMinimized" :icon-size :icon="sizeMode === 'max' ? 'icons:content-copy:90' : 'icons:check-box-outline-blank'" @mousedown.stop @tap.stop="_toggleSize(['normal', 'max'])"></oda-button>
-            </div>
-            <oda-button ~if="allowClose || (float && allowClose !== false)" class="close-btn" :icon-size="iconSize + 4" icon="icons:close" @mousedown.stop @tap.stop="_close" error-invert style="align-self: flex-start; padding: 6px"></oda-button>
-        </div>
+        <oda-button :disabled="!focused" ~if="allowClose || (float && allowClose !== false)" class="close-btn" :icon-size="iconSize + 4" icon="icons:close" @mousedown.stop @tap.stop="_close" error-invert style="align-self: flex-start; padding: 2px; margin: 4px;"></oda-button>        
     </div>
     <form-status-bar ~show="!isMinimized" :icon-size="iconSize" ~props="statusBar"></form-status-bar>`,
     _in() {
