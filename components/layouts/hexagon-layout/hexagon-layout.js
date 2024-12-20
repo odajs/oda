@@ -219,6 +219,8 @@ ODA({is: 'oda-hexagon',
         :host(:hover) > .container > label {
             transform: scale(1.5) !important;
             top: {{size}}px !important;
+            opacity: 1 !important;
+  
         }
         :host(:hover) .block {
             transform: scale(2) !important;
@@ -232,8 +234,8 @@ ODA({is: 'oda-hexagon',
             white-space: normal;
             overflow: hidden;
             transform: scale(1);
-            transition: top .5s, transform  .5s;
-            left: -{{size * .25}}px;
+            transition: top .5s, transform  .5s, opacity  .5s;
+            /*left: -{{size * .25}}px;*/
             max-height: {{size}}px;
 
             text-align: center;
@@ -241,21 +243,20 @@ ODA({is: 'oda-hexagon',
             content: "{{label}}";
             top: {{size/2 * 1.5}}px;
             font-size: small;
-            width: {{size * 1.5}}px;
+            /*width: {{size * 1.5}}px;*/
             @apply --text-shadow;
             background-color: transparent;
-            @apply --raised;
+            padding: 4px;
+            @apply --content;  
+            border-radius: 8px;
+            @apply --raised;  
+            opacity: .7;
         }{}
         .container{
             overflow: visible; 
             align-items: center; 
             align-self: center;
             z-index: 1;
-        }
-        label{
-            border-radius: 8px;
-            padding: 4px;
-            @apply --info;
         }
     </style>
     <div class="flex vertical container">
