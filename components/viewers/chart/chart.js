@@ -15,7 +15,7 @@ ODA({ is: 'oda-chart', imports: './lib/chart.js',
             $def: 'line',
             $list: ['line', 'bar', 'pie', 'radar', 'doughnut', 'polarArea'],
             $attr: true,
-            $save: true
+            // $save: true
         },
         data: undefined,
         options: {},
