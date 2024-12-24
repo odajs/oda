@@ -864,6 +864,20 @@ in the <${host.localName}>`;
                 return res;
             }
         });
+        globalThis.AsyncPromise = class AsyncPromise{
+            constructor(handler) {
+                return new Promise((resolve, reject)=>{
+                    queueMicrotask(async ()=>{
+                        try{
+                            resolve(await handler());
+                        }
+                        catch (e){
+                            reject(e);
+                        }
+                    })
+                })
+            }
+        }
     }
     String:{
         const kebabGlossary = Object.create(null);
