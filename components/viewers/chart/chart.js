@@ -29,7 +29,7 @@ ODA({ is: 'oda-chart', imports: './lib/chart.js',
                     } catch (error) {}
                 }
             },
-            $save: true
+            // $save: true
         },
         source: {
             get() {
