@@ -858,10 +858,13 @@ in the <${host.localName}>`;
         Object.defineProperty(Array.prototype, 'unique', {
             enumerable: false, configurable: true,
             value: function () {
-                let res = [];
-                for (let item of this)
-                    res.add(item);
-                return res;
+                return this.filter((v,i,items) => items.indexOf(v) === i);
+            }
+        });
+        Object.defineProperty(Array.prototype, 'uniqueObject', {
+            enumerable: false, configurable: true,
+            value: function () {
+                return this.filter((v,i,items) => items.indexOf(v) === i || typeof v !== 'object');
             }
         });
         globalThis.AsyncPromise = class AsyncPromise{
