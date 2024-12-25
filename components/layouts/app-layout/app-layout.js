@@ -83,15 +83,12 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter', extends: 
             order: 2;
         }
     </style>
-    <div ~show="!isMinimized" id="appHeader" class="pe-no-print top title">
+    <div id="appHeader" class="pe-no-print top title">
 <!--        <slot name="title" class="horizontal"></slot>-->
         <slot name="header" class="vertical"></slot>
     </div>
     <div
-        ~show="!isMinimized"
         class="main-container header flex"
-        ~class="{'stop-pointer-events': sizeMode === 'min'}"
-        ~style="{zoom: sizeMode === 'min' ? '50%' : '100%'}"
     >
         <div
             class="main vertical flex shadow"
@@ -119,7 +116,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter', extends: 
             <slot :name="$for.item.pos + '-panel'" class="pe-no-print"></slot>
         </app-layout-drawer>
     </div>
-    <slot ~show="!isMinimized" name="footer" class="pe-no-print vertical no-flex" style="overflow: visible;"></slot>
+    <slot name="footer" class="pe-no-print vertical no-flex" style="overflow: visible;"></slot>
     `,
     leftButtons: [],
     rightButtons: [],
@@ -172,13 +169,16 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter', extends: 
     $listeners: {
         'resize': 'updateCompact',
     },
+    /**@this {odaAppLayout}*/
     attached() {
         this.$super('oda-form-layout', 'attached');
     },
+    /**@this {odaAppLayout}*/
     updateCompact() {
         if (!this.autoCompact) return;
         this.compact = this.offsetWidth < this.compactThreshold;
     },
+    /**@this {odaAppLayout}*/
     _scroll(e) {
         if (!this.hideHeader || e.ctrlKey || e.shiftKey || e.altKey) return;
         this.throttle('hide-header', () => {
@@ -194,6 +194,7 @@ ODA({is: 'oda-app-layout', imports: '@oda/form-layout, @oda/splitter', extends: 
                 : `-${h.offsetHeight}px`;
         });
     },
+    /**@this {odaAppLayout}*/
     closeDrawers() {
         [this.leftPanelElement, this.rightPanelElement].forEach(i => i?.close?.());
     },
@@ -373,6 +374,7 @@ ODA({is: 'app-layout-drawer', imports: '@oda/tabs',
         <oda-splitter :sign ~if="!hideResize" ::width @touchstart.stop></oda-splitter>
     </div>
     `,
+    /**@this {odaAppLayout}*/
     get $saveKey() {
         return this.domHost.$savePath + this.pos;
     },
@@ -409,6 +411,7 @@ ODA({is: 'app-layout-drawer', imports: '@oda/tabs',
             $attr: true
         },
         controls: Array,
+        /**@this {odaAppLayoutDrawer}*/
         get tabs() {
             if (!this.controls?.length) return;
             return this.controls.map(c => ({
@@ -423,6 +426,7 @@ ODA({is: 'app-layout-drawer', imports: '@oda/tabs',
         controlsOverflow: false,
         openedControl: {
             $def: null,
+            /**@this {odaAppLayoutDrawer}*/
             set(n, o) {
                 if (n) {
                     n.titleIcon = n.getAttribute('title-icon');
@@ -440,6 +444,7 @@ ODA({is: 'app-layout-drawer', imports: '@oda/tabs',
                 });
             }
         },
+        /**@this {odaAppLayoutDrawer}*/
         get focused() {
             this.async(() => {
                 const btn = this.$('oda-button.accent');

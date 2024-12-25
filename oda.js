@@ -1687,10 +1687,12 @@ in the <${host.localName}>`);
                 const p = props[i];
                 if (p && [Function, AsyncFunction].some(ctor => p.constructor === ctor)) {
                     this.__propsHandlers ??= {};
-                    const fn = this.__propsHandlers[i] ??= p.bind(this);
+                    if (this.__propsHandlers[i]) {
+                        this.removeEventListener(i, this.__propsHandlers[i], true);
+                    }
+                    const fn = this.__propsHandlers[i] = p.bind(this);
                     // если не кешировать функцию после bind, то каждый раз будет новая подписка
                     this.addEventListener(i, fn, true);
-                    // todo: отписка?
                 }
             }
             for (let i in props) {
