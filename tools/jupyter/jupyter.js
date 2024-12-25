@@ -1542,9 +1542,9 @@ class JupyterCell extends ROCKS({
         try{
 
             run_context.output_data = jupyter.output_data = [];
-            let fn = new AsyncFunction('context', this.code);
+            let fn = new AsyncFunction(this.code);
             let time = Date.now();
-            let res =  await fn.call(cell, run_context);
+            let res =  await fn.call(cell);
             time = new Date(Date.now() - time);
             let time_str = '';
             let t = time.getMinutes();
@@ -1610,7 +1610,7 @@ class JupyterCell extends ROCKS({
             }
             return row;
         }).join('\n');
-        code = `with (context) {try{
+        code = `try{
 ${code}
         }catch(e){
             let idx = e.stack.indexOf('<anonymous>:');
@@ -1625,7 +1625,7 @@ ${code}
                 throw new Error(mess)
             }
             throw new Error(e.stack)
-        }}`;
+        }`;
         return code;
     }
 }
