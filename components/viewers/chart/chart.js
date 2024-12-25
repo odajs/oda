@@ -41,14 +41,15 @@ ODA({ is: 'oda-chart', imports: './lib/chart.js',
     get defaultOptions() { return { responsive: true, maintainAspectRatio: false } },
     $observers: {
         async chartChanged(type, data, options) {
-            if (type && data && options) {
-                this.$('#wrap').innerHTML = '<canvas style="position: relative; flex: 1; max-width: 100%; max-height: 100%"></canvas>';
+            let wrap = this.$('#wrap');
+            if (type && data && options && wrap) {
+                wrap.innerHTML = '<canvas style="position: relative; flex: 1; max-width: 100%; max-height: 100%"></canvas>';
                 this.async(() => {
                     const canvas = this.$?.('canvas');
                     // this.chart?.destroy();
                     const ctx = canvas.getContext('2d');
                     this.chart = new Chart(ctx, { type: this.type, data: this.data, options: { ...this.defaultOptions, ...this.options } });
-                })
+                }, 100)
             }
         }
     }
