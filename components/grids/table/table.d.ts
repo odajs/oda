@@ -14,6 +14,8 @@ interface Table extends odaComponent {
     allowFocusCell: boolean;
     allowDrag: boolean;
 
+    onTapEditMode: boolean;
+
     focusedCell: TableCellInfo;
     selectedRows: TableRow[];
     focusedRow: TableRow;
@@ -41,6 +43,8 @@ interface Table extends odaComponent {
     fillingNewLineMode: boolean;
 
     body: TableBody;
+
+    onDblclick(e: MouseEvent): void;
 
     moveCellPointer(h: number, v: number);
     focusCell(row: TableRow, column: TableColumn): void;

@@ -1366,7 +1366,21 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         else {
             cellElement.fire('deactivate');
         }
-    }
+    },
+    /**@this {Table}*/
+    onCellPointerDown(row, col, cell) {
+        this.table.focusCell(row, col);
+        if (this.onTapEditMode && !this.activeCell) {
+            this.activateCell(cell)
+        }
+    },
+    /**@this {Table}*/
+    onCellDoubleClick(e, cell) {
+        this.onDblclick(e);
+        if (!this.onTapEditMode) {
+            this.activateCell(cell)
+        }
+    },
 });
 
 ODA({is: 'oda-table-group-panel', imports: '@oda/icon',
@@ -1734,8 +1748,8 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
                         :border-bottom="raisedRows.last === $for.item"
                         :column="$$for.item"
                         :item="$for.item"
-                        @mousedown="_onCellPointerDown($for.item, $$for.item, $this)"
-                        @dblclick.stop="_onCellDoubleClick($event, $this)"
+                        @mousedown="onCellPointerDown($for.item, $$for.item, $this)"
+                        @dblclick.stop.capture="onCellDoubleClick($event, $this)"
                         :cell-coordinates="{row: $for.item, column: $$for.item}"
                     ></div>
                 </div>
@@ -1919,18 +1933,6 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
                 this.onSelectRow(e, { value: row });
             }
         },
-    },
-    _onCellPointerDown(row, col, cell) {
-        this.table.focusCell(row, col);
-        if (this.onTapEditMode && !this.activeCell) {
-            this.activateCell(cell)
-        }
-    },
-    _onCellDoubleClick(e, cell) {
-        this.onDblclick(e);
-        if (!this.onTapEditMode) {
-            this.activateCell(cell)
-        }
     },
     _getTemplateTag(row, col) {
         if (row.__group__)
