@@ -1217,11 +1217,15 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             }
         },
         clearHiddenErros: {
-            $def: false,
+            $def: '',
+            get() {
+                let l = this.jupyter?.notebook?.data?.hiddenErrors?.length;
+                return l ? l + ' hidden errors' : '';
+            },
             set(n) {
-                if (n) {
+                let l = this.jupyter?.notebook?.data?.hiddenErrors?.length;
+                if (l && l !== l + ' hidden errors') {
                     this.jupyter.notebook.clearHiddenErrors();
-                    this.clearHiddenErros = false;
                 }
             }
         }
