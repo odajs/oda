@@ -1090,6 +1090,16 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 filter: unset;
 
             }
+            .err {
+                cursor: pointer;
+                color: red;
+                opacity: 0;
+                font-size: larger;
+                font-weight: bold;
+            }
+            .err:hover {
+                opacity: 1;
+            }
         </style>
         <div  class="horizontal" :border="!hideCode"  style="min-height: 64px;">
             <oda-code-editor :scroll-calculate="getScrollCalculate()" :wrap ~if="!hideCode" show-gutter :read-only @change-cursor="on_change_cursor" @change-breakpoints="on_change_breakpoints" @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" max-lines="Infinity" @change="editorValueChanged" @pointerdown="on_pointerdown" enable-breakpoints sticky-search></oda-code-editor>
@@ -1124,6 +1134,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         let error =  this.editor?.editor?.session?.getAnnotations();
         error = error?.filter((e, i)=>{
             if(e.type !== 'error') return false;
+            if (this.jupyter?.notebook?.data?.hiddenErrors?.some(s => s.startsWith(e.text.replace(/\s*from\s*line\s*\d*\s*/gm, '')))) return false;
             if(e.text.startsWith('Expected an identifier and instead saw \'>')) return false;
             if(e.text.startsWith('Unexpected early end of program.')) return false;
             if(e.text.startsWith('Missing ";" before statement')) return false;
@@ -1131,7 +1142,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             if(e.text.startsWith(`Unexpected '{a}'.`) && error[i-1]?.text.startsWith(`Expected an identifier and instead saw '='.`)) return false;
             return true;
         }).map(err =>{
-            return '    '+err.text + ` <u row="${err.row}" column="${err.column}" onclick="_findErrorPos(this)" style="cursor: pointer; color: -webkit-link">(${err.row+1}:${err.column})</u>`
+            return `<span class="err" onclick="_hideError(this)">  x  </span><span>${err.text}</span><u row="${err.row}" column="${err.column}" onclick="_findErrorPos(this)" style="cursor: pointer; color: -webkit-link">(${err.row+1}:${err.column})</u>`
         }).join('\n');
         if(error)
             error = '<span bold style="padding: 2px; font-size: large; margin-bottom: 4px; white-space: pre-wrap;">SyntaxError:</span><br>'+error;
@@ -1204,6 +1215,15 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             set(n){
                 this.cell?.writeMetadata('maxRow', n)
             }
+        },
+        clearHiddenErros: {
+            $def: false,
+            set(n) {
+                if (n) {
+                    this.jupyter.notebook.clearHiddenErrors();
+                    this.clearHiddenErros = false;
+                }
+            }
         }
     },
     getScrollCalculate(){
@@ -1224,7 +1244,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
 })
 
 class JupyterNotebook extends ROCKS({
-    data: { cells: [] },
+    data: { cells: [], hiddenErrors: [] },
     isChanged: false,
     get cells() {
         return this.data.cells.map(cell => new JupyterCell(cell, this));
@@ -1277,6 +1297,15 @@ class JupyterNotebook extends ROCKS({
         })
         this.cells = undefined;
         return this.cells.find(i => i.id === id)
+    },
+    addHiddenError(err) {
+        this.data.hiddenErrors ||= [];
+        this.data.hiddenErrors.add(err);
+        this.change();
+    },
+    clearHiddenErrors() {
+        this.data.hiddenErrors = [];
+        this.change();
     },
     change(add_new) {
         this.isChanged = true;
@@ -1658,6 +1687,14 @@ window._findErrorPos = async (e) => {
     const range = new ace.Range(row, 0, row, column);
     aceEditor.session.selection.setRange(range);
     aceEditor.focus();
+}
+window._hideError = async (e) => {
+    let cellElement = e.parentElement;
+    while(cellElement && !cellElement.domHost){
+        cellElement = cellElement.parentElement;
+    }
+    cellElement = cellElement.domHost
+    cellElement.jupyter.notebook.addHiddenError(e.nextElementSibling.innerText.replace(/\s*from\s*line\s*\d*\s*/gm, ''));
 }
 window.addEventListener('keydown', e => {
     if (e.code === 'KeyR' && e.ctrlKey) {
