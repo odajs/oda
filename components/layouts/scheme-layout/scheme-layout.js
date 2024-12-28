@@ -173,38 +173,34 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
                     i.x = x < (0 - this.iconSize) ? 0 - this.iconSize : x;
                     i.y = y < (0 - this.iconSize) ? 0 - this.iconSize : y;
 
-                    if (Math.abs(i.delta.x - e.detail.x) > step || Math.abs(i.delta.y - e.detail.y) > step)
-                        this.inTrack = true;
-                })
+                    if (Math.abs(i.delta.x - e.detail.x) > step || Math.abs(i.delta.y - e.detail.y) > step) this.inTrack = true;
+                });
                 this.links = undefined;
             } break;
             case 'end': {
                 this.lastdown.style.opacity = 1;
-                this.async(() => {
-                    this.inTrack = false;
-                    this.links = undefined;
-                });
                 const blockRect = this.lastdown.getClientRect(this.layout);
                 const trashRect = this.trashElement.getClientRect(this.layout);
                 if((Math.abs(blockRect.center.x - trashRect.center.x) < blockRect.width / 2) && (Math.abs(blockRect.center.y - trashRect.center.y) < blockRect.height / 2))
                     await this.removeSelection();
-                this.lastdown = null;
-                this.showTrash = false;
+                // this.async(() => {
+                    this.inTrack = false;
+                    this.links = undefined;
+                    this.lastdown = null;
+                    this.showTrash = false;
+                // });
             } break;
         }
     },
     select(e) {
-        if (!this.designMode) return;
-        if (this.inTrack) return;
+        if (!this.designMode || this.inTrack) return;
         const block = e.target.block;
         this.focusedPin = null;
         if (!e.ctrlKey)
-            this.designInfo = undefined
-        else {
-            if (this.selection.has(block)) {
-                this.selection.remove(block);
-                return;
-            }
+            this.designInfo = undefined;
+        else if (this.selection.has(block)) {
+            this.selection.remove(block);
+            return;
         }
         this.selection.add(block);
     },
@@ -229,9 +225,8 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
             outline: 1px dotted gray !important;
             @apply --selected;
         }
-    </style>
-    <style>
-        :host{
+
+        :host {
             transform: translate3d({{block?.x || 0}}px, {{block?.y || 0}}px, 0px);
             z-index: {{(containerIsFocused?1:0)}};
         }
