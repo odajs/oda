@@ -52,7 +52,7 @@ ODA({
         <slot class="horizontal"  flex  name="title-bar"></slot>
         <label ~if="title" ~html="title" style="margin-left: 8px; align-self: center; overflow: hidden; text-overflow: ellipsis;"></label>
         <slot id="titleButtons" class="horizontal no-flex" name="title-buttons"></slot>
-        <oda-button :disabled="!focused" ~if="allowClose || (float && allowClose !== false)" class="close-btn" :icon-size="iconSize + 4" icon="icons:close" @mousedown.stop @tap.stop="_close" error-invert style="align-self: flex-start; padding: 2px; margin: 4px;"></oda-button>
+        <oda-button :disabled="!focused" ~if="allowClose || (float && allowClose !== false)" class="close-btn" :icon-size="iconSize + 4" icon="icons:close" @mousedown.stop @tap.stop="_close" :error-invert="dialog" style="align-self: flex-start; padding: 2px; margin: 4px;"></oda-button>
     </div>`,
     /**@this {odaFormLayout} */
     _checkTitleIsSmall() {
