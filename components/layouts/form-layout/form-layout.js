@@ -46,6 +46,9 @@ ODA({
             display: flex;
             align-items: justify;
         }
+         .close-btn:hover{
+                @apply --error-invert;
+            }
     </style>
     <div id="titleBar" class="pe-no-print">
         <oda-icon ~if="title && icon" :icon :sub-icon style="margin-left: 8px;"></oda-icon>
