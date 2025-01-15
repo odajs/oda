@@ -22,17 +22,20 @@ ODA({
             overflow: hidden;
             touch-action: manipulation;
             white-space: nowrap;
-            position: absolute;
             box-sizing: border-box;
             filter: drop-shadow(0px 0px 4px var(--shadow-color));
             width: 100%;
             height: 100%;
         }
-        :host([float]){
+        :host([float]) {
+            position: absolute;
             margin-top: var(--side-padding);
             margin-left: var(--side-padding);
             width: calc(100% - var(--side-padding));
             height: calc(100% - var(--side-padding));
+        }
+        :host(not([float])) {
+            position: relative;
         }
         :host([dialog]) {
             margin: var(--side-padding);

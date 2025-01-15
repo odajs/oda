@@ -110,8 +110,8 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
         },
         tap(e) {
             if( this.showTrash ) return;
-            this.designInfo = undefined
-            this.focusedPin = null
+            this.designInfo = undefined;
+            this.focusedPin = null;
         },
         dragover(e) {
             e.preventDefault();
@@ -181,14 +181,14 @@ ODA({ is: 'oda-scheme-layout', imports: '@oda/ruler-grid, @oda/button, @tools/co
                 this.lastdown.style.opacity = 1;
                 const blockRect = this.lastdown.getClientRect(this.layout);
                 const trashRect = this.trashElement.getClientRect(this.layout);
-                if((Math.abs(blockRect.center.x - trashRect.center.x) < blockRect.width / 2) && (Math.abs(blockRect.center.y - trashRect.center.y) < blockRect.height / 2))
-                    await this.removeSelection();
-                // this.async(() => {
+                this.async(() => {
                     this.inTrack = false;
                     this.links = undefined;
                     this.lastdown = null;
                     this.showTrash = false;
-                // });
+                });
+                if((Math.abs(blockRect.center.x - trashRect.center.x) < blockRect.width / 2) && (Math.abs(blockRect.center.y - trashRect.center.y) < blockRect.height / 2))
+                    await this.removeSelection();
             } break;
         }
     },

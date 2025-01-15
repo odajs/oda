@@ -199,11 +199,9 @@ ODA({ is: 'oda-ruler-grid', template: /*html*/`
         }
     },
     trackGrid(e) {
-        switch (e.detail.state) {
-            case 'track': {
-                this.slotDiv.scrollLeft = this.left - e.detail.ddx;
-                this.slotDiv.scrollTop = this.top - e.detail.ddy
-            } break;
+        if(e.detail.state === 'track') {
+            this.slotDiv.scrollLeft = this.left - e.detail.ddx;
+            this.slotDiv.scrollTop = this.top - e.detail.ddy;
         }
     }
 })
