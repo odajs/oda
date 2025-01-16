@@ -298,6 +298,7 @@ ODA({ is: 'oda-scheme-container', template: /*html*/`
             e.preventDefault();
         },
         drop(e) {
+            if(!this.focusedPin) return;
             this.onLinkToBlock();
         },
         dragend(e) {
