@@ -5,7 +5,7 @@
 <script type="module">
     import '../../../oda.js';
     import './chart.js';
-    chart.type = 'pie';
+    chart.type = 'bar';
     chart.data = {
         labels: ['color-260', 'color-290', 'color-320', 'color-350', 'color-20', 'color-50', 'color-80', 'color-110', 'color-140', 'color-170', 'color-200', 'color-230'],
         datasets: [...[{
@@ -42,4 +42,11 @@
             borderWidth: 1
         }]]
     }
+    // chart.options = {
+    //     scales: {
+    //         x: {
+    //             display: false
+    //         }
+    //     }
+    // }
 </script>

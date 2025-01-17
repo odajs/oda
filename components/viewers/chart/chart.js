@@ -4,8 +4,9 @@ ODA({ is: 'oda-chart', imports: './lib/chart.js',
             :host {
                 display: flex;
                 flex: 1;
-                width: 100%;
-                height: 100%;
+                width:  calc(100% - {{padding * 2}}px);
+                height: calc(100% - {{padding * 2}}px);
+                padding: {{padding || 8}}px;
             }
         </style>
         <div id="wrap" style="position: relative; flex: 1; max-width: 100%; max-height: 100%"></div>
@@ -17,6 +18,7 @@ ODA({ is: 'oda-chart', imports: './lib/chart.js',
             $attr: true,
             // $save: true
         },
+        padding: 8,
         data: undefined,
         options: {},
         src: {
