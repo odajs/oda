@@ -344,6 +344,7 @@ if (!window.ODA?.IsReady) {
             this._on_disconnect_timer = setTimeout(() => {
                 this._on_disconnect_timer = 0;
                 this.detached?.();
+                this.detached?.();
             }, 100)
             if (this[CORE_KEY].slotted?.size) {
                 this.async(() => {
