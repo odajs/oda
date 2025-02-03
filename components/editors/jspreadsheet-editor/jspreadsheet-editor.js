@@ -64,6 +64,8 @@ ODA({ is: 'oda-jspreadsheet-editor',
                     (Object.keys(i)).map(k => {
                         if (worksheets[idx]?.columns?.[+k])
                             worksheets[idx].columns[+k].type = i[k];
+                        if (i[k] === 'color')
+                            worksheets[idx].columns[+k].render = 'square';
                     })
                 })
             }
