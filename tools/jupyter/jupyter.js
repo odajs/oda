@@ -1032,33 +1032,50 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
     }
 })
 
-ODA({ is: 'oda-jupyter-sheet-editor', imports: '@oda/spreadsheet-editor', extends: 'oda-spreadsheet-editor',
+ODA({ is: 'oda-jupyter-sheet-editor', imports: '@oda/jspreadsheet-editor', extends: 'oda-jspreadsheet-editor',
     template:`
         <style>
             :host {
-                height: {{height}};
+                height: {{height}}px;
             }
         </style>
     `,
     $public: {
         height: {
-            $def: '400px',
             get(){
-                return this.cell?.readMetadata('height', '400px');
+                return this.cell?.readMetadata('height', 160);
             },
             set(n){
                 this.cell?.writeMetadata('height', n);
             }
+        },
+        types: {
+            get(){
+                return this.cell?.readMetadata('types', '');
+            },
+            set(n){
+                this.cell?.writeMetadata('types', n);
+            }
+        },
+        list: {
+            get(){
+                return this.cell?.readMetadata('list', '');
+            },
+            set(n){
+                this.cell?.writeMetadata('list', n);
+            }
+        },
+        masks: {
+            get(){
+                return this.cell?.readMetadata('masks', '');
+            },
+            set(n){
+                this.cell?.writeMetadata('masks', n);
+            }
         }
     },
     set editMode(v) {
-        this.showToolbar = this.mode = undefined;
-    },
-    get mode() {
-        return this.editMode ? 'edit' : 'read';
-    },
-    get showToolbar() {
-        return this.editMode;
+        this.toolbar = this.tabs = v;
     },
     $listeners: {
         'sheet-tap'(e) {
