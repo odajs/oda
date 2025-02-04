@@ -57,16 +57,24 @@ ODA({ is: 'oda-jspreadsheet-editor',
             tabs: ${this.tabs},
             toolbar: true,
             contextMenu: function(o, x, y, e, items, section) {
-
+                if (section == 'tabs') {
+                    console.log(x)
+                    items.unshift({ type: 'line' });
+                    items.unshift({ 
+                        title: 'Set pagination',
+                        onclick: () => {
+                            o.options.pagination = (prompt('Enter pagination', o.options.pagination || '10') || '');
+                            elGrid.worksheets = JSON.stringify(o.parent.getConfig().worksheets);
+                            setTimeout(() => elGrid.setEditor(x), 100);
+                        } 
+                    })
+                }
                 if (section == 'header') {
                     const fn = (type) => {
                         o.options.columns[x].type = type;
-                        if (type === 'color')
-                            o.options.columns[x].render = 'square';
-                        elGrid.worksheets = JSON.stringify(o.parent.getConfig().worksheets, null, 4);
-                        setTimeout(() => {
-                            elGrid.setEditor(x);
-                        }, 100)
+                        if (type === 'color') o.options.columns[x].render = 'square';
+                        elGrid.worksheets = JSON.stringify(o.parent.getConfig().worksheets);
+                        setTimeout(() => elGrid.setEditor(x), 100);
                     }
                     items.unshift({ type: 'line' });
                     items.unshift({ 
@@ -108,7 +116,7 @@ ODA({ is: 'oda-jspreadsheet-editor',
         this.setEditor();
     },
 
-    setEditor() {
+    setEditor(x = 0) {
         const iframe = this.$('iframe');
         if (iframe) {
             iframe.srcdoc = '';
@@ -128,6 +136,7 @@ ODA({ is: 'oda-jspreadsheet-editor',
                         this.grid[0].parent.showToolbar();
                     else
                         this.grid[0].parent.hideToolbar();
+                        this.grid[0].openWorksheet(x);
                 }
                 iframe.srcdoc = this.srcdoc(this.data);
             })
