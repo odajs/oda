@@ -47,21 +47,18 @@
                 ['002', 'text-2', .9, 'hidden', 'bmw', true, false, '', '', '#00ff00', '<a href="https://odajs.org/" target="blank">visit to odajs.org !</a>', 'readonly'],
             ],
             columns: [
-                { title: 'dropdown-1' },
-                { title: 'text' },
-                { title: 'numeric' },
-                { title: 'hidden' },
-                { title: 'dropdown-2' },
-                { title: 'checkbox' },
-                { title: 'radio' },
-                { title: 'calendar' },
-                { title: 'image' },
-                { title: 'color' },
-                { title: 'html', width: 200 }
+                { title: 'dropdown-1', source: ['001', '002', '003'] },
+                { title: 'text', type: 'text' },
+                { title: 'numeric', type: 'numeric', mask: "# ##0,00" },
+                { title: 'hidden', type: 'hidden' },
+                { title: 'dropdown-2', type: 'dropdown', source: ['audi', 'bmw', 'honda'] },
+                { title: 'checkbox', type: 'checkbox' },
+                { title: 'radio', type: 'radio' },
+                { title: 'calendar', type: 'calendar' },
+                { title: 'image', type: 'image' },
+                { title: 'color', type: 'color', render: 'square' },
+                { title: 'html', type: 'html' }
             ]
         }
     ]
-    editor.types = '[{}, {}, { "0": "dropdown", "1": "text", "2": "numeric", "3": "hidden", "4": "dropdown", "5": "checkbox", "6": "radio", "7": "calendar", "8": "image", "9": "color", "10": "html" }]';
-    editor.list = '[{}, {}, { "4": ["alfa romeo", "audi", "bmw", "honda"], "0": ["001", "002", "003"] }]';
-    editor.masks = '[{}, {}, { "2": "# ##0,00" }]';
 </script>

@@ -1048,30 +1048,6 @@ ODA({ is: 'oda-jupyter-sheet-editor', imports: '@oda/jspreadsheet-editor', exten
             set(n){
                 this.cell?.writeMetadata('height', n);
             }
-        },
-        types: {
-            get(){
-                return this.cell?.readMetadata('types', '');
-            },
-            set(n){
-                this.cell?.writeMetadata('types', n);
-            }
-        },
-        list: {
-            get(){
-                return this.cell?.readMetadata('list', '');
-            },
-            set(n){
-                this.cell?.writeMetadata('list', n);
-            }
-        },
-        masks: {
-            get(){
-                return this.cell?.readMetadata('masks', '');
-            },
-            set(n){
-                this.cell?.writeMetadata('masks', n);
-            }
         }
     },
     set editMode(v) {

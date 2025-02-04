@@ -26,78 +26,88 @@ ODA({ is: 'oda-jspreadsheet-editor',
             set(n) {
                 this.setEditor();
             }
-        },
-        types: '', // '[{}, {}, { "0": "dropdown", "1": "text", "2": "numeric", "3": "hidden", "4": "dropdown", "5": "checkbox", "6": "radio", "7": "calendar", "8": "image", "9": "color", "10": "html" }]'
-        list: '', // '[{}, {}, { "4": ["alfa romeo", "audi", "bmw", "honda"], "0": ["001", "002", "003"] }]'
-        masks: '', // '[{}, {}, { "2": "#.##0,00" }]'
-        worksheetsDefault: '[{ minDimensions: [5, 1] }]'
+        }
     },
+    worksheetsDefault: '[{ minDimensions: [5, 1] }]',
     value: {
         get() {
             return this.worksheets;
         },
-        set(v) {
-            if (v) {
-                if (typeof v == "string")
-                    v = JSON.parse(v);
-                this.worksheets = JSON.stringify(v.worksheets || v);
+        set(n) {
+            if (n) {
+                if (Array.isArray(n))
+                    n = JSON.stringify(v.worksheets || n);
+                this.worksheets = n;
             }
         }
     },
     worksheets: undefined,
     get data() {
-        const parse = (str) => {
+        let worksheets = this.worksheets || this.worksheetsDefault;
+        if (Array.isArray(worksheets))
             try {
-                return JSON.parse(str);
-            } catch (err) { console.log(err) }
-        }
-        let types, list, masks,
-            worksheets = this.worksheetsDefault;
-        if (this.worksheets) {
-            worksheets = this.worksheets;
-            if (typeof worksheets == "string") {
-                worksheets = parse(worksheets);
+                worksheets = JSON.stringify(worksheets);
+            } catch (err) { 
+                console.error('Error stringify JSON:', err);
+                worksheets = this.worksheets || this.worksheetsDefault;
             }
-            if (this.types) {
-                types = parse(this.types);
-                (types || []).map((i, idx) => {
-                    (Object.keys(i)).map(k => {
-                        if (worksheets[idx]?.columns?.[+k])
-                            worksheets[idx].columns[+k].type = i[k];
-                        if (i[k] === 'color')
-                            worksheets[idx].columns[+k].render = 'square';
-                    })
-                })
-            }
-            if (this.list) {
-                list = parse(this.list);
-                (list || []).map((i, idx) => {
-                    (Object.keys(i)).map(k => {
-                        if (worksheets[idx]?.columns?.[+k])
-                            worksheets[idx].columns[+k].source = i[k];
-                    })
-                })
-            }
-            if (this.masks) {
-                masks = parse(this.masks);
-                (masks || []).map((i, idx) => {
-                    (Object.keys(i)).map(k => {
-                        if (worksheets[idx]?.columns?.[+k])
-                            worksheets[idx].columns[+k].mask = i[k];
-                    })
-                })
-            }
-            worksheets = JSON.stringify(worksheets);
-        }
-        return `{
+
+        const data = `{
             worksheets: ${worksheets},
             tabs: ${this.tabs},
-            toolbar: true
+            toolbar: true,
+            contextMenu: function(o, x, y, e, items, section) {
+
+                if (section == 'header') {
+                    const fn = (type) => {
+                        o.options.columns[x].type = type;
+                        if (type === 'color')
+                            o.options.columns[x].render = 'square';
+                        elGrid.worksheets = JSON.stringify(o.parent.getConfig().worksheets, null, 4);
+                        setTimeout(() => {
+                            elGrid.setEditor(x);
+                        }, 100)
+                    }
+                    items.unshift({ type: 'line' });
+                    items.unshift({ 
+                        title: 'Set list',
+                        onclick: () => {
+                            o.options.columns[x].source = (prompt('Enter list', o.options.columns[x].source.join(', ') || 'value1, value2') || '').split(',');
+                        } 
+                    });
+                    items.unshift({ 
+                        title: 'Set mask',
+                        onclick: () => {
+                            o.options.columns[x].mask = prompt('Enter mask', o.options.columns[x].mask || '#.##0,00');
+                        }
+                    });
+
+                    items.unshift({ 
+                        title: 'Set type',
+                        submenu: [ 
+                            { title: 'text', onclick: (e) => { fn(e.outerText) } },
+                            { title: 'numeric', onclick: (e) => { fn(e.outerText) } },
+                            { title: 'dropdown', onclick: (e) => { fn(e.outerText) } },
+                            { title: 'checkbox', onclick: (e) => { fn(e.outerText) } },
+                            { title: 'radio', onclick: (e) => { fn(e.outerText) } },
+                            { title: 'calendar', onclick: (e) => { fn(e.outerText) } },
+                            { title: 'image', onclick: (e) => { fn(e.outerText) } },
+                            { title: 'color', onclick: (e) => { fn(e.outerText) } },
+                            { title: 'html', onclick: (e) => { fn(e.outerText) } }
+                            ]
+                        });
+                    return items;
+                }
+            }
         }`
+        // console.log(data);
+        return data;
     },
+
     attached() {
         this.setEditor();
     },
+
     setEditor() {
         const iframe = this.$('iframe');
         if (iframe) {
@@ -113,6 +123,7 @@ ODA({ is: 'oda-jspreadsheet-editor',
                         this.fire('sheet-tap');
                     })
                     this.grid = iframe.contentWindow.gridJspreadsheet;
+                    iframe.contentWindow.elGrid = this;
                     if (this.toolbar)
                         this.grid[0].parent.showToolbar();
                     else
