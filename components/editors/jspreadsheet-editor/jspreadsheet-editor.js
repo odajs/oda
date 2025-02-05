@@ -179,26 +179,32 @@ ODA({ is: 'oda-jspreadsheet-editor',
 
 <script>
     const copy = () => {
-        return JSON.stringify(grid[0].parent.getConfig(), null, 4);
+        return JSON.stringify(grid[0].parent.getConfig());
+    }
+    const createHandler = () => {
+        document.dispatchEvent(new CustomEvent('change', { detail: copy() }));
     }
     let grid = window.gridJspreadsheet = jspreadsheet(document.getElementById('spreadsheet'), ${src});
-    if (grid[0]?.parent) {
-        grid[0].parent.config.onchange = () => { document.dispatchEvent(new CustomEvent('change', { detail: copy() })) }
-        grid[0].parent.config.oninsertrow = () => { document.dispatchEvent(new CustomEvent('change', { detail: copy() })) }
-        grid[0].parent.config.ondeleterow = () => { document.dispatchEvent(new CustomEvent('change', { detail: copy() })) }
-        grid[0].parent.config.oninsertcolumn = () => { document.dispatchEvent(new CustomEvent('change', { detail: copy() })) }
-        grid[0].parent.config.ondeletecolumn = () => { document.dispatchEvent(new CustomEvent('change', { detail: copy() })) }
-        grid[0].parent.config.onmoverow = () => { document.dispatchEvent(new CustomEvent('change', { detail: copy() })) }
-        grid[0].parent.config.onmovecolumn = () => { document.dispatchEvent(new CustomEvent('change', { detail: copy() })) }
-        grid[0].parent.config.onresizerow = () => { document.dispatchEvent(new CustomEvent('change', { detail: copy() })) }
-        grid[0].parent.config.onresizecolumn = () => { document.dispatchEvent(new CustomEvent('change', { detail: copy() })) }
-        grid[0].parent.config.onmerge = () => { document.dispatchEvent(new CustomEvent('change', { detail: copy() })) }
-        grid[0].parent.config.onchangeheader = () => { document.dispatchEvent(new CustomEvent('change', { detail: copy() })) }
-        grid[0].parent.config.onchangestyle = () => { document.dispatchEvent(new CustomEvent('change', { detail: copy() })) }
-        grid[0].parent.config.onchangemeta = () => { document.dispatchEvent(new CustomEvent('change', { detail: copy() })) }
-        grid[0].parent.config.onundo = () => { document.dispatchEvent(new CustomEvent('change', { detail: copy() })) }
-        grid[0].parent.config.onredo = () => { document.dispatchEvent(new CustomEvent('change', { detail: copy() })) }
-        grid[0].parent.config.oncomments = () => { document.dispatchEvent(new CustomEvent('change', { detail: copy() })) }
+    if (grid?.[0]?.parent) {
+        const config = grid[0].parent.config;
+        config.onchange = () => { createHandler() }
+        config.oninsertrow = () => { createHandler() }
+        config.ondeleterow = () => { createHandler() }
+        config.oninsertcolumn = () => { createHandler() }
+        config.ondeletecolumn = () => { createHandler() }
+        config.onmoverow = () => { createHandler() }
+        config.onmovecolumn = () => { createHandler() }
+        config.onresizerow = () => { createHandler() }
+        config.onresizecolumn = () => { createHandler() }
+        config.onmerge = () => { createHandler() }
+        config.onchangeheader = () => { createHandler() }
+        config.onchangestyle = () => { createHandler() }
+        config.onchangemeta = () => { createHandler() }
+        config.onundo = () => { createHandler() }
+        config.onredo = () => { createHandler() }
+        config.oncreateworksheet = () => { createHandler() }
+        config.ondeleteworksheet = () => { createHandler() }
+        setTimeout(() => document.dispatchEvent(new CustomEvent('is-ok', { detail: grid })), 100)
     }
 </script>
         `
