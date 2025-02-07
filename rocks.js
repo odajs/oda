@@ -102,17 +102,15 @@ if (!globalThis.ROCKS) {
             }
             throttle(key, handler, delay = 0) {
                 key += '.' + delay;
-                let handlers = THROTTLES[key];
-                if (handlers){
-                    handlers.add(handler);
+                if (THROTTLES[key]){
+                    THROTTLES[key] = handler;
                 }
                 else{
-                    THROTTLES[key] = handlers = [handler];
+                    THROTTLES[key] = handler;
                     const fn = (delay ? setTimeout : requestAnimationFrame) || setTimeout;
                     fn(() => {
-                        delete THROTTLES[key];
-                        handlers.forEach(h=>h());
-                        handlers.clear();
+                        THROTTLES[key]();
+                        THROTTLES[key] = undefined;
                     }, delay)
                 }
             }
