@@ -46,7 +46,7 @@ if (!globalThis.ROCKS) {
     const OBS_PREFIX = '__obs__';
     const ID_KEY = Symbol('__id__')
     globalThis.CORE_KEY = Symbol('core');
-    const THROTTLES = Object.create(null);
+    const THROTTLES = Symbol('THROTTLES');
     globalThis.ROCKS = function (prototype){
         const rocks = class extends (this || EventTarget) {
             constructor() {
@@ -101,17 +101,18 @@ if (!globalThis.ROCKS) {
                 this[CORE_KEY].debounces.set(key, t);
             }
             throttle(key, handler, delay = 0) {
+                this[THROTTLES] ??= Object.create(null);
                 key += '.' + delay;
-                if (THROTTLES[key]){
-                    THROTTLES[key] = handler;
+                if (this[THROTTLES][key]){
+                    this[THROTTLES][key] = handler;
                 }
                 else{
-                    THROTTLES[key] = handler;
-                    const fn = (delay ? setTimeout : requestAnimationFrame) || setTimeout;
+                    this[THROTTLES][key] = handler;
+                    const fn = (delay ? setTimeout : queueMicrotask) || setTimeout;
                     fn(() => {
-                        THROTTLES[key]();
-                        THROTTLES[key] = undefined;
-                    }, delay)
+                        this[THROTTLES][key]();
+                        this[THROTTLES][key] = undefined;
+                    }, delay);
                 }
             }
             listen(event, callback, props = { target: this, once: false, useCapture: false }) {
