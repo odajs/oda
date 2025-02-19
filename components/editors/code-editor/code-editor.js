@@ -66,7 +66,7 @@ ODA({is: 'oda-code-editor',
             }
         },
         theme: {
-            $def: 'chrome',
+            $def: matchMedia('(prefers-color-scheme: dark)').matches ? 'ambiance' : 'chrome',
             set(n) {
                 if (n)
                     this.setTheme(n);
