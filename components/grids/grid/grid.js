@@ -218,6 +218,8 @@ ODA({
             vertical-align: middle;
             @apply --header;
             height: {{rowHeight}}px;
+            resize: horizontal;
+            overflow: hidden;
         }
         :host .dimmed{
             opacity: 0.3;
