@@ -36,7 +36,7 @@ let style = /*css*/`
 
 
     --layout-1: oklch(from var(--main-color) 1 .02 h);
-    --layout-2: oklch(from var(--main-color) 0.2 .02 h);
+    --layout-2: oklch(from var(--main-color) 0.1 .02 h);
     --layout-background: light-dark(var(--layout-1), var(--layout-2));
     --layout-color: light-dark(var(--layout-2), var(--layout-1));
 
@@ -77,7 +77,7 @@ let style = /*css*/`
     --disabled-color: light-dark(silver, silver);
 
     --selected-color: light-dark(var(--light-1), var(--light-2));
-    --selected-background: light-dark(var(--light-2), var(--light-1));
+    --selected-background: light-dark(var(--light-1), var(--light-2));
     --selected-filter: brightness(0.8) contrast(1.2);
     --pointer-color: light-dark(var(--main-color), var(--main-color-invert));
 
