@@ -19,9 +19,11 @@ ODA({ is: 'oda-pptx-viewer', imports: '@oda/button',
     },
     $observers: {
         urlChanged(url, isReady) {
-            if (url && isReady) {
-                this.$('iframe').srcdoc = srcdoc(url);
-            }
+            this.async(() => {
+                if (url && isReady) {
+                    this.$('iframe').srcdoc = srcdoc(url);
+                }
+            })
         }
     },
     setFullscreen() {
