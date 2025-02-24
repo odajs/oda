@@ -77,7 +77,7 @@ let style = /*css*/`
     --disabled-color: light-dark(silver, silver);
 
     --selected-color: light-dark(var(--light-1), var(--light-2));
-    --selected-background: light-dark(var(--light-1), var(--light-2));
+    --selected-background: light-dark(var(--light-2), var(--light-1));
     --selected-filter: brightness(0.8) contrast(1.2);
     --pointer-color: light-dark(var(--main-color), var(--main-color-invert));
 
