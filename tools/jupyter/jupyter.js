@@ -627,6 +627,9 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         this.cell?.next?.clearTimes();
                         this.scrollToRunOutputs();
                     }
+                    this.async(() => {
+                        this.$render();
+                    })
                 }
             }, 50)
         })
