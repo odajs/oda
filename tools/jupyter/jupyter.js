@@ -1393,10 +1393,26 @@ class JupyterCell extends ROCKS({
         }
     },
     get outputs() {
-        return this.data?.outputs || [];
+        return this._outputs || this.data?.outputs || [];
     },
     set outputs(n) {
-        this.data.outputs = n;
+        this._outputs = n;
+        if (n && Array.isArray(n)) {
+            this.data.outputs = [];
+            n.map(item => {
+                if (item.data && typeof item.data === 'object') {
+                    for (const key in item.data) {
+                        const newItem = { data: {} };
+                        if (item.data[key] instanceof HTMLElement) {
+                            newItem.data[key] = 'HTMLElement ...';
+                        } else {
+                            newItem.data[key] = item.data[key];
+                        }
+                        this.data.outputs.push(newItem);
+                    }
+                }
+            })
+        }
     },
     get sources() {
         return this.data?.source || [];
