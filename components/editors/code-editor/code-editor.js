@@ -185,6 +185,39 @@ ODA({is: 'oda-code-editor',
                 session.setValue(fn(session.getValue(), { "end_with_newline": true, }));
             }
         });
+        const search = (e) => {
+            if (!this.editor.searchBox) {
+                ace.config.loadModule("ace/ext/searchbox", (t) => {
+                    t.Search(e);
+                    this.editor.searchBox.element.addEventListener('keydown', (e) => {
+                        if (e.key == 'F3' || (e.key === 'f' && e.ctrlKey)) {
+                            e.preventDefault();
+                            this.editor.searchBox.findNext();
+                        }
+                    });
+                    // this.focus();
+                });
+            }
+            else {
+                if (this.editor.searchBox.active) {
+                    this.editor.searchBox.findNext();
+                }
+                else {
+                    this.editor.searchBox.show(this.editor.getSelectedText());
+                    this.focus();
+                }
+            }
+        };
+        this.editor.commands.addCommand({
+            name: 'oda-search',
+            bindKey: { win: "Ctrl-F", mac: "Ctrl-f" },
+            exec: search
+        });
+        this.editor.commands.addCommand({
+            name: 'oda-search2',
+            bindKey: { win: "F3", mac: "F3" },
+            exec: search
+        });
 
 
         this.editor.commands.addCommand({
@@ -250,7 +283,8 @@ ODA({is: 'oda-code-editor',
                 e.editor.session.clearBreakpoint(row);
             e.stop();
             this.fireBreakpoints();
-        })
+        });
+        ace.config.loadModule("ace/ext/searchbox");
         this.fire('loaded', this.editor);
     },
     fireBreakpoints() {
