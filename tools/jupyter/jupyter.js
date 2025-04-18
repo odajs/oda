@@ -182,9 +182,10 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 this.style.scrollBehavior = 'auto';
                 this.scrollTop = this.scrollHeight;
                 this.async(async () => {
-                    const auto_run = this.$$('oda-jupyter-cell').filter(i=>i.cell.autoRun).last
+                    const auto_run = this.$$('oda-jupyter-cell').filter(i=>i.cell.autoRun).last;
                     if(auto_run)
                         await auto_run.run(true);
+                    this.scrollTop = 0;
                     await this.$render();
                     if (!this.selectedCell && this.cells?.[this.savedIndex]) {
                         this.selectedCell = this.cells[this.savedIndex];
