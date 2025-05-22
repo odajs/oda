@@ -31,6 +31,7 @@ ODA({is: 'oda-tree', imports: '@oda/table', extends: 'this, oda-table',
         <slot name="search-buttons"></slot>
     </div>
     `,
+    /**@this {Tree} */
     get search_height(){
         return this.iconSize + this.iconSize / 2 + 4;
     },
@@ -45,20 +46,25 @@ ODA({is: 'oda-tree', imports: '@oda/table', extends: 'this, oda-table',
             $type: String
         },
     },
+    /**@this {Tree} */
     get columns() {
         return [{ name: this.keyName, treeMode: true }];
     },
+    /**@this {Tree} */
     get searchInput() {
         return this.$('div > input');
     },
+    /**@this {Tree} */
     attached() {
         this.async(() => {
             this.searchInput?.focus();
         }, 100)
     },
+    /**@this {Tree} */
     onSearchInput(e) {
         this.searchText = (e.target.value || '');
     },
+    /**@this {Tree} */
     onSearchKeyDown(e) {
         if (e.keyCode === 27) {
             this.searchInput?.blur?.();

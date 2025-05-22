@@ -36,8 +36,8 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     },
     overHeight: false,
     /**
+     * @type {Table["onDblclick"]}
      * @this {Table}
-     * @param {MouseEvent & {path: (HTMLElement & {row: TableRow})[]}} e
      */
     onDblclick(e) {
         const el = e.path.find(p => p.row);
@@ -45,30 +45,66 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             this.table.fire('cell-dblclick', el.row);
         }
     },
+    /**
+     * @type {Table["arrowLeft"]}
+     * @this {Table}
+     */
     arrowLeft(e) {
         this.body.$keys.arrowLeft(e);
     },
+    /**
+     * @type {Table["arrowRight"]}
+     * @this {Table}
+     */
     arrowRight(e) {
         this.body.$keys.arrowRight(e);
     },
+    /**
+     * @type {Table["arrowUp"]}
+     * @this {Table}
+     */
     arrowUp(e) {
         this.body.$keys.arrowUp(e);
     },
+    /**
+     * @type {Table["arrowDown"]}
+     * @this {Table}
+     */
     arrowDown(e) {
         this.body.$keys.arrowDown(e);
     },
+    /**
+     * @type {Table["home"]}
+     * @this {Table}
+     */
     home(e) {
         this.body.$keys.home(e);
     },
+    /**
+     * @type {Table["end"]}
+     * @this {Table}
+     */
     end(e) {
         this.body.$keys.end(e);
     },
+    /**
+     * @type {Table["pageUp"]}
+     * @this {Table}
+     */
     pageUp(e) {
         this.body.$keys.pageUp(e);
     },
+    /**
+     * @type {Table["pageDown"]}
+     * @this {Table}
+     */
     pageDown(e) {
         this.body.$keys.pageDown(e);
     },
+    /**
+     * @type {Table["enter"]}
+     * @this {Table}
+     */
     enter(e) {
         this.body.$keys.enter(e);
     },
@@ -632,12 +668,17 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         dragend: 'onDragEnd',
         // dragleave: 'onDragEnd',
     },
+    /**
+     * @type {Table["onTapRows"]}
+     * @this {Table}
+     * */
     onTapRows(e) {
         if (e.button) return;
         const evt = e.sourceEvent || e;
         if (evt.which !== 1) return;
         this.onSelectRow(evt);
     },
+    /**@type {Table["expand"]}*/
     expand(row, force, old) {
         const items = this._beforeExpand(row, force);
         if (items?.then) {
@@ -854,6 +895,10 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             return (String(_a)).localeCompare(String(_b)) * sort;
         });
     },
+    /**
+     * @type {Table["onfocusRow"]}
+     * @this {Table}
+     */
     onfocusRow(e, d) {
         if (e.ctrlKey || e.shiftKey) return;
 
@@ -862,7 +907,10 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
 
         this.focusRow(row);
     },
-    /**@this {Table} */
+    /**
+     * @type {Table["focusRow"]}
+     * @this {Table}
+     */
     focusRow(row) {
         if (this.allowFocus && row && !row.__group__ && (!row.disabled && row.$allowFocus !== false)) {
             this.focusedRow = row;
@@ -872,13 +920,20 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             this.table.expand(row);
         }
     },
+    /**
+     * @type {Table["onSelectRow"]}
+     * @this {Table}
+     */
     onSelectRow(e, d) {
         const row = d?.value || e.target.item;
         if (!row) return;
 
         this.selectRow(row, { range: e.shiftKey, add: e.ctrlKey });
     },
-    /**@this {Table} */
+    /**
+     * @type {Table["selectRow"]}
+     * @this {Table}
+     */
     selectRow(row, { range = false, add = false } = {}) {
         if (this.allowSelection === 'none') {
             this.focusRow(row);
@@ -945,7 +1000,10 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         this.addSelection(row);
 
     },
-    /**@this {Table} */
+    /**
+     * @type {Table["moveCellPointer"]}
+     * @this {Table}
+     */
     moveCellPointer(h = 0, v = 0) {
         if (!this.allowFocusCell) return;
 
@@ -1000,7 +1058,10 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
     getRowIndex(row) {
         return this.rows.findIndex(r => Object.equal(r, row));
     },
-    /**@this {Table} */
+    /**
+     * @type {Table["addSelection"]}
+     * @this {Table}
+     */
     addSelection(item) {
         if (!item || item.__group__ || item.$allowSelection === false) return;
         switch (this.allowSelection) {
@@ -1025,12 +1086,19 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         this.selectedRows = [...this.selectedRows];
         // this.fire('selected-rows-changed', this.selectedRows);
     },
+    /**
+     * @type {Table["clearSelection"]}
+     * @this {Table}
+     */
     clearSelection() {
         this._selectedAll = false;
         this.selectedRows = [];
         // this.fire('selected-rows-changed', this.selectedRows);
     },
-    /** @this {Table} */
+    /**
+     * @type {Table["scrollToRowIndex"]}
+     * @this {Table}
+     */
     scrollToRowIndex(index) {
         if (this.style.getPropertyValue('visibility') === 'hidden') {
             return this.async(() => this.scrollToRowIndex(index), 100);
@@ -1048,6 +1116,10 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             }
         }, 100);
     },
+    /**
+     * @type {Table["scrollToRow"]}
+     * @this {Table}
+     */
     scrollToRow(item) {
         if (this.style.getPropertyValue('visibility') === 'hidden') {
             return this.async(() => this.scrollToRow(item), 100);
@@ -1060,6 +1132,10 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         });
         this.scrollToRowIndex(index);
     },
+    /**
+     * @type {Table["selectAndFocusRow"]}
+     * @this {Table}
+     */
     selectAndFocusRow(item) {
         this.clearSelection();
         const items = this.items;
@@ -1076,6 +1152,10 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
             }
         }
     },
+    /**
+     * @type {Table["selectAll"]}
+     * @this {Table}
+     */
     selectAll() {
         if (!this._selectedAll)
             this._selectedAll = true;
@@ -1085,7 +1165,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
                 this.addSelection(item);
             }
         }
-        this.render();
+        this.$render();
     },
     getColPath(col) {
         if (col.$parent)
@@ -1323,7 +1403,10 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         this.focusedRow = null;
         this.clearSelection();
     },
-    /**@this {Table}*/
+    /**
+     * @type {Table['activateCell']}
+     * @this {Table}
+     */
     activateCell(cellElement) {
         if (this.activeCell) {
             this.deactivateCell(this.activeCell);
@@ -1358,7 +1441,10 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         }
         this.activeCell = null;
     },
-    /**@this {Table}*/
+    /**
+     * @type {Table['deactivateCell']}
+     * @this {Table}
+     */
     deactivateCell(cellElement) {
         if (typeof cellElement.deactivate === 'function') {
             cellElement.deactivate();
