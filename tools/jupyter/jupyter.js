@@ -150,7 +150,11 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         levelStep: {
             $def: 8,
             $save: true
-        }
+        },
+        maxOutputRows: {
+            $def: 20,
+            $save: true
+        },
     },
     $listeners:{
         scroll(e){
@@ -349,7 +353,9 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
     textWrap: true,
     row: undefined,
     showAll: false,
-    max: 50,
+    get max() {
+        return this.maxOutputRows;
+    },
     step: 0,
     setStep(e, sign) {
         e.preventDefault();
@@ -408,7 +414,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
         return  this.split_out.length;
     },
     get curRowsLength(){
-        return this.max * 2 * (this.step + 1);
+        return this.max * 1 * (this.step + 1);
     },
     get split_out(){
         const limit = 10000
@@ -1202,16 +1208,17 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 this.setBreakpoints();
             }
         },
-        maxRow:{
-            // $group: 'output',
-            $pdp: true,
-            $def: 50,
-            get(){
-                return this.cell?.readMetadata('maxRow', 50)
-            },
-            set(n){
-                this.cell?.writeMetadata('maxRow', n)
-            }
+        get maxRow() {
+            // // $group: 'output',
+            // $pdp: true,
+            // $def: 50,
+            // get(){
+            //     return this.cell?.readMetadata('maxRow', 50)
+            // },
+            // set(n){
+            //     this.cell?.writeMetadata('maxRow', n)
+            // }
+            return this.maxOutputRows;
         },
         clearHiddenErros: {
             $def: '',
