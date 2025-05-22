@@ -181,21 +181,16 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 await this.$render();
                 this.style.scrollBehavior = 'smoth';
                 this.scrollTop = this.scrollHeight;
-                this.async(() => {
-                    this.scrollTop = this.scrollHeight;
-                }, 500)
                 this.async(async () => {
                     const auto_run = this.$$('oda-jupyter-cell').filter(i=>i.cell.autoRun).last;
                     if(auto_run)
                         await auto_run.run(true);
                     // this.scrollTop = 0;
-                    // await this.$render();
-                    this.async(async () => {
-                        if (!this.selectedCell && this.cells?.[this.savedIndex]) {
-                            this.selectedCell = this.cells[this.savedIndex];
-                            await this.scrollToCell(this.selectedCell, 0, 1 );
-                        }
-                    }, 300)
+                    await this.$render();
+                    if (!this.selectedCell && this.cells?.[this.savedIndex]) {
+                        this.selectedCell = this.cells[this.savedIndex];
+                        await this.scrollToCell(this.selectedCell, 0, 1 );
+                    }
                     this.style.visibility = 'visible';
                     this.style.opacity = 1;
                     this.style.scrollBehavior = 'smooth';
