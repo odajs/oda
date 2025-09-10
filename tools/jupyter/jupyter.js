@@ -51,19 +51,23 @@ window.log = (...e) => {
 const console_warn = console.warn;
 window.warning = window.warn =  console.warn = (...e) => {
     console_warn.call(window, ...e);
-    run_context.output_data?.push({ 'html/text': '<b>warning</b>:\n'+[...e].join('\n') });
+    run_context.output_data?.push(...e.map(v => {
+        return { 'html/text': '<span style="font-size: large;" info><b>warning: </b>' + v.toString() +'</span>' };
+    }))
 }
 const console_error =  console.error;
 window.err = window.error = console.error = (...e) => {
     console_error.call(window, ...e);
-    run_context.output_data?.push({ 'html/text': '<b>error:</b>\n'+ [...e].join('\n') });
+    run_context.output_data?.push(...e.map(v => {
+        return { 'html/text': '<span style="font-size: large;" error><b>error: </b>' + v.toString() +'</span>' };
+    }))
 }
 window.run_context = run_context;
 
 import { getLoader } from '../../components/tools/loader/loader.js';
 // https://medium.com/@aszepeshazi/printing-selected-elements-on-a-web-page-from-javascript-a878ac873828
 // https://github.com/szepeshazi/print-elements
-import { PrintElements } from './print_elements.js';
+import { PrintElements } from './lib/print_elements.js';
 ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     template: `
         <style>
@@ -73,34 +77,46 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 outline: none !important;
                 overflow-y: auto !important;
                 overflow-x: hidden !important;
-                /*padding: 12px 6px 30px 6px;*/
                 padding-top: 14px;
-                opacity: 0;
-                transition: opacity 1s;
-                /*background-color: var(--content-background);*/
                 scroll-behavior: smooth;
                 position: relative;
                 @apply --light;
+                z-index: 1;
             }
             @media print {
                 .pe-preserve-print::-webkit-scrollbar { width: 0px; height: 0px; }
             }
         </style>
         <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
-        <oda-jupyter-cell content @tap="cellSelect($for.item)" ~for="cells" :cell="$for.item" ~show="!$for.item.hidden"></oda-jupyter-cell>
+        <oda-jupyter-cell content @tap="focusedCell = $for.item" ~for="cells" :cell="$for.item" ~show="!$for.item.hidden"></oda-jupyter-cell>
         <div style="min-height: 90%"></div>
     `,
+
     command_replace(){
-        const el = this.$$('oda-jupyter-cell').find(el => el.cell.id === this.selectedCell.id);
+        const el = this.getCell(this.focusedCell.id);
         el?.control?.editor?.editor?.execCommand?.('replace')
 
     },
+    connect(target){
+        if (this.connected_target === target)
+            return;
+        if (this.connected_target){
+            this.connected_target.unlisten('progress-changed');
+            this.unlisten('stop');
+        }
+        this.connected_target = target;
+        target.listen('progress-changed', async progress=>{
+            await this.setProgress(progress);
+        })
+        this.listen('stop', e=>{
+            target.stop = true;
+            setTimeout(()=>{
+                target.stop = false;
+            }, 100)
+        })
+    },
     use_native_menu: true,
     output_data: [],
-    cellSelect(item){
-        this['selectedCell'] = item;
-        // this.$render();
-    },
     tabindex:{
         $def: 0,
         $attr: true
@@ -114,20 +130,20 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     },
     $keyBindings:{
         "ctrl+home"(e){
-            this.selectedCell = this.cells[0];
+            this.focusedCell = this.cells[0];
         },
         enter(e){
             this.editMode = true;
         },
         arrowup(e){
             e.preventDefault()
-            if (!this.editMode && this.selectedCell.index > 0)
-                this.selectedCell = this.cells[this.selectedCell.index - 1]
+            if (!this.editMode && this.focusedCell.index > 0)
+                this.focusedCell = this.cells[this.focusedCell.index - 1]
         },
         arrowdown(e){
             e.preventDefault();
-            if (!this.editMode && this.cells.length - 1 > this.selectedCell.index)
-                this.selectedCell = this.cells[this.selectedCell.index + 1]
+            if (!this.editMode && this.cells.length - 1 > this.focusedCell.index)
+                this.focusedCell = this.cells[this.focusedCell.index + 1]
         },
         async "ctrl+p"(e){
             e.stopPropagation();
@@ -135,7 +151,20 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             this.printValue();          
         }
     },
+    set stop(n){
+        this.fire('stop', n)
+    },
+    async setProgress(percent){
+        return await new Promise(resolve=>{
+            this.progress = percent;
+            requestAnimationFrame(()=>{
+                resolve(this.progress)
+            })
+        })
+
+    },
     $public: {
+        progress: 0,
         $pdp: true,
         iconSize: 24,
         readOnly: false,
@@ -147,10 +176,10 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 return path + '/' + this.file_path;
             return '';
         },
-        levelStep: {
-            $def: 8,
-            $save: true
-        },
+        // levelStep: {
+        //     $def: 8,
+        //     $save: true
+        // },
         maxOutputRows: {
             $def: 20,
             $save: true
@@ -179,60 +208,55 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
         },
         get notebook() {
             this.style.visibility = 'hidden';
-            this.style.opacity = 0;
             const nb = new JupyterNotebook(this.url);
             nb.listen('ready', async (e) => {
+                await this.$$('oda-jupyter-cell').filter(i=>i.cell.autoRun).last?.auto_run();
                 await this.$render();
-                this.style.scrollBehavior = 'smoth';
-                this.scrollTop = this.scrollHeight;
-                this.async(async () => {
-                    const auto_run = this.$$('oda-jupyter-cell').filter(i=>i.cell.autoRun).last;
-                    if(auto_run)
-                        await auto_run.run(true);
-                    // this.scrollTop = 0;
-                    await this.$render();
-                    if (!this.selectedCell && this.cells?.[this.savedIndex]) {
-                        this.selectedCell = this.cells[this.savedIndex];
-                        await this.scrollToCell(this.selectedCell, 0, 1 );
-                    }
-                    this.style.visibility = 'visible';
-                    this.style.opacity = 1;
-                    this.style.scrollBehavior = 'smooth';
+                this.async(() => {
+                    this.focusedCell = this.cells?.[this.savedIndex];
+                    this.async(()=>{
+                        this.style.visibility = 'visible';
+                    }, 100)
                 }, 1000);
+
             })
-            nb.listen('changed', async (e) => {
-                if(this.selectedCell) {
-                    const selectedFromCells = this.cells.find(cell => cell.id === this.selectedCell.id);
-                    if(selectedFromCells && this.selectedCell !== selectedFromCells)
-                        this.selectedCell = selectedFromCells;
-                }
-                await this.$render();
+            nb.listen('changed', (e) => {
+                // if(this.focusedCell) {
+                //     const selectedFromCells = this.cells.find(cell => cell.id === this.focusedCell.id);
+                //     if(selectedFromCells && this.focusedCell !== selectedFromCells)
+                //         this.focusedCell = selectedFromCells;
+                // }
+                // await this.$render();
                 if (e.detail.value) {
-                    const added = this.$$('oda-jupyter-cell').find(cell => cell.cell.id === this.selectedCell?.id);
-                    added.focus();
+                    this.getCell(this.focusedCell?.id)?.focus?.();
                 }
                 this.fire('changed');
             })
-            if (!this.url) {
-                this.style.visibility = 'visible';
-                this.style.opacity = 1;
-            }
             return nb;
         },
         editors: {
             code: { label: 'Code', editor: 'oda-jupyter-code-editor', type: 'code' },
             text: { label: 'Text', editor: 'oda-markdown', type: 'text' },
-            sheet: { label: 'Sheet', editor: 'oda-jupyter-sheet-editor', type: 'sheet' }
         },
-        selectedCell: {
+        focusedCell: {
             $def: null,
             set(n, o) {
                 if (n){
                     this.editMode = false;
                     this.savedIndex = n.index;
+                    let el = this.getCell(n.id);
+                    el?.scrollToCell(o && o.index < n.index);
+                    // if (el?.cell?.lastRange){
+                    //     if (el.scrollCancel)
+                    //         return;
+                    //     this.async(() => {
+                    //         el.control?.scrollToCursor(el?.cell?.lastRange.start.row, 10);
+                    //         el.control?.focus();
+                    //     }, 300)
+                    // }
                 }
                 else if (o){
-                    this.selectedCell = o
+                    this.focusedCell = o
                 }
             }
         },
@@ -247,44 +271,29 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             }
         }
     },
-    async scrollToCell(cell = this.selectedCell, row = 0, delta = 0, toLastRange = false) {
-        if (!cell) return;
-        const cellElements = this.jupyter.$$('oda-jupyter-cell');
-        const cellElement = cellElements.find(el => el.cell.id === cell.id);
-        if (!cellElement) return;
-        const screenTop = this.jupyter.scrollTop,
-            screenBottom = screenTop + this.jupyter.offsetHeight;
-        if (cell.type === 'code' && !cell.hideCode && row >= 0) {
-            if (!cellElement?.control?.editor) return;
-            if (toLastRange && cell.lastRange) {
-                row = cell.lastRange.start.row;
-                this.async(() => {
-                    cellElement.control.ace.focus();
-                }, 100)
-            }
-            const lineHeight = cellElement.control.editor.lineHeight,
-                rowTop = cellElement.offsetTop + lineHeight * row,
-                isVisible = rowTop >= screenTop && rowTop <= screenBottom - lineHeight * 2;
-            if (isVisible && !delta)
-                return;
-            if (rowTop < screenTop || delta || toLastRange)
-                delta = lineHeight * (row) - delta;
-            else
-                delta = lineHeight * (row + 2) - this.jupyter.offsetHeight - delta;
-            this.jupyter.scrollTop = cellElement.offsetTop + delta;
-            await new Promise(resolve => this.async(resolve, 100));
-        } else {
-            if (delta) {
-                this.jupyter.scrollTop = cellElement.offsetTop + delta;
-                await new Promise(resolve => this.async(resolve, 100));
-            } else if (cellElement.offsetTop >= screenBottom - cellElement.offsetHeight) {
-                this.jupyter.scrollTop += cellElement.offsetHeight;
-                await new Promise(resolve => this.async(resolve, 100));
-            }
-        }
+    set isMoveCell(v) {
+        if (this.isMoveCell === 0)
+            return;
+        console.log(v)
+        this._isMoveCell?.clearTimeout?.();
+        this._isMoveCell = setTimeout(() => {
+            this.isMoveCell = 0;
+        }, 500)
+    },
+    getCell(id){
+        return this.$$('oda-jupyter-cell').find(i => i.cell.id === id);
     },
     async attached() {
         await getLoader();
+        this.listen('cell-action-run-next', e => {
+            const cell = e.detail?.value;
+            if (cell) {
+                // console.log(cell.id)
+                cell.jupyter ||= this;
+                let next = cell.next;
+                next?.execute?.(cell);
+            }
+        })
     },
     async printValue() {
         const scrollTop = this.scrollTop;
@@ -296,11 +305,11 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             await new Promise(resolve => this.async(resolve, 100));
         }
         this.ownerDocument.body.classList.add("pe-preserve-ancestor");
-        PrintElements.print([this]);
+        PrintElements.print(this.$$('oda-jupyter-cell'));
         // this.ownerDocument.defaultView.print();
         this.ownerDocument.body.classList.remove("pe-preserve-ancestor");
         this.scrollTop = scrollTop;
-        // this.scrollToCell(this.selectedCell);
+        this.focusedCell.scrollToCell();
     },
     setFullscreen() {
         const element = this;
@@ -343,20 +352,26 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
                 height: 40px;
             }
         </style>
-        <div :src="image" ~is="out_tag" :srcdoc vertical  ~html="outHtml" ~style="{overflowWrap: (textWrap ? 'break-word': ''), whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning @load="iframe_loaded"></div>
+        <div :src="image" light ~is="out_tag" :srcdoc vertical  ~html="outHtml" ~style="{overflowWrap: (textWrap ? 'break-word': ''), whiteSpace: (textWrap ? 'break-spaces': 'pre')}" :text-mode="typeof outHtml === 'string'" :warning @load="iframe_loaded"></div>
         <div ~if="curRowsLength<maxRowsLength && !showAll" class="horizontal left header flex" style="font-size: small; align-items: center;">
             <span style="padding: 9px;">Rows: {{curRowsLength.toLocaleString()}} of {{maxRowsLength.toLocaleString()}}</span>
-            <oda-button ~if="!showAll" :icon-size class="dark border" style="margin: 4px; border-radius: 2px;" @tap="setStep($event, 1)">Show next {{(max*2).toLocaleString()}}</oda-button>
+            <oda-button ~if="!showAll" :icon-size class="dark border" style="margin: 4px; border-radius: 2px;" @tap="setStep($event, 1)">Show next {{(max).toLocaleString()}}</oda-button>
             <oda-button ~if="!showAll" :icon-size class="dark border" style="margin: 4px; border-radius: 2px;" @tap="showAll=true">Show all</oda-button>
         </div>
     `,
+    $listeners:{
+        down(e){
+            this.domHost.scrollCancel = true;
+        }
+    },
+    $wake: true,
     textWrap: true,
     row: undefined,
     showAll: false,
     get max() {
         return this.maxOutputRows;
     },
-    step: 0,
+    step: 1,
     setStep(e, sign) {
         e.preventDefault();
         e.stopPropagation();
@@ -364,9 +379,10 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
     },
     iframe_loaded(e){
         const iframe = e.target;
+        if (!iframe.contentDocument) return;
         iframe.style.height = '40px';
         this.row.item.elem = iframe.contentDocument.body.firstChild;
-        console.log(this.row.item.elem);
+        // console.log(this.row.item.elem);
         const resizeObserver = new ResizeObserver((e) => {
             let h = iframe.contentDocument.body.scrollHeight;
             iframe.style.height = h + 'px';
@@ -380,6 +396,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
         }, 500)
     },
     get srcdoc(){
+        if (this.row?.key !== 'jupyter/iframe') return '';
         let tag_name = this.row.item.tag_name, src = '';
         try {
             src = JSON.stringify(ODA.telemetry.prototypes[tag_name] || {});
@@ -411,25 +428,52 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
         return 'div';
     },
     get maxRowsLength(){
-        return  this.split_out.length;
+        return  this.split_out().length;
     },
-    get curRowsLength(){
+    get curRowsLength() {
         return this.max * 1 * (this.step + 1);
     },
-    get split_out(){
+    split_out(out =  this.row?.item || '') {
         const limit = 10000
-        return this.row?.item?.split?.('\n').map(v=>{
+        return out.split?.('\n').map(v => {
             if(v.length>limit)
                 return v.substring(0, limit);
             return v
         }) || [];
     },
+    replaceAngleBrackets(htmlString) {
+        if (typeof htmlString !== 'string') return;
+        const validHtmlTags = new Set(['img', 'input', 'button']);
+        const regex = /<([^>\s]+)([^>]*)>/g;
+        function hasClosingTag(tag, str) {
+            const closingTag = `</${tag}>`;
+            return str.includes(closingTag);
+        }
+        return htmlString.replace(regex, (match, tagName, attributes) => {
+            if (tagName.startsWith('/')) {
+                const actualTagName = tagName.slice(1);
+                if (validHtmlTags.has(actualTagName) || actualTagName.match(/^[a-zA-Z][a-zA-Z0-9-_]*$/)) {
+                    return match;
+                }
+            }
+            if (validHtmlTags.has(tagName))
+                return match;
+            if (tagName.match(/^[a-zA-Z][a-zA-Z0-9-_]*$/) && hasClosingTag(tagName, htmlString))
+                return match;
+            return `&lt;${tagName}${attributes}&gt;`;
+        })
+    },
     get outHtml() {
         if (this.row?.item instanceof HTMLElement)
             return this.row.item;
+        
+        let out = this.row.item;
+        if (!out.startsWith?.("<label bold onclick='_findCodeEntry(this)'"))
+            out = this.replaceAngleBrackets(out);
+
         if (this.showAll)
-            return this.row?.item || ''
-        let array = this.split_out.slice(0, this.curRowsLength);
+            return out || ''
+        let array = this.split_out(out).slice(0, this.curRowsLength);
         return array.join('\n');
     },
     get warning() {
@@ -450,7 +494,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 @apply --no-flex;
                 position: relative;
                 padding-right: 2px;
-                margin-top: 4px;
+                /*margin-top: 4px;*/
                 min-height: 24px;
             }
             .sticky{
@@ -470,7 +514,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 @apply --header;
             }
             :host(:hover) {
-                outline: 1px dashed gray;
+                @apply --shadow;
             }
             :host(:hover) oda-jupyter-toolbar, :host(:hover) oda-jupyter-outputs-toolbar{
                 display: flex !important;
@@ -480,55 +524,143 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                     width: 100%!important;
                 }
             }
+            .circular-progress-container {
+                margin: 4px 0px 4px 4px;
+            }
+            .hidden-progress {
+                position: absolute;
+                opacity: 0;
+                width: 0;
+                height: 0;
+            } 
+            .circular-progress {
+                --size: 32px;
+                --border-width: 3px;
+                --progress: 0;
+                
+                width: var(--size);
+                height: var(--size);
+                border-radius: 50%;
+                background: conic-gradient(
+                #3498db calc(var(--progress) * 3.6deg),
+                #eee 0deg
+                );
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }     
+            .circular-progress::before {
+                content: '';
+                position: absolute;
+                width: calc(100% - var(--border-width) * 2);
+                height: calc(100% - var(--border-width) * 2);
+                background: white;
+                border-radius: 50%;
+            }
+            .progress-text {
+                position: relative;
+                font-family: Arial, sans-serif;
+                font-size: 10px;
+                color: #333;
+                z-index: 1;
+            }
         </style>
-
-        <div class="horizontal">
-            <div class="pe-no-print left-panel vertical" :error-invert="status === 'error'" content style="z-index: 2;">
-                <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: 2px; min-height: 50px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
-                    <oda-button  ~if="cell.type === 'code'"  :icon-size :icon @tap="run()" :error="cell?.autoRun" :success="!cell?.time" style="margin: 4px; border-radius: 50%;"></oda-button>
-                    <div>{{time}}</div>
-                    <div>{{status}}</div>
-                    <oda-icon id="go-lastrange" ~if="!cell?.hideCode && isLastRange" :icon-size icon="box:s-edit-alt" @tap="scrollToLastRange" style="margin: 8px;" title="scroll to marked"></oda-icon>
-                    <oda-icon id="go-breakpoint" no-flex ~if="showGoBreakpoint" :icon-size icon="icons:label-outline" @tap="goToBreakPoint" style="margin: 8px;" title="debugger"></oda-icon>
-                </div>
-            </div>
-            <div class="pe-preserve-print vertical no-flex" style="width: calc(100% - 34px); position: relative;">
-                <div id="main" class="vertical" >
-                    <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell :control ~show="selected"></oda-jupyter-toolbar>
-                    <div class="horizontal" >
-                        <oda-icon ~if="cell.type!=='code' && cell.allowExpand" :icon="expanderIcon" @dblclick.stop @tap.stop="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
-                        <div flex id="control" ~is="editor" :cell ::edit-mode ::value :read-only show-preview :_value :show-border="editMode"></div>
-                    </div>
-                    <div info ~if="cell.collapsed" class="horizontal" @tap="cell.collapsed = false">
-                        <oda-icon style="margin: 4px;" :icon="childIcon"></oda-icon>
-                        <div style="margin: 8px;">Hidden {{cell.childrenCount}} cells</div>
-                    </div>
-                </div>
-                <div id="outputs" ~if="outputs?.length" class="info border" flex style="z-index: 1;">
-                    <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell ~show="selected"></oda-jupyter-outputs-toolbar>
-                    <div class="vertical flex" style="overflow: hidden;">
-                        <div flex vertical ~if="!cell?.hideOutput" style="overflow: hidden;">
-                            <div ~for="outputs" style="font-family: monospace;" >
-                                <oda-jupyter-cell-out ~for="$for.item.data" :row="$$for" :max="control?.maxRow"></oda-jupyter-cell-out>
+        <div class="pe-preserve-print vertical no-flex" style="position: relative;" :focused="selected">
+              <div class="horizontal">
+                    <div class="pe-no-print left-panel vertical" :error-invert="cell.type === 'code' && status === 'error'" content style="z-index: 2;">
+                        <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: 2px; min-height: 50px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
+                            <oda-button ~if="!showProgress && cell.type === 'code'"  :icon-size :icon :error="!!fn" @tap="run()" :info-invert="cell?.autoRun" :success="!fn && !cell?.time" style="margin: 4px; border-radius: 50%;">
+                            </oda-button>
+                            <div ~if="showProgress && cell.type === 'code'" class="circular-progress-container" @tap="run()">
+                                <progress class="hidden-progress" max="100" :value="jupyter.progress"></progress>
+                                <div class="circular-progress" :style="progressStyle">
+                                    <span class="progress-text">{{jupyter.progress}}%</span>
+                                </div>
                             </div>
+                            <div ~if="cell.type === 'code'" >{{time}}</div>
+                            <div ~if="cell.type === 'code'" >{{status}}</div>
                         </div>
                     </div>
-                    <div ~if="cell?.hideOutput" class="horizontal left header" style="padding: 0 4px; font-size: small;">
-                        <oda-button :icon-size class="dark header no-flex" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="showOutput">Show hidden outputs data</oda-button>
+                    <div id="main" class="vertical flex">
+                        <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell :control ~show="selected"></oda-jupyter-toolbar>
+                        <div class="horizontal" >
+                            <oda-icon ~if="cell.type!=='code' && cell.allowExpand && !editMode" :icon="expanderIcon" @dblclick.stop @tap.stop="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
+                            <div flex id="control" ~is="editor" :cell ::edit-mode ::value :read-only show-preview :_value :show-border="editMode"></div>
+                        </div>
+                        <div info ~if="cell.collapsed" class="horizontal" @tap="cell.collapsed = false">
+                            <oda-icon style="margin: 4px;" :icon="childIcon"></oda-icon>
+                            <div style="margin: 8px;">Hidden {{cell.childrenCount}} cells</div>
+                        </div>
+                    </div>
+            </div>
+<!--            <div horizontal ~if="showProgress" style="align-items: center;">-->
+<!--                <progress  max="100" :value="jupyter.progress">{{jupyter.progress}}%</progress>-->
+<!--                <oda-button icon="icons:clear" @tap="run()" style="transform: scale(0.8); fill: red;"></oda-button>-->
+<!--            </div>-->
+            <div id="outputs" ~if="outputs?.length && !cell?.hideCode" class="info border" flex style="z-index: 1;">
+                <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell ~show="selected" :cell-control="this"></oda-jupyter-outputs-toolbar>
+                <div class="vertical flex" style="overflow: hidden;">
+                    <div flex vertical ~if="!cell?.hideOutput" style="overflow: hidden;">
+                        <div ~for="outputs" style="font-family: monospace;" >
+                            <oda-jupyter-cell-out ~for="$for.item.data || $for.item.text" :row="$$for" :max="control?.maxRow"></oda-jupyter-cell-out>
+                        </div>
                     </div>
                 </div>
-                <div class="pe-no-print horizontal left header flex" ~if="!cell?.hideOutput && showOutInfo" style="padding: 0 4px; font-size: small; align-items: center; font-family: monospace;">
-                    <span style="padding: 9px;">{{outInfo}}</span>
-                    <oda-button ~if="!showAllOutputsRow" :icon-size class="dark" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 1)">Show next {{maxOutputsRow.toLocaleString()}}</oda-button>
-                    <oda-button ~if="!showAllOutputsRow" :icon-size class="dark" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 0)">Show all</oda-button>
-                </div>
+            </div>
+            <div class="pe-no-print horizontal left header flex" ~if="!cell?.hideOutput && showOutInfo" style="padding: 0 4px; font-size: small; align-items: center; font-family: monospace;">
+                <span style="padding: 9px;">{{outInfo}}</span>
+                <oda-button ~if="!showAllOutputsRow" :icon-size class="dark" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 1)">Show next {{maxOutputsRow.toLocaleString()}}</oda-button>
+                <oda-button ~if="!showAllOutputsRow" :icon-size class="dark" style="margin: 4px; border-radius: 2px; cursor: pointer;" @tap="setOutputsStep($event, 0)">Show all</oda-button>
             </div>
         </div>
         <oda-jupyter-divider></oda-jupyter-divider>
     `,
-    get showGoBreakpoint() {
-        return !this.cell?.hideCode && this.cell?.breakpoints?.trim();
+    set scrollCancel(n){
+        if (n){
+            this.async(()=>{
+                this.scrollCancel = false;
+            }, 500)
+        }
     },
+    scrollToCell(forward = undefined){
+        if(this.scrollCancel){
+            this.scrollCancel = false;
+            return;
+        }
+        switch (forward){
+            case true:{
+                if (this.jupyter.scrollTop + this.jupyter.offsetHeight/2 > this.offsetTop)
+                    return;
+
+                if ((this.offsetTop + this.offsetHeight) >= Math.floor(this.jupyter.scrollTop + this.jupyter.offsetHeight)){
+                    if(this.offsetHeight>this.jupyter.offsetHeight && this.previousElementSibling?.offsetHeight <this.jupyter.offsetHeight / 2){
+                        this.previousElementSibling.scrollIntoView(true);
+                    }
+                    else
+                        this.scrollIntoView(this.offsetHeight>this.jupyter.offsetHeight);
+                }
+            } break;
+            case false:{
+                if (this.jupyter.scrollTop + this.jupyter.offsetHeight/2 < this.offsetTop + this.offsetHeight)
+                    return;
+                if (this.offsetTop <= Math.ceil(this.jupyter.scrollTop)){
+                    if (this.previousElementSibling?.offsetHeight <this.jupyter.offsetHeight / 3)
+                        this.previousElementSibling.scrollIntoView(true);
+                    else
+                        this.scrollIntoView(true);
+                }
+            } break;
+            default:{
+                this.scrollIntoView(true);
+            }
+        }
+    },
+
+    progressStyle() {
+        return`--progress: ${this.jupyter.progress}`
+    },
+    showProgress: false,
     get outputs(){
         this.control = undefined;
         return this.cell?.controls?.slice(0, this.maxOutputsRow * (this.outputsStep + 1)) || [];
@@ -592,61 +724,63 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     get status(){
         return this.cell?.status || '';
     },
-
-    async run(autorun) {
-        return new Promise(resolve => {
-            const task = ODA.addTask();
-            this.outputsStep = 0;
-            this.showAllOutputsRow = false;
-            const out = this.$$('oda-jupyter-cell-out');
-            if (out?.length) {
-                out.map(i => {
-                    i.step = 0;
-                    i.showAll = false;
-                })
-            }
+    async run(){
+        try{
+            this.showProgress = true;
+            this.checkBreakpoints();
+            await this.auto_run();
+        }
+        finally {
+            this.notebook?.change();
+            this.cell?.next?.clearTimes();
+            this.scrollToRunOutputs();
+            this.showProgress = false;
+        }
+    },
+    async auto_run(autorun) {
+        if (this.fn) {
+            this.fn = null;
+            this.jupyter.stop = true;
+            return;
+        }
+        this.jupyter.stop = false;
+        const task = ODA.addTask();
+        await new Promise(resolve =>{
             this.async(async () => {
                 try {
-                    for (let code of this.notebook.codes){
+                    for (let code of this.notebook.codes) {
                         if (code === this.cell) break;
-                        if (code.hideCode && !autorun) continue;
                         if (code.time) continue;
-                        await new Promise(async (resolve)=>{
-                            if (autorun !== true)
-                                this.checkBreakpoints(code);
-                            await code.run(this);
-                            this.async(resolve)
-                        })
-                        await this.$render();
+                        const control = this.jupyter.getCell(code.id)?.control;
+                        if (code.hideCode && !control.showProgress) continue;
+                        control.checkBreakpoints();
+                        await code.execute(control);
                     }
-                    if (autorun !== true)
-                        this.checkBreakpoints(this.cell);
-                    await this.cell.run(this);
+                    await this.cell.execute(this);
 
-                } catch (error) {
-
-                } finally {
+                }
+                finally {
                     ODA.removeTask(task);
-                    if(autorun !== true)
-                        this.notebook?.change();
                     resolve();
-                    if(autorun !== true){
-                        this.cell?.next?.clearTimes();
-                        this.scrollToRunOutputs();
-                    }
-                    this.async(() => {
+                    this.jupyter.progress = 0;
+                    this.async(()=>{
                         this.$render();
                     })
                 }
-            }, 50)
-        })
+            }, 100)
 
+        })
+        // await this.$render();
+            // this.async(async () => {
+
+            // }, 50)
     },
-    checkBreakpoints(cell) {
+    checkBreakpoints() {
+        let cell = this.cell;
         cell.srcWithBreakpoints = '';
         if (cell.hideCode || !cell.breakpoints)
             return;
-        const control = this.jupyter.$$('oda-jupyter-cell').find(i => i.cell.id == cell.id)?.control,
+        const control = this.control,
             session = control?.session;
         if (!session)
             return;
@@ -671,39 +805,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         })
         cell.srcWithBreakpoints = src;
     },
-    goToBreakPoint(e) {
-        let breakpoints = this.cell.breakpoints.split(' ');
-        breakpoints = breakpoints.filter(i => i).sort((a, b) => a - b);
-        let row = this._currentBreakPoints,
-            isChange = false;
-        if (!this._currentBreakPoints || breakpoints.length === 1) {
-            row = +breakpoints[0];
-        } else {
-            for (let i = 0; i < breakpoints.length; i++) {
-                const p = breakpoints[i];
-                if (p > row) {
-                    row = +p;
-                    isChange = true;
-                    break;
-                }
-            } if (!isChange) {
-                row = +breakpoints[0];
-            }
-        }
-        this._currentBreakPoints = row;
-        row -= 1;
-        const delta = this.$('#go-breakpoint').offsetTop + 12;
-        this.jupyter.scrollToCell(this.cell, row, delta);
-    },
-    get isLastRange() {
-        return this.cell?.lastRange;
-    },
-    scrollToLastRange() {
-        if (this.cell?.lastRange) {
-            const delta = this.$('#go-lastrange').offsetTop + 12;
-            this.jupyter.scrollToCell(this.cell, this.cell.lastRange.start.row, delta, true);
-        }
-    },
     scrollToRunOutputs() {
         this.async(() => {
             if (this.control_bottom < (this.jupyter_height + this.jupyter_scroll_top) /*&& this.control_offsetBottom > this.jupyter_scroll_top*/)
@@ -725,12 +826,16 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     get cell_height() {
         return this.offsetHeight;
     },
+    fn: null,
     $pdp: {
+        get jupyter(){
+            return this.domHost?.jupyter || this.domHost;
+        },
         get control_bottom(){
             return this.offsetTop + this.control_height;
         },
         get icon(){
-            return this.cell?.isRun? 'spinners:8-dots-rotate': 'av:play-circle-outline';
+            return this.fn? 'av:stop': 'av:play-circle-outline';
         },
         get isReadyRun(){
             return this.selected || this.cell?.isRun;
@@ -749,14 +854,14 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             $def: false,
             $attr: 'raised',
             get() {
-                return !this.readOnly &&  (this.selectedCell === this.cell/* || this.selectedCell?.id === this.cell?.id*/);
+                return !this.readOnly &&  (this.focusedCell === this.cell/* || this.focusedCell?.id === this.cell?.id*/);
             }
         },
         get control() {
             return this.$('#control') || undefined;
         },
         showAllOutputsRow: false,
-        outputsStep: 0
+        outputsStep: 1,
     },
     setOutputsStep(e, sign) {
         e.preventDefault();
@@ -855,32 +960,23 @@ ODA({ is: 'oda-jupyter-divider',
         return false
     },
     add(key) {
-        this.jupyter.isMoveCell = true;
-        this.selectedCell = this.notebook.add(this.cell, key);
-        this.async(() => {
-            if (!this.selectedCell.next) {
-                this.scrollToCell(this.selectedCell, -1);
-            }
-            this.async(() => this.jupyter.isMoveCell = false, 300);
-        }, 300)
+        this.jupyter.isMoveCell = (this.jupyter.isMoveCell || 0) + 1;
+        this.focusedCell = this.notebook.add(this.cell, key);
     },
     showInsertBtn() {
         return !this.readOnly && JSON.parse(top._jupyterCellData || '[]')?.length;
     },
     insert() {
-        this.jupyter.isMoveCell = true;
         const cells = JSON.parse(top._jupyterCellData || '[]');
-        this.selectedCell = this.cell;
+        this.focusedCell = this.cell;
         let lastCell;
         cells.map(i => {
+            this.jupyter.isMoveCell = (this.jupyter.isMoveCell || 0) + 1;
             lastCell = this.notebook.add(lastCell || this.cell, '', i);
             lastCell.id = lastCell.metadata.id = getID();
         })
-        this.selectedCell ||= lastCell;
+        this.focusedCell ||= lastCell;
         top._jupyterCellData = undefined;
-        this.async(() => {
-            this.jupyter.isMoveCell = false;
-        }, 300)
     }
 })
 
@@ -907,60 +1003,58 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
                  border-radius: 4px;
             }
         </style>
-        <div class="pe-no-print top" ~if="!readOnly" @down="tap">
+        <div class="pe-no-print top" ~if="!readOnly">
             <oda-button :disabled="!cell.prev" :icon-size icon="icons:arrow-back:90" @tap.stop="move(-1)"></oda-button>
             <oda-button :disabled="!cell.next" :icon-size icon="icons:arrow-back:270" @tap.stop="move(1)"></oda-button>
-            <oda-button ~show="cell?.type === 'code' || cell?.type === 'sheet'" :icon-size icon="icons:settings" @tap.stop="showSettings"></oda-button>
             <oda-button :icon-size icon="icons:delete" @tap.stop="deleteCell"></oda-button>
             <oda-button :icon-size icon="icons:content-copy" @tap.stop="copyCell" ~style="{fill: isCopiedCell ? 'red' : ''}"></oda-button>
             <oda-button ~if="cell.type!=='code'" allow-toggle ::toggled="editMode"  :icon-size :icon="editMode?'icons:close':'editor:mode-edit'"></oda-button>
-            <oda-button ~if="cell?.type === 'code'" :icon-size icon="bootstrap:eye-slash" title="Hide/Show code"  allow-toggle ::toggled="hideCode"></oda-button>
+            <oda-button ~if="cell?.type === 'code'" :icon-size :icon="iconEye" title="Hide/Show code" @tap="toggleShowCode"></oda-button>
         </div>
     `,
-    get hideCode(){
-        return this.cell?.hideCode;
+    get iconEye() {
+        return this.cell.hideCode ? 'bootstrap:eye-slash' : 'bootstrap:eye';
     },
-    set hideCode(n){
-        let top = this.jupyter.scrollTop;
-        if (n){
-            if (top > this.domHost.offsetTop){
-                this.async(()=>{
-                    this.jupyter.scrollToCell(this.selectedCell);
-                })
-
-                //top -= this.domHost.$('#main').offsetHeight - (top - this.domHost.$('#main').offsetTop);
-
-            }
-
+    toggleShowCode() {
+        this.control.hideCode = this.cell.hideOutput = !this.cell.hideOutput;
+        this.jupyter.$render();
+        this.notebook.change();
+        if (this.control.hideCode) {
+            this.domHost.scrollToCell();
         }
-        else{
-
-        }
-        // this.cell.hideCode = this.cell.hideOutput = n;
-        this.control.hideCode = this.cell.hideOutput = n;
     },
     move(direction){
         let top = this.jupyter.scrollTop;
+        let id = this.cell.id;
         if(direction<0){
             top -= this.domHost.previousElementSibling.offsetHeight
         }
         else if(direction>0){
             top += this.domHost.nextElementSibling.offsetHeight
         }
+        this.jupyter.isMoveCell = (this.jupyter.isMoveCell || 0) + 1;
         this.cell.move(direction);
         this.jupyter.scrollTop = top;
-        this.setIsMoveCell();
+        this.async(() => {
+            this.jupyter.focusedCell = this.jupyter.getCell(id)?.cell;
+        }, 10)
     },
     cell: null,
     iconSize: 16,
     deleteCell() {
-        if (!window.confirm(`Do you really want delete current cell?`)) return;
+        if (!window.confirm(`Delete cell?`)) return;
+        let id = null;
+        if (this.cell.prev) {
+            id = this.cell.prev.id;
+        }
+        else if(this.cell.next) {
+            id = this.cell.next.id;
+        }
+        this.jupyter.isMoveCell = (this.jupyter.isMoveCell || 0) + 1;
         this.cell.delete();
-        this.setIsMoveCell();
-    },
-    setIsMoveCell() {
-        this.jupyter.isMoveCell = true;
-        this.async(() => this.jupyter.isMoveCell = false, 500);
+        this.async(() => {
+            this.jupyter.focusedCell = this.jupyter.getCell(id)?.cell;
+        }, 10)
     },
     control: null,
     showSettings(e) {
@@ -990,9 +1084,6 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
             top._jupyterCellData = JSON.stringify(cells);
         }
         this.jupyter.$render();
-    },
-    tap(e) {
-        this.selectedCell = this.cell;
     }
 })
 
@@ -1021,52 +1112,33 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
             }
         </style>
         <div class="pe-no-print top info border" ~if="cell?.outputs?.length || cell?.controls?.length">
-            <oda-button :icon-size icon="bootstrap:eye-slash"  title="Hide/Show" allow-toggle ::toggled="toggleOutput"></oda-button>
+            <oda-button :icon-size icon="carbon:up-to-top" title="scroll to Up" @tap="scrollUp"></oda-button>
+            <oda-button :icon-size icon="carbon:down-to-bottom" title="scroll to Down" @tap="scrollDown"></oda-button>
             <oda-button :icon-size icon="icons:clear" @tap="clearOutputs" title="Clear outputs"></oda-button>
         </div>
     `,
     cell: null,
+    cellControl: null,
     iconSize: 16,
-    get toggleOutput(){
-        return this.cell.hideOutput;
-    },
-    set toggleOutput(n){
-        this.cell.hideOutput = n;
-        this.jupyter.$render();
-        this.notebook.change();
-    },
     clearOutputs() {
         this.cell.hideOutput = false;
         this.cell.outputs = [];
         this.cell.controls = [];
-    }
-})
-
-ODA({ is: 'oda-jupyter-sheet-editor', imports: '@oda/jspreadsheet-editor', extends: 'oda-jspreadsheet-editor',
-    template:`
-        <style>
-            :host {
-                height: {{height}}px;
-            }
-        </style>
-    `,
-    $public: {
-        height: {
-            get(){
-                return this.cell?.readMetadata('height', 160);
-            },
-            set(n){
-                this.cell?.writeMetadata('height', n);
-            }
-        }
+        this.domHost.scrollToCell();
     },
-    set editMode(v) {
-        this.toolbar = this.tabs = v;
+    scrollUp() {
+        this.parentElement.scrollIntoView({block: "start"});
     },
-    $listeners: {
-        'sheet-tap'(e) {
-            this.selectedCell = this.cell;
+    scrollDown() {
+        const outs = this.cellControl.$$('oda-jupyter-cell-out');
+        if (outs?.length) {
+            outs.map(i => {
+                i.showAll = true;
+            })
         }
+        this.async(() => {
+            this.parentElement.scrollIntoView({block: "end"});
+        }, 100)
     }
 })
 
@@ -1105,7 +1177,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             }
         </style>
         <div  class="horizontal" :border="!hideCode"  style="min-height: 64px;">
-            <oda-code-editor :scroll-calculate="getScrollCalculate()" :wrap ~if="!hideCode" show-gutter :read-only @change-cursor="on_change_cursor" @change-breakpoints="on_change_breakpoints" @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" max-lines="Infinity" @change="editorValueChanged" @pointerdown="on_pointerdown" enable-breakpoints sticky-search></oda-code-editor>
+            <oda-code-editor :scroll-calculate="getScrollCalculate()" :wrap ~if="!hideCode" show-gutter :read-only @change-cursor="on_change_cursor" @change-breakpoints="on_change_breakpoints" @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" max-lines="Infinity" @change="editorValueChanged" @pointerdown="on_pointerdown" enable-breakpoints sticky-search use-global-find></oda-code-editor>
             <div dimmed ~if="hideCode" class="horizontal left content flex" style="cursor: pointer; padding: 8px 4px;" @dblclick="hideCode=false">
                 <oda-icon icon="bootstrap:eye-slash" style="align-self: baseline; cursor: pointer;" @tap="hideCode = false"></oda-icon>
                 <h1 flex  vertical style="margin: 0px 16px; font-size: large; cursor: pointer; text-overflow: ellipsis;" ~html="cell.name +'... <u disabled style=\\\'font-size: x-small; right: 0px;\\\'>(Double click to show...)</u>'" ></h1>
@@ -1118,17 +1190,43 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
 
     `,
     on_pointerdown(e) {
+        this.domHost.scrollCancel = true;
         this.ace?.focus();
     },
     on_change_cursor(e) {
-        this.debounce('change_cursor', () => {
-            if (!this.jupyter.isMoveCell && !this.jupyter.isScroll) {
-                this.cell.lastRange = this.ace?.getSelectionRange();
-                // if (this.cell.lastRange.start.row === this.cell.lastRange.end.row && this.cell.lastRange.start.column === this.cell.lastRange.end.column) {
-                    this.jupyter.scrollToCell(this.cell, this.cell.lastRange.start.row);
-                // }
+        if (this.jupyter.isMoveCell)
+            return;
+        let range = this.ace?.getSelectionRange();
+        try{
+            if (this.cell.lastRange){
+                let currentRow = range.start.row;
+                let lastRow = this.cell.lastRange.start.row;
+                if (currentRow === lastRow) return;
+
+                this.throttle('scrollToCursor', () => {
+                    this.scrollToCursor(currentRow);
+                }, 10)
             }
-        }, 300)
+        }
+        finally {
+            this.cell.lastRange = range;
+        }
+    },
+    scrollToCursor(currentRow, shift = 1) {
+        let h = this.editor.lineHeight;
+        let lineTop = this.domHost.offsetTop + currentRow * h;
+        let lineBottom = this.domHost.offsetTop + (currentRow + 1) * h;
+        let visibleTop = this.jupyter.scrollTop;
+        let visibleBottom = this.jupyter.scrollTop + this.jupyter.offsetHeight;
+        let needScrollUp = lineTop < visibleTop + h;
+        let needScrollDown = lineBottom > visibleBottom - h;
+        if (needScrollUp) {
+            let targetScroll = Math.max(0, lineTop - h * shift);
+            this.jupyter.scrollTop = targetScroll;
+        } else if (needScrollDown) {
+            let targetScroll = lineBottom - this.jupyter.offsetHeight + h * shift;
+            this.jupyter.scrollTop = targetScroll;
+        }
     },
     on_change_breakpoints(e){
         this.cell.breakpoints = e.detail.value;
@@ -1148,7 +1246,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             return `<span class="err" onclick="_hideError(this)">  x  </span><span>${err.text}</span><u row="${err.row}" column="${err.column}" onclick="_findErrorPos(this)" style="cursor: pointer; color: -webkit-link">(${err.row+1}:${err.column})</u>`
         }).join('\n');
         if(error)
-            error = '<span bold style="padding: 2px; font-size: large; margin-bottom: 4px; white-space: pre-wrap;">SyntaxError:</span><br>'+error;
+            error = '<span style="padding: 2px; font-size: large; margin-bottom: 4px; white-space: pre-wrap;">SyntaxError:</span><br>'+error;
         return error;
     },
     get editor(){
@@ -1255,7 +1353,8 @@ class JupyterNotebook extends ROCKS({
     data: { cells: [], hiddenErrors: [] },
     isChanged: false,
     get cells() {
-        return this.data.cells.map(cell => new JupyterCell(cell, this));
+        this.data.cells ||= [];
+        return this.data.cells?.map(cell => new JupyterCell(cell, this)) || [];
     },
     get codes() {
         return this.cells.filter(i=>i.type === 'code');
@@ -1586,44 +1685,64 @@ class JupyterCell extends ROCKS({
         this.notebook = notebook;
         this.data = data;
     }
-    async run(cell){
-        let jupyter = cell.jupyter
+
+    async execute(cell){
+        let jupyter = cell?.jupyter;
         this.hideOutput = false;
         this.time = '';
         this.status = '';
         this.isRun = true;
-        try{
+            try{
+                run_context.output_data = jupyter.output_data = [];
+                cell.fn = new AsyncFunction('JUPYTER', this.code);
 
-            run_context.output_data = jupyter.output_data = [];
-            let fn = new AsyncFunction(this.code);
-            let time = Date.now();
-            let res =  await fn.call(cell);
-            time = new Date(Date.now() - time);
-            let time_str = '';
-            let t = time.getMinutes();
-            if (t)
-                time_str += t + ' m\n';
-            t = time.getSeconds();
-            if (time_str  || t)
-                time_str += t + ' s\n';
-            t = time.getMilliseconds();
-            time_str += t + ' ms';
-            this.time = time_str;
-            if (res){
-                jupyter.output_data.push({ 'text/plain': res });
+                // let time = Date.now();
+                // let res =  await cell.fn.call(cell);
+                // time = new Date(Date.now() - time);
+                // let time_str = '';
+                // let t = time.getMinutes();
+                // if (t)
+                //     time_str += t + ' m\n';
+                // t = time.getSeconds();
+                // if (time_str  || t)
+                //     time_str += t + ' s\n';
+                // t = time.getMilliseconds();
+                // time_str += t + ' ms';
+                // this.time = time_str;
+
+                let startTime = performance.now();
+                let res = await cell.fn.call(cell, jupyter);
+                let elapsed = performance.now() - startTime;
+                let time_str = '';
+                let minutes = Math.floor(elapsed / 60000);
+                if (minutes) {
+                    time_str += minutes + ' m\n';
+                }
+                let seconds = Math.floor((elapsed % 60000) / 1000);
+                if (time_str || seconds) {
+                    time_str += seconds + ' s\n';
+                }
+                let milliseconds = Math.floor(elapsed % 1000);
+                time_str += milliseconds + ' ms';
+                this.time = time_str;
+
+                if (res){
+                    jupyter.output_data.push({ 'text/plain': res });
+                }
             }
-        }
-        catch (e){
-            let error = '<span bold style=\'padding: 2px; font-size: large; margin-bottom: 4px; white-space: pre-wrap;\'>'+e.toString()+'</span>';
-            jupyter.output_data.push({ 'html/text': '<div style="padding: 4px;" border error>'+error+'</div>' });
-            this.status = 'error';
-            this.time = '0 ms';
-        }
-        finally {
-            this.controls = jupyter.output_data.map(val => ({ data: val }));
-            this.isRun = false;
-            run_context.output_data = [];
-        }
+            catch (e){
+                let error = '<span bold style=\'padding: 2px; font-size: large; margin-bottom: 4px; white-space: pre-wrap;\'>'+e.toString()+'</span>';
+                jupyter.output_data.push({ 'html/text': '<div style="padding: 4px;" border error>'+error+'</div>' });
+                this.status = 'error';
+                this.time = '0 ms';
+            }
+            finally {
+                this.controls = jupyter.output_data.map(val => ({ data: val }));
+                this.isRun = false;
+                run_context.output_data = [];
+                cell.fn = null;
+            }
+
     }
     get code(){
         let src = this.srcWithBreakpoints || this.src;
@@ -1631,6 +1750,9 @@ class JupyterCell extends ROCKS({
         code = code.replace(/import\s+(\{.*\})\s*from\s*([\"|\'])(\S+)([\"|\'])/gm, '__v__ =  $1 = await import($2$3$4); for(let i in __v__) run_context.i = __v__[i]');
         code = code.replace(/(import\s*\()/gm, ' ODA.$1');
         code = code.replace(/^\s*print\s*\((.*)\)/gm, ' log($1)');
+        code = code.replace(/^\s*runNext\s*\((.*)\)/gm, `
+    this.jupyter.fire("cell-action-run-next", this.cell);
+        `);
         code = code.split('\n').map(row =>{
 
             let s = row.trim();
@@ -1674,7 +1796,7 @@ ${code}
                 stack = stack.split(':');
                 let row = (stack[0] || 0) - 3;
                 let column = stack[1];
-                let mess = e.message + \` <u row="\$\{row-1\}" column="\$\{column\}" onclick="_findErrorPos(this)" style="cursor: pointer; color: -webkit-link">(\$\{row\}:\$\{column\})</u>\`
+                let mess = e.stack + \` <u row="\$\{row-1\}" column="\$\{column\}" onclick="_findErrorPos(this)" style="cursor: pointer; color: -webkit-link">(\$\{row\}:\$\{column\})</u>\`
                 throw new Error(mess)
             }
             throw new Error(e.stack)
@@ -1726,5 +1848,4 @@ window.addEventListener('keydown', e => {
         e.preventDefault();
         e.target?.command_replace?.();
     }
-
 }, true)

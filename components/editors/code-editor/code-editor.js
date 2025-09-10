@@ -20,6 +20,9 @@ ODA({is: 'oda-code-editor',
             .ace_hidden-cursors {
                 opacity: {{showCursor ? 1 : 0}};
             }
+            .ace_editor{
+                font-family: iosevka, Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace;
+            }
             .ace_editor .ace_marker-layer .ace_selection {
                 background: {{marker?marker+'!important':''}};
             }
@@ -136,7 +139,8 @@ ODA({is: 'oda-code-editor',
         },
         showCursor: true,
         isChanged: false,
-        enableBreakpoints: false
+        enableBreakpoints: false,
+        useGlobalFind: false
     },
     src: {
         $def: '',
@@ -149,9 +153,13 @@ ODA({is: 'oda-code-editor',
         return componentPath;
     },
     get container() {
-        return this.$?.('div');
+        return this.$?.('div') || undefined;
     },
-    async attached() {
+    async ready() {
+        if (!this.container) {
+            this.async(() => this.ready(), 100);
+            return;
+        }
         // if (!window.ace){
             const imp = await import(componentPath+'/ace.js');
             window.ace.componentPath = componentPath;
@@ -159,6 +167,7 @@ ODA({is: 'oda-code-editor',
         if (!this.container) return;
         this.editor = ace?.edit(this.container);
         this.editor.renderer.attachToShadowRoot();
+        this.editor.setShowPrintMargin(false);
         await import('./src/ext-language_tools.js');
         // await import('./src/beautify-html.js');
         ['basePath', 'modePath', 'themePath', 'workerPath'].map(path => {
@@ -208,16 +217,18 @@ ODA({is: 'oda-code-editor',
                 }
             }
         };
-        this.editor.commands.addCommand({
-            name: 'oda-search',
-            bindKey: { win: "Ctrl-F", mac: "Ctrl-f" },
-            exec: search
-        });
-        this.editor.commands.addCommand({
-            name: 'oda-search2',
-            bindKey: { win: "F3", mac: "F3" },
-            exec: search
-        });
+        if (!this.useGlobalFind) {
+            this.editor.commands.addCommand({
+                name: 'oda-search',
+                bindKey: { win: "Ctrl-F", mac: "Ctrl-f" },
+                exec: search
+            })
+            this.editor.commands.addCommand({
+                name: 'oda-search2',
+                bindKey: { win: "F3", mac: "F3" },
+                exec: search
+            })
+        }
 
 
         this.editor.commands.addCommand({

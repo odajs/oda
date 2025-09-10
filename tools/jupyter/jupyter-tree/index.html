@@ -9,10 +9,10 @@
     import '../jupyter.js';
     import './jupyter-tree.js';
     ODA({ is: 'oda-jupyter-layout', extends: 'this, oda-jupyter', template: `
-        <oda-jupyter-tree slot="left-panel" ::focused-row="selectedCell"></oda-jupyter-tree>
+        <oda-jupyter-tree slot="left-panel" ::focused-row="focusedCell"></oda-jupyter-tree>
         `,
     });
 
-   jupyterlayout.file_path = 'colab.ipynb';
+   jupyterlayout.file_path = './colab.ipynb';
 </script>
  

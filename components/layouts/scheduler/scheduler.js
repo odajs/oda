@@ -16,10 +16,11 @@ ODA({ is: "oda-scheduler", imports: '@oda/button, @tools/containers',
                 padding: 2px;
             }
         </style>
-        <oda-scheduler-toolbar :slot="showToolbar ? '?' : 'center'" style="width: 100%"></oda-scheduler-toolbar>
+        <oda-scheduler-toolbar :slot="showToolbar ? undefined : toolBarSlot" style="width: 100%"></oda-scheduler-toolbar>
         <div class="flex" ~is="modeTemplate"></div>
         <div ~if="title" class="title" @tap="title=undefined" ~style="style">{{title?.label}}</div>
     `,
+    toolBarSlot: 'top-center',
     attached() {
         this.async(() => {
             this.currentTime = new Date();

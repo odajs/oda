@@ -199,7 +199,7 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         size: {
             $type: Number,
             get() {
-                return this.items?.length || 0;
+                return this.sortedItems?.length || 0;
             }
         },
         evenOdd: {
@@ -2073,13 +2073,15 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
         return this.focusedCell && this.compareRows(this.focusedCell.row, row) && this.focusedCell.column === column;
     },
     setScreen() {
-        if (this.fix) return;
-        this.$height = this.offsetHeight;
-        this.$width = this.offsetWidth;
-        this.overHeight = this.offsetHeight < this.scrollHeight;
-        this.$scrollTop = this.scrollTop;
-        this.$scrollWidth = this.scrollWidth;
-        this.$scrollLeft = this.scrollLeft;
+        this.debounce('setScreen', () => {
+            if (this.fix) return;
+            this.$height = this.offsetHeight;
+            this.$width = this.offsetWidth;
+            this.overHeight = this.offsetHeight < this.scrollHeight;
+            this.$scrollTop = this.scrollTop;
+            this.$scrollWidth = this.scrollWidth;
+            this.$scrollLeft = this.scrollLeft;
+        }, 100);
     },
     findCellByCoordinates({ row, column }) {
         const cellContents = this.$$('.cell-content');

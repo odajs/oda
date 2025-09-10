@@ -243,6 +243,8 @@ html {
         display: none !important;
     }
     .pe-preserve-ancestor {
+        height: auto !important;
+        overflow: visible !important;
         display: block !important;
         margin: 0 !important;
         padding: 0 !important;
@@ -255,6 +257,15 @@ html {
     .raised, [raised] {
         border: none !important;
         box-shadow: none !important;
+    }
+    table, pre, code-block {
+        break-inside: avoid;
+    }
+    h1, h2, h3 {
+        break-after: avoid;
+    }
+    section {
+        break-before: auto;
     }
 }
 input{

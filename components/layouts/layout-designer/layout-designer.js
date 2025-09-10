@@ -566,12 +566,12 @@ ODA({ is: 'oda-layout-designer-container',
             if (!this.designMode) return;
             e.stopPropagation();
             if (!this.designInfo.selected.includes(this.item))
-                this.$listeners.pointerdown.call(this, e)
+                this.$listeners.mousedown.call(this, e)
         },
-        pointerdown(e) {
+        mousedown(e) {
             if (this.designMode) {
                 selectItem.call(this, e)
-                window.dispatchEvent(new PointerEvent('pointerdown', e))
+                window.dispatchEvent(new PointerEvent('mousedown', e))
                 this.designer.$render();
             }
         },
@@ -610,7 +610,7 @@ async function contextMenu(e) {
     if (!this.designMode) return;
     e.preventDefault();
     if (!this.designInfo.selected.includes(this.item))
-        this.$listeners.pointerdown?.call(this, e)
+        this.$listeners.mousedown?.call(this, e)
     await ODA.import('@tools/containers');
     await ODA.import('@oda/menu');
     const menu = [
@@ -879,14 +879,14 @@ ODA({is:'oda-layout-designer-table-cell', extends: 'oda-icon, oda-table-cell',
         contextmenu(e) {
             contextMenu.call(this, e)
         },
-        pointerdown(e) {
+        mousedown(e) {
             if (e.button === 2) {
                 selectItem.call(this, e)
             }
             else if (this.item.itemType === 'tab') {
                 this.item.owner.focusedTab = this.item;
             }
-            window.dispatchEvent(new PointerEvent('pointerdown', e))
+            window.dispatchEvent(new PointerEvent('mousedown', e))
         }
     }
 })

@@ -1144,64 +1144,66 @@ if (!window.ODA?.IsReady) {
     }
 
     async function renderChildren(root) {
-        if (!root.$sleep || root.$wake) {
-            let el, idx = 0;
-            for (let h of (root?.$node || this[CORE_KEY]).children || []) {
-                if (h.call) { // table list
-                    let items = h.call(this, root.__for);
-                    for (let i = 0; i < items.length; i++) {
-                        const node = items[i];
-                        if (node) {
-                            while (el = root.childNodes[idx]) {
-                                if (el.$node === node.child) break;
-                                if (!el.$node) {
-                                    idx++;
-                                    continue;
-                                }
-                                //понаблюдать 👀
-                                else if (el.$node.vars !== node.child.vars) {
-                                    break;
-                                }
-                                root.removeChild(el);
+        if(root.$sleep && !root.$wake && !this.$wake)
+            return root;
+
+        let el, idx = 0;
+        for (let h of (root?.$node || this[CORE_KEY]).children || []) {
+            if (h.call) { // table list
+                let items = h.call(this, root.__for);
+                for (let i = 0; i < items.length; i++) {
+                    const node = items[i];
+                    if (node) {
+                        while (el = root.childNodes[idx]) {
+                            if (el.$node === node.child) break;
+                            if (!el.$node) {
+                                idx++;
+                                continue;
                             }
-                            el = root.childNodes[idx + i];
-                            el = await renderElement.call(this, node.child, el, root, node.params);
+                            //понаблюдать 👀
+                            else if (el.$node.vars !== node.child.vars) {
+                                break;
+                            }
+                            root.removeChild(el);
                         }
+                        el = root.childNodes[idx + i];
+                        el = await renderElement.call(this, node.child, el, root, node.params);
                     }
-                    idx += items.length;
                 }
-                else { // single element
-                    while (el = root.childNodes[idx]) {
-                        if (el.$node === h) break;
-                        if (!el.$node) {
-                            idx++;
-                            continue;
-                        }
-                        root.removeChild(el);
-                    }
-                    el = await renderElement.call(this, h, el, root, root.__for);
-                    idx++;
-                }
+                idx += items.length;
             }
-            if (root[CORE_KEY] && root.isConnected) {
-                await root.$render(this);
-            }
-            // else if (root?.$node?.isSlot){
-            //     // for (let el of root.assignedElements?.() || []){
-            //     //     if (el.$sleep || !el[CORE_KEY]) continue;
-            //     //     /*await*/ el.$render(this);
-            //     // }
-            // }
-            else {
+            else { // single element
                 while (el = root.childNodes[idx]) {
-                    if (!el?.$node) {
+                    if (el.$node === h) break;
+                    if (!el.$node) {
                         idx++;
                         continue;
                     }
                     root.removeChild(el);
                 }
+                el = await renderElement.call(this, h, el, root, root.__for);
+                idx++;
             }
         }
+        if (root[CORE_KEY] && root.isConnected) {
+            await root.$render(this);
+        }
+        // else if (root?.$node?.isSlot){
+        //     // for (let el of root.assignedElements?.() || []){
+        //     //     if (el.$sleep || !el[CORE_KEY]) continue;
+        //     //     /*await*/ el.$render(this);
+        //     // }
+        // }
+        else {
+            while (el = root.childNodes[idx]) {
+                if (!el?.$node) {
+                    idx++;
+                    continue;
+                }
+                root.removeChild(el);
+            }
+        }
+
         return root;
     }
     async function renderElement(src, $el, $parent, __for) {

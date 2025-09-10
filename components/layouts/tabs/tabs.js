@@ -361,7 +361,7 @@ ODA({
             }
         </style>
         <oda-icon ~if="item.icon" :icon="item.icon + (direction === 'vertical' && item.label ? ':90' : '')" :sub-icon="item.subIcon" :icon-size></oda-icon>
-        <div ~text="item.label" style="padding-bottom: 6px;"></div>
+        <div ~text="item.label"></div>
     `,
     item: null,
     iconSize: 24,
