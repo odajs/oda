@@ -176,10 +176,10 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 return path + '/' + this.file_path;
             return '';
         },
-        // levelStep: {
-        //     $def: 8,
-        //     $save: true
-        // },
+        levelStep: {
+            $def: 8,
+            $save: true
+        },
         maxOutputRows: {
             $def: 20,
             $save: true
@@ -371,7 +371,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
     get max() {
         return this.maxOutputRows;
     },
-    step: 1,
+    step: 0,
     setStep(e, sign) {
         e.preventDefault();
         e.stopPropagation();
@@ -861,7 +861,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             return this.$('#control') || undefined;
         },
         showAllOutputsRow: false,
-        outputsStep: 1,
+        outputsStep: 0,
     },
     setOutputsStep(e, sign) {
         e.preventDefault();
