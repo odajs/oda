@@ -371,7 +371,7 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
     get max() {
         return this.maxOutputRows;
     },
-    step: 0,
+    step: 1,
     setStep(e, sign) {
         e.preventDefault();
         e.stopPropagation();
@@ -861,7 +861,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             return this.$('#control') || undefined;
         },
         showAllOutputsRow: false,
-        outputsStep: 0,
+        outputsStep: 1,
     },
     setOutputsStep(e, sign) {
         e.preventDefault();
@@ -1519,6 +1519,7 @@ class JupyterCell extends ROCKS({
                     }
                 }
             })
+            this.notebook.change();
         }
     },
     get sources() {
