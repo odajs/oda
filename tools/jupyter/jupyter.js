@@ -246,14 +246,15 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                     this.savedIndex = n.index;
                     let el = this.getCell(n.id);
                     el?.scrollToCell(o && o.index < n.index);
-                    // if (el?.cell?.lastRange){
-                    //     if (el.scrollCancel)
-                    //         return;
-                    //     this.async(() => {
-                    //         el.control?.scrollToCursor(el?.cell?.lastRange.start.row, 10);
-                    //         el.control?.focus();
-                    //     }, 300)
-                    // }
+                    if (el?.cell?.lastRange && el?.control) {
+                        if (el.scrollCancel || this.isMoveCell)
+                            return;
+                        this.async(() => {
+                            el.control.scrollToCursor(el.cell.lastRange.start.row, 10);
+                            this.isMoveCell = 1;
+                            el.control.focus();
+                        }, 100)
+                    }
                 }
                 else if (o){
                     this.focusedCell = o
