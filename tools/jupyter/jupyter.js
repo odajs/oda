@@ -745,7 +745,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             return;
         }
         this.jupyter.stop = false;
-        const task = ODA.addTask();
+        // const task = ODA.addTask();
         await new Promise(resolve =>{
             this.async(async () => {
                 try {
@@ -761,7 +761,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
 
                 }
                 finally {
-                    ODA.removeTask(task);
+                    // ODA.removeTask(task);
                     resolve();
                     this.jupyter.progress = 0;
                     this.async(()=>{
