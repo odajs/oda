@@ -1092,10 +1092,14 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
     template: `
         <style>
             :host{
+                opacity: .5;
                 position: sticky;
                 top: 20px;
                 z-index: 9;
                 display: block;
+            }
+            :host(:hover){
+                opacity: 1;
             }
             .top {
                 @apply --horizontal;
