@@ -810,12 +810,11 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         this.async(() => {
             if (this.control_bottom < (this.jupyter_height + this.jupyter_scroll_top) /*&& this.control_offsetBottom > this.jupyter_scroll_top*/)
                 return;
-            if (this.cell?.hideOutput)
-                return;
-            if (this.output_height>this.jupyter_height)
+            if (this.output_height < 12 || this.output_height>this.jupyter_height) {
                 this.jupyter.scrollTop = this.control_bottom - 64;
-            else
-                this.$('#outputs')?.scrollIntoView({block: "end"});
+                return;
+            }
+            this.$('#outputs')?.scrollIntoView({block: "end"});
         })
     },
     get output_height() {
