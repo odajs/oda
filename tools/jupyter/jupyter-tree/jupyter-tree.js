@@ -21,11 +21,61 @@ ODA({
                 border-radius: 50%;
                 @apply --success-invert;
             }
+            .circular-progress-container {
+                margin: 4px 0px 4px 4px;
+            }
+            .hidden-progress {
+                position: absolute;
+                opacity: 0;
+                width: 0;
+                height: 0;
+            } 
+            .circular-progress {
+                --size: 32px;
+                --border-width: 3px;
+                --progress: 0;
+                
+                width: var(--size);
+                height: var(--size);
+                border-radius: 50%;
+                background: conic-gradient(
+                #3498db calc(var(--progress) * 3.6deg),
+                #eee 0deg
+                );
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }     
+            .circular-progress::before {
+                content: '';
+                position: absolute;
+                width: calc(100% - var(--border-width) * 2);
+                height: calc(100% - var(--border-width) * 2);
+                background: white;
+                border-radius: 50%;
+            }
+            .progress-text {
+                position: relative;
+                font-family: Arial, sans-serif;
+                font-size: 10px;
+                color: #333;
+                z-index: 1;
+            }
         </style>
-        <oda-button class="btn-code" ~if="item.type ==='code'" :icon @down.stop="onTap" :error="!!item?.fn" :info-invert="item?.autoRun" :success="!item?.time" style="border-radius: 50%;  transform: scale(.8);"></oda-button>
+        <div ~if="item.type === 'code' && cell?.showProgress" class="circular-progress-container" @tap="onTap" style="margin-left: 0px; cursor: pointer;">
+            <progress class="hidden-progress" max="100" :value="jupyter.progress"></progress>
+            <div class="circular-progress" :style="progressStyle">
+                <span class="progress-text">{{jupyter.progress}}%</span>
+            </div>
+        </div>
+        <oda-button class="btn-code" ~if="item.type ==='code' && !cell?.showProgress" :icon @down.stop="onTap" :error="!!item?.fn" :info-invert="item?.autoRun" :success="!item?.time" style="border-radius: 50%;  transform: scale(.8);"></oda-button>
         <span class="field-control flex" ~is="template" :column :item ::value style="overflow: hidden">{{value ?? ''}}</span>
         <oda-button ~if="item.type ==='code'" :icon="iconEye" title="Hide/Show" style="border-radius: 50%; transform: scale(0.8);" @tap="toggleOutput" scale=".5"></oda-button>
     `,
+    progressStyle() {
+        return`--progress: ${this.jupyter.progress}`
+    },
     focused: {
         $type: Boolean,
         $def: false,

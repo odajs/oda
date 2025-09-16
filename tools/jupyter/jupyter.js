@@ -275,7 +275,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     set isMoveCell(v) {
         if (this.isMoveCell === 0)
             return;
-        console.log(v)
+        // console.log(v)
         this._isMoveCell?.clearTimeout?.();
         this._isMoveCell = setTimeout(() => {
             this.isMoveCell = 0;
