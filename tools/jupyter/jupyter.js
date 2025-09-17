@@ -729,12 +729,13 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         try{
             this.showProgress = true;
             this.checkBreakpoints();
+            this.scrollToRunOutputs();
             await this.auto_run();
         }
         finally {
             this.notebook?.change();
             this.cell?.next?.clearTimes();
-            this.scrollToRunOutputs();
+            // this.scrollToRunOutputs();
             this.showProgress = false;
         }
     },
@@ -1128,7 +1129,7 @@ ODA({ is: 'oda-jupyter-outputs-toolbar',
         this.cell.hideOutput = false;
         this.cell.outputs = [];
         this.cell.controls = [];
-        this.domHost.scrollToCell();
+        // this.domHost.scrollToCell();
     },
     scrollUp() {
         this.parentElement.scrollIntoView({block: "start"});
