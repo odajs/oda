@@ -63,7 +63,7 @@ ODA({
                 z-index: 1;
             }
         </style>
-        <div ~if="item.type === 'code' && cell?.showProgress" class="circular-progress-container" @tap="onTap" style="margin-left: 0px; cursor: pointer;">
+        <div ~if="item.type === 'code' && cell?.showProgress" class="circular-progress-container" @down.stop="onTap" style="margin-left: 0px; cursor: pointer;">
             <progress class="hidden-progress" max="100" :value="jupyter.progress"></progress>
             <div class="circular-progress" :style="progressStyle">
                 <span class="progress-text">{{jupyter.progress}}%</span>
