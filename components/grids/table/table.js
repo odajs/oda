@@ -2073,7 +2073,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
         return this.focusedCell && this.compareRows(this.focusedCell.row, row) && this.focusedCell.column === column;
     },
     setScreen() {
-        this.debounce('setScreen', () => {
+        this.throttle('setScreen', () => {
             if (this.fix) return;
             this.$height = this.offsetHeight;
             this.$width = this.offsetWidth;
