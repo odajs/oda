@@ -131,10 +131,20 @@ ODA({
     },
     $listeners: {
         tap(e) {
+            let id = e.target.cell?.cell?.id;
             this.jupyter._lastId ||= this.jupyter?.focusedCell?.id;
-            if (this.jupyter._lastId === this.jupyter?.focusedCell?.id)
+            if (this.jupyter._lastId === this.jupyter?.focusedCell?.id) {
+                let visibleTop = this.jupyter.scrollTop,
+                    visibleBottom = visibleTop + this.jupyter.offsetHeight,
+                    el = this.jupyter.getCell(id),
+                    elTop = el.offsetTop,
+                    elBottom = elTop + el.offsetHeight;
+                // console.log(visibleTop, visibleBottom, elTop, elBottom);
+                if ((elTop >= visibleTop && elTop <= visibleBottom) || (elBottom >= visibleTop && elBottom <= visibleBottom)) return;
+                // console.log('scroll');
                 this.cell?.scrollToCell?.();
-            this.jupyter._lastId = e.target.cell?.cell?.id;
+            }
+            this.jupyter._lastId = id;
         }
     }
 })
