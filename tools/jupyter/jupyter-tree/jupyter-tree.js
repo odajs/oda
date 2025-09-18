@@ -131,22 +131,32 @@ ODA({
     },
     $listeners: {
         tap(e) {
-            this.cell.highlighted = true;
-            this.async(() => this.cell.highlighted = false, 1200);
-            let id = e.target.cell?.cell?.id;
+            let id = e.target.cell?.cell?.id,
+                el = this.jupyter.getCell(id);
             this.jupyter._lastId ||= this.jupyter?.focusedCell?.id;
             if (this.jupyter._lastId === this.jupyter?.focusedCell?.id) {
                 let visibleTop = this.jupyter.scrollTop,
                     visibleBottom = visibleTop + this.jupyter.offsetHeight,
-                    el = this.jupyter.getCell(id),
                     elTop = el.offsetTop,
                     elBottom = elTop + el.offsetHeight;
-                // console.log(visibleTop, visibleBottom, elTop, elBottom);
-                if ((elTop >= visibleTop && elTop <= visibleBottom) || (elBottom >= visibleTop && elBottom <= visibleBottom)) return;
-                // console.log('scroll');
+                if ((elTop >= visibleTop && elTop <= visibleBottom) || (elBottom >= visibleTop && elBottom <= visibleBottom)) {
+                    this.jupyter._lastId = id;
+                    this.cell.highlighted = true;
+                    return;
+                }
                 this.cell?.scrollToCell?.();
             }
             this.jupyter._lastId = id;
+            const observer = new IntersectionObserver(e => {
+                e.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        this.async(() => this.cell.highlighted = true, 100);
+                        observer.unobserve(entry.target);
+                    }
+                  })
+            }, { threshold: .1 })
+            observer.observe(el);
+
         }
     }
 })

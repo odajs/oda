@@ -567,7 +567,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 z-index: 1;
             }
             [highlighted] {
-                animation: highlight 1s ease-in-out;
+                animation: highlight .2s ease-in-out;
             }
             @keyframes highlight {
                 0% {
@@ -631,7 +631,14 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         </div>
         <oda-jupyter-divider></oda-jupyter-divider>
     `,
-    highlighted: false,
+    highlighted: {
+        $def: false,
+        set(v) {
+            if (v) {
+                this.async(() => this.highlighted = false, 200);
+            }
+        }
+    },
     set scrollCancel(n){
         if (n){
             this.async(()=>{
