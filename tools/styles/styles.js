@@ -112,10 +112,10 @@ let style = /*css*/`
         border-color: var(--dark-color);
     };
     --light:{
-        background-color: var(--light-background);
-        color: var(--light-color);
-        fill: var(--light-color);
-        border-color: var(--light-color);
+        background-color: var(--light-background) !important;
+        color: var(--light-color) !important;
+        fill: var(--light-color) !important;
+        border-color: var(--light-color) !important;
     };
 
     --boxed: {

@@ -34,8 +34,8 @@ ODA({is: 'oda-code-editor',
             .ace_scrollbar-h {
                 position: {{scrollCalculate?'sticky':'absolute'}};
                 bottom: 0px;
+                left: {{scrollCalculate>0?'128px!important':''}};
                 top: {{scrollCalculate>0?scrollCalculate+'px':'unset'}};
-                width: unset !important;
             }
             .ace_search.right {
                 position: sticky;
