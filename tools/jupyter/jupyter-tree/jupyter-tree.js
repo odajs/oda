@@ -131,6 +131,8 @@ ODA({
     },
     $listeners: {
         tap(e) {
+            this.cell.highlighted = true;
+            this.async(() => this.cell.highlighted = false, 1200);
             let id = e.target.cell?.cell?.id;
             this.jupyter._lastId ||= this.jupyter?.focusedCell?.id;
             if (this.jupyter._lastId === this.jupyter?.focusedCell?.id) {

@@ -566,8 +566,22 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 color: #333;
                 z-index: 1;
             }
+            [highlighted] {
+                animation: highlight 1s ease-in-out;
+            }
+            @keyframes highlight {
+                0% {
+                    filter: brightness(1);
+                }
+                50% {
+                    filter: brightness(0.5);
+                }
+                100% {
+                    filter: unset;
+                }
+            }
         </style>
-        <div class="pe-preserve-print vertical no-flex" style="position: relative;" :focused="selected">
+        <div class="pe-preserve-print vertical no-flex" style="position: relative;" :focused="selected" :highlighted="highlighted">
               <div class="horizontal">
                     <div class="pe-no-print left-panel vertical" :error-invert="cell.type === 'code' && status === 'error'" content style="z-index: 2;">
                         <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: 2px; min-height: 50px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
@@ -617,6 +631,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         </div>
         <oda-jupyter-divider></oda-jupyter-divider>
     `,
+    highlighted: false,
     set scrollCancel(n){
         if (n){
             this.async(()=>{
