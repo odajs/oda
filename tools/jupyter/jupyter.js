@@ -362,12 +362,6 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
             <oda-button ~if="!showAll" :icon-size class="dark border" style="margin: 4px; border-radius: 2px;" @tap="showAll=true">Show all</oda-button>
         </div>
     `,
-    $listeners:{
-        down(e){
-            e.stopPropagation();
-            this.domHost.scrollCancel = true;
-        }
-    },
     $wake: true,
     textWrap: true,
     row: undefined,
@@ -606,7 +600,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 <div class="vertical flex" style="overflow: hidden;">
                     <div flex vertical ~if="!cell?.hideOutput" style="overflow: hidden;">
                         <div ~for="outputs" style="font-family: monospace;" >
-                            <oda-jupyter-cell-out ~for="$for.item.data || $for.item.text" :row="$$for" :max="control?.maxRow"></oda-jupyter-cell-out>
+                            <oda-jupyter-cell-out ~for="$for.item.data || $for.item.text" :row="$$for" :max="control?.maxRow" @down.stop @tap.stop></oda-jupyter-cell-out>
                         </div>
                     </div>
                 </div>
