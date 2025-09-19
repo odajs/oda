@@ -517,7 +517,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             :host(:hover) oda-jupyter-toolbar, :host(:hover) oda-jupyter-outputs-toolbar{
                 display: flex !important;
             }
-            [block] {
+            #block {
                 transition: filter .2s ease-in-out;
             }
             [blink]{
@@ -571,7 +571,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             }
         </style>
         <div class="pe-preserve-print vertical no-flex" style="position: relative;" :focused="selected">
-              <div class="horizontal" block :blink>
+              <div class="horizontal" id="block" :blink>
                     <div class="pe-no-print left-panel vertical" :error-invert="cell.type === 'code' && status === 'error'" content style="z-index: 2;">
                         <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: 2px; min-height: 50px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
                             <oda-button ~if="!showProgress && cell.type === 'code'"  :icon-size :icon :error="!!fn" @tap="run()" :info-invert="cell?.autoRun" :success="!fn && !cell?.time" style="margin: 4px; border-radius: 50%;">
@@ -734,19 +734,33 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     get status(){
         return this.cell?.status || '';
     },
+    scrollToBlockEnd() {
+        this.async(() => {
+            let block = this.$('#block');
+            let visibleTop = this.jupyter.scrollTop,
+                visibleBottom = visibleTop + this.jupyter.offsetHeight,
+                blockBottom = this.offsetTop + block.offsetHeight;
+            if (blockBottom >= visibleTop && blockBottom <= visibleBottom)
+                return;
+            this.jupyter.scrollTop = blockBottom - this.jupyter.offsetHeight + 128;
+        })
+    },
     async run(){
         try{
+            this.cell.hideOutput = false;
+            this.cell.outputs = [];
+            this.cell.controls = [];
             this.blink =  true;
             this.showProgress = true;
             this.checkBreakpoints();
-            this.scrollToRunOutputs();
+            this.scrollToBlockEnd();
             await this.auto_run();
         }
         finally {
             this.notebook?.change();
             this.cell?.next?.clearTimes();
-            // this.scrollToRunOutputs();
             this.showProgress = false;
+            this.scrollToBlockEnd();
         }
     },
     async auto_run(autorun) {
@@ -817,17 +831,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         })
         cell.srcWithBreakpoints = src;
     },
-    scrollToRunOutputs() {
-        this.async(() => {
-            if (this.control_bottom < (this.jupyter_height + this.jupyter_scroll_top) /*&& this.control_offsetBottom > this.jupyter_scroll_top*/)
-                return;
-            if (this.output_height < 12 || this.output_height>this.jupyter_height) {
-                this.jupyter.scrollTop = this.control_bottom - 64;
-                return;
-            }
-            this.$('#outputs')?.scrollIntoView({block: "end"});
-        })
-    },
     get output_height() {
         return this.cell_height - this.control_height;
     },
@@ -841,9 +844,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     $pdp: {
         get jupyter(){
             return this.domHost?.jupyter || this.domHost;
-        },
-        get control_bottom(){
-            return this.offsetTop + this.control_height;
         },
         get icon(){
             return this.fn? 'av:stop': 'av:play-circle-outline';
