@@ -190,7 +190,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             this.jupyter_scroll_top = this.scrollTop;
             this.jupyter.debounce('blink', ()=>{
                 this.getCell(this.focusedCell?.id).blink = false;
-            }, 150)
+            }, 200)
         },
         resize(e){
             this.jupyter_height = this.offsetHeight;
@@ -629,7 +629,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             if(n){
                 this.jupyter.debounce('blink', ()=>{
                     this.blink = false;
-                }, 200)
+                }, 100)
             }
         }
     },
