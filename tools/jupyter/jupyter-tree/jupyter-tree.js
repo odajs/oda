@@ -70,9 +70,14 @@ ODA({
             </div>
         </div>
         <oda-button class="btn-code" ~if="item.type ==='code' && !cell?.showProgress" :icon @down.stop="onTap" :error="!!item?.fn" :info-invert="item?.autoRun" :success="!item?.time" style="border-radius: 50%;  transform: scale(.8);"></oda-button>
-        <span class="field-control flex" ~is="template" :column :item ::value style="overflow: hidden">{{value ?? ''}}</span>
+        <span @tap="reFocus" class="field-control flex" ~is="template" :column :item ::value style="overflow: hidden">{{value ?? ''}}</span>
         <oda-button ~if="item.type ==='code'" :icon="iconEye" title="Hide/Show" style="border-radius: 50%; transform: scale(0.8);" @tap="toggleOutput" scale=".5"></oda-button>
     `,
+    reFocus(){
+        let focused = this.jupyter.focusedCell;
+        this.jupyter.focusedCell = null;
+        this.jupyter.focusedCell = focused;
+    },
     progressStyle() {
         return`--progress: ${this.jupyter.progress}`
     },
@@ -124,7 +129,7 @@ ODA({
         this.cell?.run();
     },
     get cell() {
-        return  this.jupyter.getCell(this.item.id);
+        return this.jupyter.getCell(this.item.id);
     },
     toggleOutput() {
         this.cell.cell.hideCode = !this.cell.cell.hideCode;
