@@ -129,34 +129,34 @@ ODA({
     toggleOutput() {
         this.cell.cell.hideCode = !this.cell.cell.hideCode;
     },
-    $listeners: {
-        tap(e) {
-            let id = e.target.cell?.cell?.id,
-                el = this.jupyter.getCell(id);
-            this.jupyter._lastId ||= this.jupyter?.focusedCell?.id;
-            if (this.jupyter._lastId === this.jupyter?.focusedCell?.id) {
-                let visibleTop = this.jupyter.scrollTop,
-                    visibleBottom = visibleTop + this.jupyter.offsetHeight,
-                    elTop = el.offsetTop,
-                    elBottom = elTop + el.offsetHeight;
-                if ((elTop >= visibleTop && elTop <= visibleBottom) || (elBottom >= visibleTop && elBottom <= visibleBottom)) {
-                    this.jupyter._lastId = id;
-                    this.cell.highlighted = true;
-                    return;
-                }
-                this.cell?.scrollToCell?.();
-            }
-            this.jupyter._lastId = id;
-            const observer = new IntersectionObserver(e => {
-                e.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        this.async(() => this.cell.highlighted = true, 100);
-                        observer.unobserve(entry.target);
-                    }
-                  })
-            }, { threshold: .1 })
-            observer.observe(el);
-
-        }
-    }
+    // $listeners: {
+    //     tap(e) {
+    //         let id = e.target.cell?.cell?.id,
+    //             el = this.jupyter.getCell(id);
+    //         this.jupyter._lastId ||= this.jupyter?.focusedCell?.id;
+    //         if (this.jupyter._lastId === this.jupyter?.focusedCell?.id) {
+    //             let visibleTop = this.jupyter.scrollTop,
+    //                 visibleBottom = visibleTop + this.jupyter.offsetHeight,
+    //                 elTop = el.offsetTop,
+    //                 elBottom = elTop + el.offsetHeight;
+    //             if ((elTop >= visibleTop && elTop <= visibleBottom) || (elBottom >= visibleTop && elBottom <= visibleBottom)) {
+    //                 this.jupyter._lastId = id;
+    //                 this.cell.highlighted = true;
+    //                 return;
+    //             }
+    //             this.cell?.scrollToCell?.();
+    //         }
+    //         this.jupyter._lastId = id;
+    //         const observer = new IntersectionObserver(e => {
+    //             e.forEach((entry) => {
+    //                 if (entry.isIntersecting) {
+    //                     this.async(() => this.cell.highlighted = true, 100);
+    //                     observer.unobserve(entry.target);
+    //                 }
+    //               })
+    //         }, { threshold: .1 })
+    //         observer.observe(el);
+    //
+    //     }
+    // }
 })

@@ -188,10 +188,9 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
     $listeners:{
         scroll(e){
             this.jupyter_scroll_top = this.scrollTop;
-            this.isScroll = true;
-            this.debounce('isScroll', () => {
-                this.isScroll = false;
-            }, 300)
+            this.jupyter.debounce('blink', ()=>{
+                this.getCell(this.focusedCell?.id).blink = false;
+            }, 100)
         },
         resize(e){
             this.jupyter_height = this.offsetHeight;
@@ -245,8 +244,11 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                     this.editMode = false;
                     this.savedIndex = n.index;
                     let el = this.getCell(n.id);
-                    el?.scrollToCell(o && o.index < n.index);
-                    if (el?.cell?.lastRange && el?.control) {
+                    if (!el)
+                        return;
+                    el.blink = true;
+                    el.scrollToCell(o && o.index < n.index);
+                    if (el.cell?.lastRange && el.control) {
                         if (el.scrollCancel || this.isMoveCell)
                             return;
                         this.async(() => {
@@ -520,6 +522,9 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             :host(:hover) oda-jupyter-toolbar, :host(:hover) oda-jupyter-outputs-toolbar{
                 display: flex !important;
             }
+            [blink]{
+                filter: sepia(.5);  
+            }
             @media print {
                 .pe-preserve-print {
                     width: 100%!important;
@@ -566,23 +571,9 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 color: #333;
                 z-index: 1;
             }
-            [highlighted] {
-                animation: highlight .2s ease-in-out;
-            }
-            @keyframes highlight {
-                0% {
-                    filter: brightness(1);
-                }
-                50% {
-                    filter: brightness(0.5);
-                }
-                100% {
-                    filter: unset;
-                }
-            }
         </style>
-        <div class="pe-preserve-print vertical no-flex" style="position: relative;" :focused="selected" :highlighted="highlighted">
-              <div class="horizontal">
+        <div class="pe-preserve-print vertical no-flex" style="position: relative;" :focused="selected">
+              <div class="horizontal" block :blink>
                     <div class="pe-no-print left-panel vertical" :error-invert="cell.type === 'code' && status === 'error'" content style="z-index: 2;">
                         <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: 2px; min-height: 50px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
                             <oda-button ~if="!showProgress && cell.type === 'code'"  :icon-size :icon :error="!!fn" @tap="run()" :info-invert="cell?.autoRun" :success="!fn && !cell?.time" style="margin: 4px; border-radius: 50%;">
@@ -609,10 +600,6 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                         </div>
                     </div>
             </div>
-<!--            <div horizontal ~if="showProgress" style="align-items: center;">-->
-<!--                <progress  max="100" :value="jupyter.progress">{{jupyter.progress}}%</progress>-->
-<!--                <oda-button icon="icons:clear" @tap="run()" style="transform: scale(0.8); fill: red;"></oda-button>-->
-<!--            </div>-->
             <div id="outputs" ~if="outputs?.length && !cell?.hideCode" class="info border" flex style="z-index: 1;">
                 <oda-jupyter-outputs-toolbar :icon-size="iconSize * .7" :cell ~show="selected" :cell-control="this"></oda-jupyter-outputs-toolbar>
                 <div class="vertical flex" style="overflow: hidden;">
@@ -631,19 +618,21 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
         </div>
         <oda-jupyter-divider></oda-jupyter-divider>
     `,
-    highlighted: {
-        $def: false,
-        set(v) {
-            if (v) {
-                this.async(() => this.highlighted = false, 200);
-            }
-        }
-    },
     set scrollCancel(n){
         if (n){
             this.async(()=>{
                 this.scrollCancel = false;
             }, 500)
+        }
+    },
+    blink:{
+        $def: false,
+        set(n){
+            if(n){
+                this.jupyter.debounce('blink', ()=>{
+                    this.blink = false;
+                }, 100)
+            }
         }
     },
     scrollToCell(forward = undefined){
@@ -749,6 +738,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     },
     async run(){
         try{
+            this.blink =  true;
             this.showProgress = true;
             this.checkBreakpoints();
             this.scrollToRunOutputs();
