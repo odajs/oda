@@ -747,9 +747,9 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     },
     async run(){
         try{
-            this.cell.hideOutput = false;
-            this.cell.outputs = [];
-            this.cell.controls = [];
+            // this.cell.hideOutput = false;
+            // this.cell.outputs = [];
+            // this.cell.controls = [];
             this.blink =  true;
             this.showProgress = true;
             this.checkBreakpoints();
