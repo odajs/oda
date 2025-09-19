@@ -70,10 +70,18 @@ ODA({
             </div>
         </div>
         <oda-button class="btn-code" ~if="item.type ==='code' && !cell?.showProgress" :icon @down.stop="onTap" :error="!!item?.fn" :info-invert="item?.autoRun" :success="!item?.time" style="border-radius: 50%;  transform: scale(.8);"></oda-button>
-        <span @tap="reFocus" class="field-control flex" ~is="template" :column :item ::value style="overflow: hidden">{{value ?? ''}}</span>
+        <span @tap="reFocus" class="field-control flex" ~is="template" :column :item ::value style="overflow: hidden; min-height: 18px;">{{value ?? ''}}</span>
         <oda-button ~if="item.type ==='code'" :icon="iconEye" title="Hide/Show" style="border-radius: 50%; transform: scale(0.8);" @tap="toggleOutput" scale=".5"></oda-button>
     `,
-    reFocus(){
+    reFocus() {
+        let visibleTop = this.jupyter.scrollTop,
+            visibleBottom = visibleTop + this.jupyter.offsetHeight,
+            elTop = this.cell.offsetTop,
+            elBottom = elTop + this.cell.offsetHeight;
+        if ((elTop >= visibleTop && elTop <= visibleBottom) || (elBottom >= visibleTop && elBottom <= visibleBottom)) {
+            this.cell.blink = true;
+            return;
+        }
         let focused = this.jupyter.focusedCell;
         this.jupyter.focusedCell = null;
         this.jupyter.focusedCell = focused;
@@ -133,35 +141,5 @@ ODA({
     },
     toggleOutput() {
         this.cell.cell.hideCode = !this.cell.cell.hideCode;
-    },
-    // $listeners: {
-    //     tap(e) {
-    //         let id = e.target.cell?.cell?.id,
-    //             el = this.jupyter.getCell(id);
-    //         this.jupyter._lastId ||= this.jupyter?.focusedCell?.id;
-    //         if (this.jupyter._lastId === this.jupyter?.focusedCell?.id) {
-    //             let visibleTop = this.jupyter.scrollTop,
-    //                 visibleBottom = visibleTop + this.jupyter.offsetHeight,
-    //                 elTop = el.offsetTop,
-    //                 elBottom = elTop + el.offsetHeight;
-    //             if ((elTop >= visibleTop && elTop <= visibleBottom) || (elBottom >= visibleTop && elBottom <= visibleBottom)) {
-    //                 this.jupyter._lastId = id;
-    //                 this.cell.highlighted = true;
-    //                 return;
-    //             }
-    //             this.cell?.scrollToCell?.();
-    //         }
-    //         this.jupyter._lastId = id;
-    //         const observer = new IntersectionObserver(e => {
-    //             e.forEach((entry) => {
-    //                 if (entry.isIntersecting) {
-    //                     this.async(() => this.cell.highlighted = true, 100);
-    //                     observer.unobserve(entry.target);
-    //                 }
-    //               })
-    //         }, { threshold: .1 })
-    //         observer.observe(el);
-    //
-    //     }
-    // }
+    }
 })

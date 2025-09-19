@@ -517,8 +517,11 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             :host(:hover) oda-jupyter-toolbar, :host(:hover) oda-jupyter-outputs-toolbar{
                 display: flex !important;
             }
+            [block] {
+                transition: filter .2s ease-in-out;
+            }
             [blink]{
-                filter: sepia(.5);  
+                filter: sepia(.75);  
             }
             @media print {
                 .pe-preserve-print {
