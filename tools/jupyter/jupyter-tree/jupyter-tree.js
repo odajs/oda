@@ -66,7 +66,8 @@ ODA({
         <div ~if="item.type === 'code' && cell?.showProgress" class="circular-progress-container" @down.stop="onTap" style="margin-left: 0px; cursor: pointer;">
             <progress class="hidden-progress" max="100" :value="jupyter.progress"></progress>
             <div class="circular-progress" :style="progressStyle">
-                <span class="progress-text">{{jupyter.progress}}%</span>
+                <!-- <span class="progress-text">{{jupyter.progress}}%</span> -->
+                <oda-icon icon="av:stop" error style="border-radius: 50%;"></oda-icon>
             </div>
         </div>
         <oda-button class="btn-code" ~if="item.type ==='code' && !cell?.showProgress" :icon @down.stop="onTap" :error="!!item?.fn" :info-invert="item?.autoRun" :success="!item?.time" style="border-radius: 50%;  transform: scale(.8);"></oda-button>

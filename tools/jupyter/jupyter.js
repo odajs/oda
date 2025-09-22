@@ -574,12 +574,13 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
               <div class="horizontal" id="block" :blink>
                     <div class="pe-no-print left-panel vertical" :error-invert="cell.type === 'code' && status === 'error'" content style="z-index: 2;">
                         <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: 2px; min-height: 50px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
-                            <oda-button ~if="!showProgress && cell.type === 'code'"  :icon-size :icon :error="!!fn" @tap="run()" :info-invert="cell?.autoRun" :success="!fn && !cell?.time" style="margin: 4px; border-radius: 50%;">
+                            <oda-button ~if="!showProgress && cell.type === 'code'"  :icon-size :icon :error="!!fn" @tap.stop="run()" :info-invert="cell?.autoRun" :success="!fn && !cell?.time" style="margin: 4px; border-radius: 50%;">
                             </oda-button>
-                            <div ~if="showProgress && cell.type === 'code'" class="circular-progress-container" @tap="run()">
+                            <div ~if="showProgress && cell.type === 'code'" class="circular-progress-container" @tap.stop="run()">
                                 <progress class="hidden-progress" max="100" :value="jupyter.progress"></progress>
                                 <div class="circular-progress" :style="progressStyle">
-                                    <span class="progress-text">{{jupyter.progress}}%</span>
+                                    <!-- <span class="progress-text">{{jupyter.progress}}%</span> -->
+                                    <oda-icon icon="av:stop" error style="border-radius: 50%;"></oda-icon>
                                 </div>
                             </div>
                             <div ~if="cell.type === 'code'" >{{time}}</div>
