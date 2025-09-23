@@ -35,7 +35,7 @@ ODA({is: 'oda-code-editor',
                 width: auto !important;
                 position: {{scrollCalculate?'sticky':'absolute'}};
                 bottom: 0px;
-                /*left: {{scrollCalculate>0?'128px!important':''}};*/
+                margin-left: {{gutterWidth}}px;
                 top: {{scrollCalculate>0?scrollCalculate+'px':'unset'}};
             }
             .ace_search.right {
@@ -56,6 +56,10 @@ ODA({is: 'oda-code-editor',
     get lineHeight(){
         return this.editor?.container.querySelector('.ace_gutter-cell')?.offsetHeight;
     },
+    get gutterWidth(){
+        return this.editor?.renderer?.$gutterLayer.gutterWidth || 0;
+    },
+    editor: undefined,
     $public: {
         scrollCalculate: 0,
         stickySearch: false,

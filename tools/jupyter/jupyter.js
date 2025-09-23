@@ -1293,7 +1293,10 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     $listeners:{
         resize(e){
             this.async(()=>{
-                this.editor?.resize?.();
+                if(this.editor){
+                    this.editor.gutterWidth = undefined;
+                    this.editor?.editor?.resize?.();
+                }
             })
         }
     },
