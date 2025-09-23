@@ -52,6 +52,11 @@ ODA({is: 'oda-code-editor',
         </style>
         <div @keydown.stop  style="min-height: 100%; font-size: large;"></div>
     `,
+    $listeners:{
+        resize(e){
+            this.editor?.resize()
+        }
+    },
     get lineHeight(){
         return this.editor?.container.querySelector('.ace_gutter-cell')?.offsetHeight;
     },
