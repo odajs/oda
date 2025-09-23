@@ -88,7 +88,7 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             }
         </style>
         <oda-jupyter-divider ~style="{zIndex: cells.length + 1}"></oda-jupyter-divider>
-        <oda-jupyter-cell content @tap="focusedCell = $for.item" ~for="cells" :cell="$for.item" ~show="!$for.item.hidden"></oda-jupyter-cell>
+        <oda-jupyter-cell content @tap="focusedCell = $for.item" ~for="cells" :cell="$for.item" ~show="!$for.item.hidden" :focused="focusedCell === $for.item"></oda-jupyter-cell>
         <div style="min-height: 90%"></div>
     `,
 
@@ -570,8 +570,8 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                 z-index: 1;
             }
         </style>
-        <div class="pe-preserve-print vertical no-flex" style="position: relative;" :focused="selected">
-              <div class="horizontal" id="block" :blink>
+        <div class="pe-preserve-print vertical no-flex" style="position: relative;">
+              <div class="horizontal" id="block" :blink :outline="selected">
                     <div class="pe-no-print left-panel vertical" :error-invert="cell.type === 'code' && status === 'error'" content style="z-index: 2;">
                         <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: 2px; min-height: 50px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
                             <oda-button ~if="!showProgress && cell.type === 'code'"  :icon-size :icon :error="!!fn" @down.stop="run()" :info-invert="cell?.autoRun" :success="!fn && !cell?.time" style="margin: 4px; border-radius: 50%;">
@@ -587,9 +587,9 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
                             <div ~if="cell.type === 'code'" >{{status}}</div>
                         </div>
                     </div>
-                    <div id="main" class="vertical flex">
+                    <div class="vertical flex">
                         <oda-jupyter-toolbar :icon-size="iconSize * .7" :cell :control ~show="selected"></oda-jupyter-toolbar>
-                        <div class="horizontal" >
+                        <div class="horizontal">
                             <oda-icon ~if="cell.type!=='code' && cell.allowExpand && !editMode" :icon="expanderIcon" @dblclick.stop @tap.stop="this.cell.collapsed = !this.cell.collapsed"></oda-icon>
                             <div flex id="control" ~is="editor" :cell ::edit-mode ::value :read-only show-preview :_value :show-border="editMode"></div>
                         </div>

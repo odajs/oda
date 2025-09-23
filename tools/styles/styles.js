@@ -171,7 +171,9 @@ let style = /*css*/`
         border: 1px solid;
         box-sizing: border-box;
     };
-
+    --outline:{
+        outline: 1px solid;
+    };
     --toolbar:{
         @apply --horizontal;
         align-items: center;
