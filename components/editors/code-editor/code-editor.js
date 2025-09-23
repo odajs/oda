@@ -33,10 +33,10 @@ ODA({is: 'oda-code-editor',
             }
             .ace_scrollbar-h {
                 width: auto !important;
-                /*position: {{scrollCalculate?'sticky':'absolute'}};*/
+                position: {{scrollCalculate?'sticky':'absolute'}};
                 bottom: 0px;
                 /*left: {{scrollCalculate>0?'128px!important':''}};*/
-                /*top: {{scrollCalculate>0?scrollCalculate+'px':'unset'}};*/
+                top: {{scrollCalculate>0?scrollCalculate+'px':'unset'}};
             }
             .ace_search.right {
                 position: sticky;

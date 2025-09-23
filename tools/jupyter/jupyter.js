@@ -574,9 +574,9 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
               <div class="horizontal" id="block" :blink :outline="selected">
                     <div class="pe-no-print left-panel vertical" :error-invert="cell.type === 'code' && status === 'error'" content style="z-index: 2;">
                         <div class="sticky" style="min-width: 40px; max-width: 40px; margin: -2px; margin-top: 2px; min-height: 50px; font-size: xx-small; text-align: center; white-space: break-spaces;" >
-                            <oda-button ~if="!showProgress && cell.type === 'code'"  :icon-size :icon :error="!!fn" @down.stop="run()" :info-invert="cell?.autoRun" :success="!fn && !cell?.time" style="margin: 4px; border-radius: 50%;">
+                            <oda-button ~if="!showProgress && cell.type === 'code'"  :icon-size :icon :error="!!fn" @down.stop="run" :info-invert="cell?.autoRun" :success="!fn && !cell?.time" style="margin: 4px; border-radius: 50%;">
                             </oda-button>
-                            <div ~if="showProgress && cell.type === 'code'" class="circular-progress-container" @down.stop="run()">
+                            <div ~if="showProgress && cell.type === 'code'" class="circular-progress-container" @down.stop="run">
                                 <progress class="hidden-progress" max="100" :value="jupyter.progress"></progress>
                                 <div class="circular-progress" :style="progressStyle">
                                     <!-- <span class="progress-text">{{jupyter.progress}}%</span> -->
@@ -627,7 +627,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
     blink:{
         $def: false,
         set(n){
-            if(n){
+            if(n && !this.fn){
                 this.jupyter.debounce('blink', ()=>{
                     this.blink = false;
                 }, 100)
@@ -762,6 +762,7 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             this.cell?.next?.clearTimes();
             this.showProgress = false;
             this.scrollToBlockEnd();
+            this.blink = false;
         }
     },
     async auto_run(autorun) {
@@ -936,10 +937,8 @@ ODA({ is: 'oda-jupyter-divider',
         <style>
             :host {
                 @apply --vertical;
-                height: 3px;
                 justify-content: center;
                 opacity: {{!visible?0:1}};
-                margin-top: {{last?'12px':'0px'}};
                 position: relative;
                 z-index: 10;
             }
@@ -1291,7 +1290,13 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             this.$render();
         }, 700)
     },
-
+    $listeners:{
+        resize(e){
+            this.async(()=>{
+                this.editor?.resize?.();
+            })
+        }
+    },
     $public:{
         autoRun:{
             $type: Boolean,
@@ -1712,7 +1717,7 @@ class JupyterCell extends ROCKS({
             try{
                 run_context.output_data = jupyter.output_data = [];
                 cell.fn = new AsyncFunction('JUPYTER', this.code);
-
+                cell.blink =  true;
                 // let time = Date.now();
                 // let res =  await cell.fn.call(cell);
                 // time = new Date(Date.now() - time);
