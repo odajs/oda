@@ -32,10 +32,11 @@ ODA({is: 'oda-code-editor',
                 background-color: lightyellow;
             }
             .ace_scrollbar-h {
-                position: {{scrollCalculate?'sticky':'absolute'}};
+                width: auto !important;
+                /*position: {{scrollCalculate?'sticky':'absolute'}};*/
                 bottom: 0px;
-                left: {{scrollCalculate>0?'128px!important':''}};
-                top: {{scrollCalculate>0?scrollCalculate+'px':'unset'}};
+                /*left: {{scrollCalculate>0?'128px!important':''}};*/
+                /*top: {{scrollCalculate>0?scrollCalculate+'px':'unset'}};*/
             }
             .ace_search.right {
                 position: sticky;
@@ -52,11 +53,6 @@ ODA({is: 'oda-code-editor',
         </style>
         <div @keydown.stop  style="min-height: 100%; font-size: large;"></div>
     `,
-    $listeners:{
-        resize(e){
-            this.editor?.resize()
-        }
-    },
     get lineHeight(){
         return this.editor?.container.querySelector('.ace_gutter-cell')?.offsetHeight;
     },

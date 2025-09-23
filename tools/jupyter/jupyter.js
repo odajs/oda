@@ -1192,7 +1192,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
                 opacity: 1;
             }
         </style>
-        <div  class="horizontal" :border="!hideCode"  style="min-height: 64px;">
+        <div  class="horizontal"  style="min-height: 64px;">
             <oda-code-editor :scroll-calculate="getScrollCalculate()" :wrap ~if="!hideCode" show-gutter :read-only @change-cursor="on_change_cursor" @change-breakpoints="on_change_breakpoints" @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" max-lines="Infinity" @change="editorValueChanged" @pointerdown="on_pointerdown" enable-breakpoints sticky-search use-global-find></oda-code-editor>
             <div dimmed ~if="hideCode" class="horizontal left content flex" style="cursor: pointer; padding: 8px 4px;" @dblclick="hideCode=false">
                 <oda-icon icon="bootstrap:eye-slash" style="align-self: baseline; cursor: pointer;" @tap="hideCode = false"></oda-icon>
