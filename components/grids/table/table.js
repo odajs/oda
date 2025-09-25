@@ -1639,7 +1639,7 @@ ODA({is: 'oda-table-cols', extends: 'oda-table-part',
 
 ODA({is: 'oda-table-header', extends: 'oda-table-cols',
     template: /*html*/`
-         <oda-button ~if="this.allowSettings" class="invert" style="position: absolute; top: 0px; right: 0px; z-index: 1;" icon="icons:settings" allow-toggle ::toggled="showSettings"></oda-button>
+         <oda-button ~if="this.allowSettings" class="invert" style="position: absolute; top: 0px; right: 0px; z-index: 1;" :icon="$this.toggled ? 'icons:chevron-right' : 'icons:settings'" allow-toggle ::toggled="showSettings"></oda-button>
     `,
     getTemplate(col) {
         return col.headerTemplate || this.headerTemplate;
