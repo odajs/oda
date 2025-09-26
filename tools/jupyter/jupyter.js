@@ -1366,7 +1366,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
         this.cell.listen('change-breakpoints', () => this.setBreakpoints());
         this.async(() => {
             this.jupyter.isMoveCell = 1;
-            this.ace.gotoLine(0, 0);
+            this.ace?.gotoLine(0, 0);
         }, 1000)
     }, 
     setBreakpoints() {
