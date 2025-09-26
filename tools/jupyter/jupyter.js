@@ -1192,7 +1192,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
             }
         </style>
         <div  class="horizontal"  style="min-height: 64px;">
-            <oda-code-editor :scroll-calculate="getScrollCalculate()" :wrap ~if="!hideCode" show-gutter :read-only @change-cursor="on_change_cursor" @change-breakpoints="on_change_breakpoints" @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" max-lines="Infinity" @change="editorValueChanged" @pointerdown="on_pointerdown" enable-breakpoints sticky-search use-global-find></oda-code-editor>
+            <oda-code-editor :scroll-calculate="getScrollCalculate()" :wrap ~if="!hideCode" show-gutter :read-only @change-cursor="on_change_cursor" @change-breakpoints="on_change_breakpoints" @keypress="_keypress" :src="value" mode="javascript" font-size="12" class="flex" max-lines="Infinity" @change="editorValueChanged" @pointerdown="on_pointerdown" enable-breakpoints sticky-search use-global-find :highlight-active-line="showCursor" :show-cursor></oda-code-editor>
             <div dimmed ~if="hideCode" class="horizontal left content flex" style="cursor: pointer; padding: 8px 4px;" @dblclick="hideCode=false">
                 <oda-icon icon="bootstrap:eye-slash" style="align-self: baseline; cursor: pointer;" @tap="hideCode = false"></oda-icon>
                 <h1 flex  vertical style="margin: 0px 16px; font-size: large; cursor: pointer; text-overflow: ellipsis;" ~html="cell.name +'... <u disabled style=\\\'font-size: x-small; right: 0px;\\\'>(Double click to show...)</u>'" ></h1>
@@ -1211,6 +1211,7 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     on_change_cursor(e) {
         if (this.jupyter.isMoveCell)
             return;
+        this.showCursor = true;
         let range = this.ace?.getSelectionRange();
         try{
             if (this.cell.lastRange){
@@ -1359,9 +1360,14 @@ ODA({ is: 'oda-jupyter-code-editor', imports: '@oda/code-editor',
     getScrollCalculate(){
         return this.jupyter_height - 22 - 5;
     },
+    showCursor: false,
     attached() {
         this.setBreakpoints();
         this.cell.listen('change-breakpoints', () => this.setBreakpoints());
+        this.async(() => {
+            this.jupyter.isMoveCell = 1;
+            this.ace.gotoLine(0, 0);
+        }, 1000)
     }, 
     setBreakpoints() {
         this.async(() => {

@@ -29,7 +29,7 @@ ODA({is: 'oda-code-editor',
             .ace_gutter-cell.ace_breakpoint{
                 border-radius: 20px 0px 0px 20px;
                 box-shadow: 0px 0px 1px 1px red inset;
-                background-color: lightyellow;
+                background-color: lightyellow!important;
             }
             .ace_scrollbar-h {
                 width: auto !important;
