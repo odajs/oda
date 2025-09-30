@@ -1020,7 +1020,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
             <oda-button :icon-size icon="icons:delete" @tap.stop="deleteCell"></oda-button>
             <oda-button :icon-size icon="icons:content-copy" @tap.stop="copyCell" ~style="{fill: isCopiedCell ? 'red' : ''}"></oda-button>
             <oda-button ~if="cell.type!=='code'" allow-toggle ::toggled="editMode"  :icon-size :icon="editMode?'icons:close':'editor:mode-edit'"></oda-button>
-            <oda-button ~if="cell?.type === 'code'" :icon-size :icon="iconEye" title="Hide/Show code" @tap="toggleShowCode"></oda-button>
+            <oda-button ~if="cell?.type === 'code'" :icon-size :icon="iconEye" title="Hide/Show code" @tap.stop="toggleShowCode"></oda-button>
         </div>
     `,
     get iconEye() {
@@ -1030,9 +1030,6 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
         this.control.hideCode = this.cell.hideOutput = !this.cell.hideOutput;
         this.jupyter.$render();
         this.notebook.change();
-        if (this.control.hideCode) {
-            this.domHost.scrollToCell();
-        }
     },
     move(direction){
         let top = this.jupyter.scrollTop;
