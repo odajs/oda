@@ -22,7 +22,13 @@ function log_recurse(obj) {
             }
         }
         case Array: {
-            return '[' + obj.map(log_recurse) + ']';
+            try {
+                return JSON.stringify(obj, 0, 2);
+            }
+            catch (e) {
+                return '[' + obj.map(log_recurse) + ']';
+            }
+
         }
         default: {
             if (obj instanceof HTMLElement) {
