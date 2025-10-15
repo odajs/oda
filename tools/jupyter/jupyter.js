@@ -485,6 +485,9 @@ ODA ({ is: 'oda-jupyter-cell-out', template: `
     },
     get error() {
         return this.cell?.status === 'error';
+    },
+    attached(e) {
+        this.showAll = false;
     }
 })
 
