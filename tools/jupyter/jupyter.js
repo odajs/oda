@@ -764,6 +764,10 @@ ODA({ is: 'oda-jupyter-cell', imports: '@oda/menu',
             this.showProgress = true;
             this.checkBreakpoints();
             this.scrollToBlockEnd();
+            let outs = this.$$('oda-jupyter-cell-out');
+            if (outs?.length) {
+                outs.forEach(i => i.showAll = false);
+            }
             await this.auto_run();
         }
         finally {
