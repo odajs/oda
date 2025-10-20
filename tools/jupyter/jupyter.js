@@ -1010,7 +1010,7 @@ ODA({ is: 'oda-jupyter-toolbar', imports: '@tools/containers, @tools/property-gr
             :host{
                 position: sticky;
                 top: 20px;
-                z-index: 11;
+                z-index: {{cells.length + 2}};
             }
             .top {
                 @apply --horizontal;
