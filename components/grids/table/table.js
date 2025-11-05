@@ -1835,7 +1835,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
                         :column="$$for.item"
                         :item="$for.item"
                         @mousedown="onCellPointerDown($for.item, $$for.item, $this)"
-                        @dblclick.stop.capture="onCellDoubleClick($event, $this)"
+                        @dblclick.stop="onCellDoubleClick($event, $this)"
                         :cell-coordinates="{row: $for.item, column: $$for.item}"
                     ></div>
                 </div>
@@ -2373,7 +2373,7 @@ cells: {
         ODA({
             is: 'oda-table-check', imports: '@oda/icon', extends: 'oda-table-cell-base',
             template: /*html*/`
-                <oda-icon class="no-flex" @tap.stop.prevent="_toggleChecked" :icon :icon-size ~style="{padding: Math.round(iconSize*.2)+'px'}"></oda-icon>
+                <oda-icon class="no-flex" @tap.stop.prevent="_toggleChecked" @dblclick.stop.capture :icon :icon-size ~style="{padding: Math.round(iconSize*.2)+'px'}"></oda-icon>
             `,
             get icon() {
                 if (this.selectByCheck) {
