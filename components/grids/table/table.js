@@ -146,7 +146,8 @@ ODA({is: 'oda-table', imports: '@oda/button, @oda/checkbox, @oda/icon, @oda/spli
         groupTemplate: 'oda-table-cell-group',
         headerTemplate: 'oda-table-header-cell',
         cellTemplate: 'oda-table-cell',
-        checkTemplate: 'oda-table-check'
+        cellTreeTemplate: 'oda-table-cell-tree',
+        checkTemplate: 'oda-table-check',
     },
     $public: {
         $pdp: true,
@@ -2024,7 +2025,7 @@ ODA({is: 'oda-table-body', extends: 'oda-table-part',
         if (row.__group__)
             return this.groupTemplate;
         if (col.treeMode)
-            return 'oda-table-cell-tree';
+            return this.cellTreeTemplate;
         if (row.templates) {
             console.warn('!!!row.templates', row);
         }
