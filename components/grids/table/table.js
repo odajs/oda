@@ -2374,7 +2374,7 @@ cells: {
         ODA({
             is: 'oda-table-check', imports: '@oda/icon', extends: 'oda-table-cell-base',
             template: /*html*/`
-                <oda-icon class="no-flex" @tap.stop.prevent="_toggleChecked" @dblclick.stop.capture :icon :icon-size ~style="{padding: Math.round(iconSize*.2)+'px'}"></oda-icon>
+                <oda-icon class="no-flex" @down.stop.prevent="_toggleChecked" @dblclick.stop.capture :icon :icon-size ~style="{padding: Math.round(iconSize*.2)+'px'}"></oda-icon>
             `,
             get icon() {
                 if (this.selectByCheck) {
