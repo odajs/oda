@@ -76,7 +76,7 @@ ODA({ is: 'oda-splitter',
             $type: Number,
             set(n) {
                 if (this.max && n > this.max)
-                    this.width = this.max;
+                    this.height = this.max;
             }
         }
     },
