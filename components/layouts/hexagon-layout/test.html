@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <oda-hexagon></oda-hexagon>
+
+</body>
+<script type="module">
+    import '../../../oda.js';
+    ODA({is: 'oda-hexagon',
+        template:`
+            <style>
+                :host{
+                    @apply --vertical;
+                    overflow: hidden;
+                }
+                .container{
+                    @apply --vertical;
+                    flex-wrap: wrap;
+                    @apply --dark;
+                }
+                .row{
+                    @apply --horizontal;
+                    overflow: hidden;
+                    margin-top: -50px;
+                    margin-bottom: 25px;
+                }
+                .row:nth-child(odd) {
+                    margin-left: -44px;
+                }
+
+                .hexagon {
+                      width: 86px;
+                      height: 100px;
+                      margin: 2px;
+                      background: linear-gradient(var(--content-background), var(--section-background));
+                      clip-path: polygon(0% 25%, 50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%);
+                }
+                .hexagon:hover {
+                    opacity: .7;
+                }
+            </style>
+            <div class="container" flex>
+                <div ~for="20" class="row">
+                    <div class="hexagon" ~for="20"></div>
+                </div>
+            </div>
+        `
+
+    })
+
+</script>
+</html>
