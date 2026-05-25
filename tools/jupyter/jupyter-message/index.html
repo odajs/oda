@@ -12,7 +12,7 @@
     ODA({ is: 'oda-jupyter-layout', extends: 'this, oda-jupyter',
         template: `
             <oda-jupyter-tree slot="left-panel" ::focused-row="focusedCell"></oda-jupyter-tree>
-            <oda-jupyter-message slot="left-panel" :message></oda-jupyter-message>
+            <oda-jupyter-message slot="left-panel" ::message></oda-jupyter-message>
         `,
     });
 
