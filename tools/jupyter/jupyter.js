@@ -167,10 +167,21 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
                 resolve(this.progress)
             })
         })
-
+    },
+    async setMessage(message = ''){
+        return await new Promise(resolve=>{
+            this.message = message;
+            requestAnimationFrame(()=>{
+                resolve(this.message)
+            })
+        })
+    },
+    addMessage(message = '') {
+        this.message = (this.message || '') + '\n\n' + message;
     },
     $public: {
         progress: 0,
+        message: '',
         $pdp: true,
         iconSize: 24,
         readOnly: false,

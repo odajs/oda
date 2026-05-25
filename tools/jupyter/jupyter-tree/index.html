@@ -8,8 +8,11 @@
     import '../../../oda.js';
     import '../jupyter.js';
     import './jupyter-tree.js';
-    ODA({ is: 'oda-jupyter-layout', extends: 'this, oda-jupyter', template: `
-        <oda-jupyter-tree slot="left-panel" ::focused-row="focusedCell"></oda-jupyter-tree>
+    import './jupyter-message.js';
+    ODA({ is: 'oda-jupyter-layout', extends: 'this, oda-jupyter',
+        template: `
+            <oda-jupyter-tree slot="left-panel" ::focused-row="focusedCell"></oda-jupyter-tree>
+            <oda-jupyter-message slot="left-panel" :message></oda-jupyter-message>
         `,
     });
 
