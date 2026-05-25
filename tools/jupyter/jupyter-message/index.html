@@ -7,8 +7,8 @@
 <script type="module">
     import '../../../oda.js';
     import '../jupyter.js';
-    import './jupyter-tree.js';
-    import '../jupyter-message/jupyter-message.js';
+    import '../jupyter-tree/jupyter-tree.js';
+    import './jupyter-message.js';
     ODA({ is: 'oda-jupyter-layout', extends: 'this, oda-jupyter',
         template: `
             <oda-jupyter-tree slot="left-panel" ::focused-row="focusedCell"></oda-jupyter-tree>
