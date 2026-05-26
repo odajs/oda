@@ -168,9 +168,10 @@ ODA({ is: 'oda-jupyter', imports: '@oda/button, @oda/markdown',
             })
         })
     },
-    async setMessage(message = ''){
+    async setMessage(message = '', replace = false){
         return await new Promise(resolve=>{
-            this.message = message;
+            this.message ||= '';
+            this.message = replace ? message : this.message + '\n\n' + message;
             requestAnimationFrame(()=>{
                 resolve(this.message)
             })
